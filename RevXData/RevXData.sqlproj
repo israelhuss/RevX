@@ -57,8 +57,15 @@
   <ItemGroup>
     <Folder Include="Properties" />
     <Folder Include="Tables" />
+    <Folder Include="PublishLocations" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="Tables\Sessions.sql" />
+    <Build Include="Tables\Status.sql" />
+    <Build Include="Tables\Providers.sql" />
+    <Build Include="Tables\Students.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PublishLocations\RevXData.publish.xml" />
   </ItemGroup>
 </Project>
