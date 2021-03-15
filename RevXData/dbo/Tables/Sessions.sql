@@ -2,8 +2,8 @@
 (
 	[Id] INT NOT NULL PRIMARY KEY IDENTITY, 
 	[Date] DATE NOT NULL, 
-	[TimeIn] TIME(0) NOT NULL, 
-	[TimeOut] TIME(0) NOT NULL, 
+	[StartTime] TIME(0) NOT NULL, 
+	[EndTime] TIME(0) NOT NULL, 
 	[StatusId] INT NOT NULL, 
 	[ProviderId] INT NOT NULL, 
 	[StudentId] INT NOT NULL, 
