@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RevXApi", "RevXApi\RevXApi.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebApps", "WebApps", "{17FB98BB-550C-4910-808B-1FD4CCD94219}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevXPortal", "RevXPortal\RevXPortal.csproj", "{420EF2DF-C5A8-4DF7-8848-960D9C2AF455}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RevXPortal", "RevXPortal\RevXPortal.csproj", "{420EF2DF-C5A8-4DF7-8848-960D9C2AF455}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
