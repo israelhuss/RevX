@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RevXPortal.Models
 {
-	public enum Students 
+	public enum Student
 	{
 		[Description("Duvi Schwartz")]
 		Duvi_Schwartz,

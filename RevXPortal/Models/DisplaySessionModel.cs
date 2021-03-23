@@ -7,7 +7,7 @@ namespace RevXPortal.Models
 {
 	public class DisplaySessionModel
 	{
-		public string Student { get; set; }
+		public Student Student { get; set; }
 		public DateTime Date { get; set; }
 		public string StartTime { get; set; }
 		public string EndTime { get; set; }
