@@ -1,0 +1,131 @@
+﻿@if (ShowDialog)
+{
+    <div class="modal show d-block" tabindex="-1" role="dialog">
+
+        <div class="modal-dialog modal-dialog-centered fade-in" role="document">
+            <EditForm Model="@FormSession" OnValidSubmit="@SaveForm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add A Session</h5>
+                        <button type="button" class="close btn" @onclick="ToggleModal">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="Student">Student</label>
+                                <InputSelect TValue="string" class="custom-select form-control" @bind-Value="@FormSession.Student">
+                                    <option>Please Select...</option>
+                                    @foreach (var student in availableStudents)
+                                    {
+                                        <option>@student</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="Date">Date</label>
+                                <InputDate type="date" min="2021-01-01" class="form-control" @bind-Value="@FormSession.Date" />
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="StartTime">Start Time</label>
+                                <InputText type="time" class="form-control" @bind-Value="@FormSession.StartTime" />
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="EndTime">End Time</label>
+                                <InputText type="time" class="form-control" @bind-Value="@FormSession.EndTime"/>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="Provider">Provider</label>
+                                <InputSelect class="custom-select form-control" @bind-Value="@FormSession.Provider">
+                                    @foreach (var provider in providers)
+                                    {
+                                    <option>@provider</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="BillingStatus">Billing Status</label>
+                                <InputSelect class="custom-select form-control" @bind-Value="@FormSession.BillingStatus">
+                                    @foreach (var status in billingStatus)
+                                    {
+                                    <option>@status</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-12">
+                                <label for="Notes">Notes</label>
+                                <textarea rows="2" type="text" class="form-control" @bind="@FormSession.Notes"></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="ToggleModal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
+
+
+            </EditForm>
+        </div>
+    </div>
+}
+@code {
+    private bool ShowDialog { get; set; }
+
+    [Parameter]
+    public FormSessionModel FormSession { get; set; }
+
+    [Parameter]
+    public EventCallback SaveForm { get; set; }
+
+    private List<SessionModel> sessions = new();
+
+    private List<string> availableStudents = new() { "Duvi Schwartz", "Mendy Surkis", "Shaya Spitzer" };
+    private List<string> providers = new() { "Encore", "Legadel" };
+    private List<string> billingStatus = new() { "Open", "Invoiced", "Paid" };
+
+    protected override Task OnInitializedAsync()
+    {
+        sessions.Add(new SessionModel
+        {
+            Student = "Duvi Shwartz",
+            Date = DateTime.Now,
+            StartTime = new TimeSpan(1, 00, 00),
+            EndTime = new TimeSpan(3, 00, 00),
+            Provider = "Legadel",
+            BillingStatus = "Open",
+            Notes = "I was very tired!!"
+        });
+        sessions.Add(new SessionModel
+        {
+            Student = "Mendy Surkis",
+            Date = DateTime.Now.AddDays(2),
+            StartTime = new TimeSpan(10, 00, 00),
+            EndTime = new TimeSpan(12, 00, 00),
+            Provider = "Encore",
+            BillingStatus = "Open",
+            Notes = "I still am..."
+        });
+        return Task.CompletedTask;
+    }
+
+    public void Show()
+    {
+        ShowDialog = true;
+    }
+
+    private void ToggleModal()
+    {
+        ShowDialog = !ShowDialog;
+    }
+}

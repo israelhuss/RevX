@@ -1,173 +1,208 @@
 ﻿@page "/sessions"
 @using RevXPortal.Models
+@*@attribute [Authorize]*@
 
 <style>
+    .grid {
+        border: solid 1px #626263;
+        border-radius: 4.5px;
+        text-align: center;
+        margin: 1rem;
+        height: 75vh;
+        overflow: hidden;
+    }
 
-	.grid {
-		border: solid 1px #626263;
-		border-radius: 4.5px;
-		text-align: center;
-		margin: 1rem;
-		height: 75vh;
-		overflow: hidden;
-	}
+    th {
+        font-size: 1.3rem;
+    }
 
-	th {
-		font-size: 1.3rem;
-	}
+    .d-flex {
+        align-items: baseline;
+    }
 
-	.d-flex {
-		align-items: baseline;
-	}
+    .icon {
+        font-size: 1rem;
+    }
 
-	.custom-select {
-		width: max-content;
-	}
+    .custom-select:focus {
+        box-shadow: none;
+    }
 
-	.custom-select:focus {
-		box-shadow: none;
-	}
+    .valid.modified:not([type=checkbox]) {
+        outline: none;
+        border: solid 1px #26b050;
+    }
 
-	.valid.modified:not([type=checkbox]) {
-		outline: none;
-		border: solid 1px #26b050;
-	}
+    .modal {
+        background-color: rgb(0 0 0 / 0.70)
+    }
 
-	.modal {
-		background-color: rgb(0 0 0 / 0.70)
-	}
+    .fade-in {
+        animation: fade-in;
+        animation-duration: .6s;
+    }
 
-	.fade-in {
-		animation: fade-in;
-		animation-duration: .6s;
-	}
-	
+    .form-group > label {
+        margin-bottom: 0;
+    }
+
+    td > .btn {
+        padding: 0;
+    }
 </style>
 
 <div class="d-flex justify-content-between">
-	<h3>Sessions</h3>
+    <h3>Sessions</h3>
 
-	<button class="btn btn-primary" @onclick="ToggleModal">Add Session</button>
+    <button class="btn btn-primary" @onclick="ShowDialog">Add Session</button>
 </div>
 
 <div class="grid">
-	<table class="table table-bordered table-striped" style="margin-top: -1px">
-		<thead>
-			<tr>
-				<th></th>
-				<th>Student</th>
-				<th>Date</th>
-				<th>Start Time</th>
-				<th>End Time</th>
-				<th>Provider</th>
-				<th>Billing Status</th>
-				<th>Notes</th>
-			</tr>
-		</thead>
-		<tbody>
-			@foreach (var session in sessions)
-			{
-				<tr>
-					<td><input type="checkbox" class="custom-checkbox" /></td>
-					<td>@session.Student</td>
-					<td>@session.Date.ToShortDateString()</td>
-					<td>@session.StartTime</td>
-					<td>@session.EndTime</td>
-					<td>@session.Provider</td>
-					<td>@session.BillingStatus</td>
-					<td>@session.Notes</td>
-				</tr>
-			}
-		</tbody>
-	</table>
+    <table class="table table-bordered table-striped" style="margin-top: -1px">
+        <thead>
+            <tr>
+                @if (sessions.Count > 0)
+                {
+                    <th></th>
+                }
+                <th>Student</th>
+                <th>Date</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Provider</th>
+                <th>Billing Status</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+
+        @if (sessions.Count > 0)
+        {
+            <tbody>
+                @foreach (var session in sessions)
+                {
+                    <tr>
+                        <td class=""><button type="button" class="btn btn-outline" @onclick="(() => Edit(session))"><i class="oi oi-trash icon"></i></button></td>
+                        <td>@session.Student</td>
+                        <td>@session.Date.ToShortDateString()</td>
+                        <td>@session.StartTime</td>
+                        <td>@session.EndTime</td>
+                        <td>@session.Provider</td>
+                        <td>@session.BillingStatus</td>
+                        <td>@session.Notes</td>
+                    </tr>
+                }
+            </tbody>
+        }
+    </table>
 
 
-	@* Main Row if sessions is empty
-		<div class="empty-table-cell grid-cell">
-			<h4>Please click here to enter a session</h4>
-		</div>
-	*@
-
+    @* Main Row if sessions is empty *@
+    @if (sessions.Count == 0)
+    {
+        <div class="empty-table-cell grid-cell">
+            <h4>Please <a href="#">click here</a> to enter a session</h4>
+        </div>
+    }
 </div>
 
+<FormModal @ref="FormModalRef" FormSession="CurrentSessionForForm" SaveForm="SaveForm"></FormModal>
 
 
-@if (ShowDialog)
-{
-<div class="modal show d-block" tabindex="-1" role="dialog">
-	<div class="modal-dialog modal-dialog-centered fade-in" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title">Add A Session</h5>
-				<button type="button" class="close btn" @onclick="ToggleModal">
-					<span aria-hidden="true">&times;</span>
-				</button>
-			</div>
-			<div class="modal-body">
-				<EditForm Model="DisplaySession">
-					<div class="d-flex justify-content-around">
-						<label for="Student">Student</label>
-						<InputSelect TValue="Student" class="custom-select" @bind-value="@DisplaySession.Student">
-							@foreach (var student in Enum.GetValues(typeof(Student)))
-							{
-								<option>@student</option>
-							}
-						</InputSelect>
-					</div>
-					<div class="d-flex justify-content-around">
-						<label for="date">Date</label>
-						<InputDate @bind-Value="@DisplaySession.Date"></InputDate>
-					</div>
-				</EditForm>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" @onclick="ToggleModal">Close</button>
-				<button type="button" class="btn btn-primary">Save changes</button>
-			</div>
-		</div>
-	</div>
-</div>
-}
 
 
 @code {
-	private bool ShowDialog = false;
-	public DisplaySessionModel DisplaySession = new();
-	private List<SessionModel> sessions = new();
-
-	private List<string> availableStudents = new() { "Duvi Schwartz", "Mendy Surkis", "Shaya Spitzer" };
-	private List<string> providers = new() { "Encore", "Legadel" };
-	private List<string> billingStatus = new() { "Open", "Invoiced", "Paid" };
+    private FormModal FormModalRef { get; set; }
+    public FormSessionModel CurrentSessionForForm { get; set; }
 
 
-	protected override Task OnInitializedAsync()
-	{
-		sessions.Add(new SessionModel
-		{
-			Student = "Duvi Shwartz",
-			Date = DateTime.Now,
-			StartTime = new TimeSpan(1, 00, 00),
-			EndTime = new TimeSpan(3, 00, 00),
-			Provider = "Legadel",
-			BillingStatus = "Open",
-			Notes = "I was very tired!!"
-		});
-		sessions.Add(new SessionModel
-		{
-			Student = "Mendy Surkis",
-			Date = DateTime.Now.AddDays(2),
-			StartTime = new TimeSpan(10, 00, 00),
-			EndTime = new TimeSpan(12, 00, 00),
-			Provider = "Encore",
-			BillingStatus = "Open",
-			Notes = "I still am..."
-		});
-		return Task.CompletedTask;
-	}
+    private List<SessionModel> sessions { get; set; }
 
-	private void ToggleModal()
-	{
-		ShowDialog = !ShowDialog;
-	}
+    protected override Task OnInitializedAsync()
+    {
+        sessions = new();
+        sessions.Add(new SessionModel
+        {
+            Student = "Duvi Shcwartz",
+            Date = DateTime.Now,
+            StartTime = new TimeSpan(1, 00, 00),
+            EndTime = new TimeSpan(3, 00, 00),
+            Provider = "Legadel",
+            BillingStatus = "Open",
+            Notes = "I was very tired!!"
+        });
+        sessions.Add(new SessionModel
+        {
+            Student = "Mendy Surkis",
+            Date = DateTime.Now.AddDays(2),
+            StartTime = new TimeSpan(10, 00, 00),
+            EndTime = new TimeSpan(12, 00, 00),
+            Provider = "Encore",
+            BillingStatus = "Open",
+            Notes = "I still am..."
+        });
+        return Task.CompletedTask;
+    }
 
+
+    private void SaveForm()
+    {
+        var isValid = Validate();
+        if (isValid == null)
+        {
+            Console.WriteLine(CurrentSessionForForm.Student);
+            Console.WriteLine(CurrentSessionForForm.Date);
+            Console.WriteLine(CurrentSessionForForm.StartTime);
+            Console.WriteLine(CurrentSessionForForm.EndTime);
+            Console.WriteLine(CurrentSessionForForm.Provider);
+            Console.WriteLine(CurrentSessionForForm.BillingStatus);
+
+            CurrentSessionForForm = new();
+        }
+    }
+
+    private void ShowDialog()
+    {
+        CurrentSessionForForm = new()
+        {
+            Student = "Duvi Schwartz",
+            Date = DateTime.Today,
+            StartTime = "14:31",
+            Provider = "Legadel",
+            BillingStatus = "Open"
+        };
+
+        FormModalRef.Show();
+    }
+
+    private void Edit(SessionModel session) => EditSession(session);
+
+    private void EditSession(SessionModel session)
+    {
+        Console.WriteLine(session.Student);
+        Console.WriteLine(session.Date);
+        Console.WriteLine(session.StartTime);
+        Console.WriteLine(session.EndTime);
+        Console.WriteLine(session.Provider);
+        Console.WriteLine(session.BillingStatus);
+    }
+
+    private System.ComponentModel.DataAnnotations.ValidationResult Validate()
+    {
+        string[] splitStartTime = CurrentSessionForForm.StartTime.Split(':');
+        TimeSpan startTimeAsTimeSpan = new(int.Parse(splitStartTime[0]), int.Parse(splitStartTime[1]), 0);
+
+        string[] splitEndTime = CurrentSessionForForm.EndTime.Split(':');
+        TimeSpan endTimeAsTimeSpan = new(int.Parse(splitEndTime[0]), int.Parse(splitEndTime[1]), 0);
+
+        var comparison = TimeSpan.Compare(startTimeAsTimeSpan, endTimeAsTimeSpan);
+        bool test = comparison == 1;
+
+        if (test)
+        {
+            return new System.ComponentModel.DataAnnotations.ValidationResult(errorMessage: "End Time cannot be before Start Time.");
+        }
+        
+
+        return System.ComponentModel.DataAnnotations.ValidationResult.Success;
+    }
 }
