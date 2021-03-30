@@ -56,10 +56,10 @@
   <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
   <ItemGroup>
     <Folder Include="Properties" />
-    <Folder Include="PublishLocations" />
     <Folder Include="dbo" />
     <Folder Include="dbo\Tables" />
-    <Folder Include="Publish Locations\" />
+    <Folder Include="dbo\Stored Procedures" />
+    <Folder Include="dbo\PublishLocations\" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\Providers.sql" />
@@ -67,12 +67,15 @@
     <Build Include="dbo\Tables\Status.sql" />
     <Build Include="dbo\Tables\Students.sql" />
     <Build Include="dbo\Tables\SessionPlans.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="PublishLocations\RevXData.publish.xml" />
-    <None Include="Publish Locations\RevXData.publish.xml" />
+    <Build Include="dbo\Stored Procedures\spSession_GetAll.sql" />
+    <Build Include="dbo\Stored Procedures\spSession_Insert.sql" />
+    <Build Include="dbo\Stored Procedures\spStudent_GetAll.sql" />
+    <Build Include="dbo\Stored Procedures\spStudent_Insert.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="RevXData.refactorlog" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="dbo\PublishLocations\RevXData.publish.xml" />
   </ItemGroup>
 </Project>

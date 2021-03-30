@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace RevXPortal.Models
+namespace RevXApi.Models
 {
 	public class SessionModel
 	{
-		public StudentModel Student { get; set; }
+		public string Student { get; set; }
 		public DateTime Date { get; set; }
 		public TimeSpan StartTime { get; set; }
 		public TimeSpan EndTime { get; set; }

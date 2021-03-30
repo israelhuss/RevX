@@ -12,8 +12,7 @@ namespace RevXPortal.Models
 	public class FormSessionModel
 	{
 		[Required]
-		[RegularExpression("Duvi Schwartz|Mendy Surkis|Shaya Spitzer", ErrorMessage = "Please select a Student.")]
-		public string Student { get; set; }
+		public StudentModel Student { get; set; }
 		[Required]
 		[NotAfterToday]
 		public DateTime Date { get; set; }

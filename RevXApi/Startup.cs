@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RevXApi.Data;
+using RevXApi.Library.DataAccess;
 using System;
 using System.Text;
 
@@ -42,6 +43,11 @@ namespace RevXApi
 			services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
 				.AddEntityFrameworkStores<ApplicationDbContext>();
 			services.AddControllersWithViews();
+
+			//Personal Services
+			services.AddTransient<ISqlDataAccess, SqlDataAccess>();
+			services.AddTransient<ISessionData, SessionData>();
+			services.AddTransient<IStudentData, StudentData>();
 
 			// JWT Authentication
 			services.AddAuthentication(options =>

@@ -8,6 +8,7 @@ namespace RevXApi.Library.DataAccess
 		void Dispose();
 		string GetConnectionString(string name);
 		List<T> LoadData<T, U>(string storedProcedure, U parameters, string connectionStringName);
+		List<T> LoadData<T>(string storedProcedure, string connectionStringName);
 		List<T> LoadDataInTransaction<T, U>(string storedProcedure, U parameters);
 		void RollBackTransaction();
 		void SaveData<T>(string storedProcedure, T parameters, string connectionStringName);

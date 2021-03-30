@@ -114,6 +114,12 @@
     private FormModal FormModalRef { get; set; }
     public FormSessionModel CurrentSessionForForm { get; set; }
 
+    private List<StudentModel> availableStudents = new()
+    {
+        new StudentModel() { FirstName = "Duvi", LastName = "Schwartz" },
+        new StudentModel() { FirstName = "Mendy", LastName = "Surkis" },
+        new StudentModel() { FirstName = "Shaya", LastName = "Spitzer" }
+    };
 
     private List<SessionModel> sessions { get; set; }
 
@@ -122,7 +128,7 @@
         sessions = new();
         sessions.Add(new SessionModel
         {
-            Student = "Duvi Shcwartz",
+            Student = availableStudents[0],
             Date = DateTime.Now,
             StartTime = new TimeSpan(1, 00, 00),
             EndTime = new TimeSpan(3, 00, 00),
@@ -132,7 +138,7 @@
         });
         sessions.Add(new SessionModel
         {
-            Student = "Mendy Surkis",
+            Student = availableStudents[1],
             Date = DateTime.Now.AddDays(2),
             StartTime = new TimeSpan(10, 00, 00),
             EndTime = new TimeSpan(12, 00, 00),
@@ -146,25 +152,22 @@
 
     private void SaveForm()
     {
-        var isValid = Validate();
-        if (isValid == null)
-        {
-            Console.WriteLine(CurrentSessionForForm.Student);
-            Console.WriteLine(CurrentSessionForForm.Date);
-            Console.WriteLine(CurrentSessionForForm.StartTime);
-            Console.WriteLine(CurrentSessionForForm.EndTime);
-            Console.WriteLine(CurrentSessionForForm.Provider);
-            Console.WriteLine(CurrentSessionForForm.BillingStatus);
+        Console.WriteLine(CurrentSessionForForm.Student.FirstName);
+        Console.WriteLine(CurrentSessionForForm.Student.LastName);
+        Console.WriteLine(CurrentSessionForForm.Date);
+        Console.WriteLine(CurrentSessionForForm.StartTime);
+        Console.WriteLine(CurrentSessionForForm.EndTime);
+        Console.WriteLine(CurrentSessionForForm.Provider);
+        Console.WriteLine(CurrentSessionForForm.BillingStatus);
 
-            CurrentSessionForForm = new();
-        }
+        CurrentSessionForForm = new();
     }
 
     private void ShowDialog()
     {
         CurrentSessionForForm = new()
         {
-            Student = "Duvi Schwartz",
+            Student = availableStudents[0],
             Date = DateTime.Today,
             StartTime = "14:31",
             Provider = "Legadel",
@@ -186,23 +189,5 @@
         Console.WriteLine(session.BillingStatus);
     }
 
-    private System.ComponentModel.DataAnnotations.ValidationResult Validate()
-    {
-        string[] splitStartTime = CurrentSessionForForm.StartTime.Split(':');
-        TimeSpan startTimeAsTimeSpan = new(int.Parse(splitStartTime[0]), int.Parse(splitStartTime[1]), 0);
 
-        string[] splitEndTime = CurrentSessionForForm.EndTime.Split(':');
-        TimeSpan endTimeAsTimeSpan = new(int.Parse(splitEndTime[0]), int.Parse(splitEndTime[1]), 0);
-
-        var comparison = TimeSpan.Compare(startTimeAsTimeSpan, endTimeAsTimeSpan);
-        bool test = comparison == 1;
-
-        if (test)
-        {
-            return new System.ComponentModel.DataAnnotations.ValidationResult(errorMessage: "End Time cannot be before Start Time.");
-        }
-        
-
-        return System.ComponentModel.DataAnnotations.ValidationResult.Success;
-    }
 }

@@ -38,6 +38,19 @@ namespace RevXApi.Library.DataAccess
 			}
 		}
 
+		public List<T> LoadData<T>(string storedProcedure, string connectionStringName)
+		{
+			string connectionString = GetConnectionString(connectionStringName);
+
+			using (IDbConnection connection = new SqlConnection(connectionString))
+			{
+				List<T> rows = connection.Query<T>(storedProcedure,
+					commandType: CommandType.StoredProcedure).ToList();
+
+				return rows;
+			}
+		}
+
 		public void SaveData<T>(string storedProcedure, T parameters, string connectionStringName)
 		{
 			string connectionString = GetConnectionString(connectionStringName);
