@@ -11,7 +11,7 @@ namespace RevXPortal.FormValidationAttributes
 
 		protected override ValidationResult IsValid(object value, ValidationContext validationContext)
 		{
-			if ((DateTime)value <= DateTime.Today )
+			if ((DateTime)value <= DateTime.Now )
 			{
 				return ValidationResult.Success;
 			}

@@ -82,7 +82,7 @@
                 {
                     <tr>
                         <td class=""><button type="button" class="btn btn-outline" @onclick="(() => Edit(session))"><i class="oi oi-trash icon"></i></button></td>
-                        <td>@session.Student</td>
+                        <td>@session.Student.FullName</td>
                         <td>@session.Date.ToShortDateString()</td>
                         <td>@session.StartTime</td>
                         <td>@session.EndTime</td>
@@ -105,14 +105,14 @@
     }
 </div>
 
-<FormModal @ref="FormModalRef" FormSession="CurrentSessionForForm" SaveForm="SaveForm"></FormModal>
+<FormModal @ref="FormModalRef" FormSession="ManageSession" SaveForm="SaveForm"></FormModal>
 
 
 
 
 @code {
     private FormModal FormModalRef { get; set; }
-    public FormSessionModel CurrentSessionForForm { get; set; }
+    public ManageSessionModel ManageSession { get; set; }
 
     private List<StudentModel> availableStudents = new()
     {
@@ -121,22 +121,22 @@
         new StudentModel() { FirstName = "Shaya", LastName = "Spitzer" }
     };
 
-    private List<SessionModel> sessions { get; set; }
+    private List<DisplaySessionModel> sessions { get; set; }
 
     protected override Task OnInitializedAsync()
     {
         sessions = new();
-        sessions.Add(new SessionModel
+        sessions.Add(new DisplaySessionModel
         {
             Student = availableStudents[0],
             Date = DateTime.Now,
             StartTime = new TimeSpan(1, 00, 00),
-            EndTime = new TimeSpan(3, 00, 00),
+            EndTime = new TimeSpan(4, 00, 00),
             Provider = "Legadel",
             BillingStatus = "Open",
             Notes = "I was very tired!!"
         });
-        sessions.Add(new SessionModel
+        sessions.Add(new DisplaySessionModel
         {
             Student = availableStudents[1],
             Date = DateTime.Now.AddDays(2),
@@ -152,41 +152,44 @@
 
     private void SaveForm()
     {
-        Console.WriteLine(CurrentSessionForForm.Student.FirstName);
-        Console.WriteLine(CurrentSessionForForm.Student.LastName);
-        Console.WriteLine(CurrentSessionForForm.Date);
-        Console.WriteLine(CurrentSessionForForm.StartTime);
-        Console.WriteLine(CurrentSessionForForm.EndTime);
-        Console.WriteLine(CurrentSessionForForm.Provider);
-        Console.WriteLine(CurrentSessionForForm.BillingStatus);
+        Console.WriteLine(ManageSession.Student.FirstName);
+        Console.WriteLine(ManageSession.Student.LastName);
+        Console.WriteLine(ManageSession.Date);
+        Console.WriteLine(ManageSession.StartTime);
+        Console.WriteLine(ManageSession.EndTime);
+        Console.WriteLine(ManageSession.Provider);
+        Console.WriteLine(ManageSession.BillingStatus);
 
-        CurrentSessionForForm = new();
+        ManageSession = new();
+
+        FormModalRef.Hide();
     }
 
     private void ShowDialog()
     {
-        CurrentSessionForForm = new()
+        ManageSession = new()
         {
-            Student = availableStudents[0],
-            Date = DateTime.Today,
-            StartTime = "14:31",
-            Provider = "Legadel",
-            BillingStatus = "Open"
+            Student = new StudentModel() { FirstName = "Duvi", LastName = "Schwartz"}
         };
-
         FormModalRef.Show();
     }
 
-    private void Edit(SessionModel session) => EditSession(session);
+    private void Edit(DisplaySessionModel session) => EditSession(session);
 
-    private void EditSession(SessionModel session)
+    private void EditSession(DisplaySessionModel session)
     {
-        Console.WriteLine(session.Student);
-        Console.WriteLine(session.Date);
-        Console.WriteLine(session.StartTime);
-        Console.WriteLine(session.EndTime);
-        Console.WriteLine(session.Provider);
-        Console.WriteLine(session.BillingStatus);
+        ManageSession = new()
+        {
+            Student = session.Student,
+            Date = session.Date,
+            StartTime = session.StartTime.ToString(),
+            EndTime = session.EndTime.ToString(),
+            Provider = session.Provider,
+            BillingStatus = session.BillingStatus,
+            Notes = session.Notes
+        };
+
+        FormModalRef.Show();
     }
 
 

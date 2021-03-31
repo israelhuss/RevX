@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace RevXPortal.Models
 {
-	public class SessionModel
+	public class DisplaySessionModel
 	{
 		public StudentModel Student { get; set; }
 		public DateTime Date { get; set; }

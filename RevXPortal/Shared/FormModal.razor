@@ -18,10 +18,10 @@
                             <div class="form-group col-md-6">
                                 <label for="Student">Student</label>
                                 <InputSelect TValue="StudentModel" class="custom-select form-control" @bind-Value="@FormSession.Student">
-                                    <option>Please Select...</option>
+                                    <option selected>Please Select...</option>
                                     @foreach (var student in availableStudents)
                                     {
-                                        <option label="@student.FullName" value="@student"/>
+                                        <option  label="@student.FullName" value="@student.Id,@student.FirstName,@student.LastName"/>
                                     }
                                 </InputSelect>
                             </div>
@@ -44,19 +44,21 @@
                             <div class="form-group col-md-6">
                                 <label for="Provider">Provider</label>
                                 <InputSelect class="custom-select form-control" @bind-Value="@FormSession.Provider">
+                                    <option selected>Please Select...</option>
                                     @foreach (var provider in providers)
-                                    {
-                                    <option>@provider</option>
-                                    }
+                                        {
+                                        <option>@provider</option>
+                                        }
                                 </InputSelect>
                             </div>
                             <div class="form-group col-md-6">
                                 <label for="BillingStatus">Billing Status</label>
-                                <InputSelect class="custom-select form-control" @bind-Value="@FormSession.BillingStatus" >
+                                <InputSelect class="custom-select form-control" @bind-Value="@FormSession.BillingStatus">
+                                    <option selected>Please Select...</option>
                                     @foreach (var status in billingStatus)
-                                    {
-                                    <option>@status</option>
-                                    }
+                                        {
+                                        <option>@status</option>
+                                        }
                                 </InputSelect>
                             </div>
                         </div>
@@ -83,12 +85,12 @@
     private bool ShowDialog { get; set; }
 
     [Parameter]
-    public FormSessionModel FormSession { get; set; }
+    public ManageSessionModel FormSession { get; set; }
 
     [Parameter]
     public EventCallback SaveForm { get; set; }
 
-    private List<SessionModel> sessions = new();
+    private List<DisplaySessionModel> sessions = new();
     private List<StudentModel> availableStudents;
 
 
@@ -97,24 +99,24 @@
 
     protected override Task OnInitializedAsync()
     {
-         availableStudents = new()
-         {
-             new StudentModel() { FirstName = "Duvi", LastName = "Schwartz" },
-             new StudentModel() { FirstName = "Mendy", LastName = "Surkis" },
-             new StudentModel() { FirstName = "Shaya", LastName = "Spitzer" }
-         };
+        availableStudents = new()
+        {
+            new StudentModel() { FirstName = "Duvi", LastName = "Schwartz" },
+            new StudentModel() { FirstName = "Mendy", LastName = "Surkis" },
+            new StudentModel() { FirstName = "Shaya", LastName = "Spitzer" }
+        };
 
-        sessions.Add(new SessionModel
+        sessions.Add(new DisplaySessionModel
         {
             Student = availableStudents[0],
             Date = DateTime.Now,
             StartTime = new TimeSpan(1, 00, 00),
-            EndTime = new TimeSpan(3, 00, 00),
+            EndTime = new TimeSpan(4, 00, 00),
             Provider = "Legadel",
             BillingStatus = "Open",
             Notes = "I was very tired!!"
         });
-        sessions.Add(new SessionModel
+        sessions.Add(new DisplaySessionModel
         {
             Student = availableStudents[1],
             Date = DateTime.Now.AddDays(2),
@@ -130,6 +132,11 @@
     public void Show()
     {
         ShowDialog = true;
+    }
+
+    public void Hide()
+    {
+        ShowDialog = false;
     }
 
     private void ToggleModal()

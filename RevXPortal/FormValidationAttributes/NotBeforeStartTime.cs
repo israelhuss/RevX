@@ -9,11 +9,10 @@ namespace RevXPortal.FormValidationAttributes
 {
 	public class NotBeforeStartTime : ValidationAttribute
 	{
-		
 		protected override ValidationResult IsValid(object value, ValidationContext validationContext)
 		{
-			var model = (FormSessionModel)value;
-			string[] startTimeSplit = model.StartTime.Split(':');
+			var model = (ManageSessionModel)value;
+			string[] startTimeSplit = model.StartTime.ToString().Split(':');
 			TimeSpan startTimeAsTimeSpan = new TimeSpan(int.Parse(startTimeSplit[0]), int.Parse(startTimeSplit[1]), 0);
 
 			string[] endTimeSplit = model.EndTime.ToString().Split(':');
