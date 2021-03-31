@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace RevXPortal.Models
 {
-	[TypeConverter(typeof(StudentConverter))]
 	public class StudentModel
 	{
 		public int Id { get; set; }
