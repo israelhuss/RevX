@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RevXApi.Library.DataAccess;
 using RevXApi.Library.Models;
@@ -30,6 +31,12 @@ namespace RevXApi.Controllers
 		public void AddStudent(StudentModel model)
 		{
 			_studentData.AddStudent(model);
+		}
+
+		[HttpGet("{id}")]
+		public StudentModel GetStudentById(int id)
+		{
+			return _studentData.GetById(id);
 		}
 	}
 }

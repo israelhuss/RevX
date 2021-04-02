@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RevXApi.Library.DataAccess;
-using RevXApi.Models;
+using RevXApi.Library.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,5 +26,10 @@ namespace RevXApi.Controllers
 			return _sessionData.GetAllSessions();
 		}
 
+		[HttpPost]
+		public void SaveSession(SessionModel model)
+		{
+			_sessionData.SaveSession(model);
+		}
 	}
 }

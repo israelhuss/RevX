@@ -3,6 +3,6 @@
 AS	
 BEGIN
 	SET NOCOUNT ON
-	SELECT [Id], [Date], [StartTime], [EndTime], [StatusId], [ProviderId], [StudentId]
+	SELECT [Id], [StudentId], [Date], [StartTime], [EndTime], [ProviderId], [BillingStatusId], [Notes]
 	FROM dbo.Sessions
 END

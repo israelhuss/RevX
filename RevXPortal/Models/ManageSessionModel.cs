@@ -24,9 +24,9 @@ namespace RevXPortal.Models
 		[Required]
 		public string EndTime { get; set; }
 		[Required]
-		public string Provider { get; set; }
+		public ProviderModel Provider { get; set; }
 		[Required]
-		public string BillingStatus { get; set; }
+		public BillingStatusModel BillingStatus { get; set; }
 		
 		public string Notes { get; set; }
 	}

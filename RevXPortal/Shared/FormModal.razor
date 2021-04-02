@@ -1,4 +1,6 @@
-﻿@if (ShowDialog)
+﻿@inject IStudentEndpoint _student
+
+@if (ShowDialog)
 {
     <div class="modal show d-block" tabindex="-1" role="dialog">
 
@@ -17,13 +19,13 @@
                         <div class="form-row">
                             <div class="form-group col-md-6">
                                 <label for="Student">Student</label>
-                                <StudentInputSelect TValue="StudentModel" class="custom-select form-control" @bind-Value="@FormSession.Student">
-                                    <option selected>Please Select...</option>
+                                <CustomInputSelect class="custom-select form-control" @bind-Value="@FormSession.Student"> 
+                                    <option selected value="null">Please Select...</option>
                                     @foreach (var student in availableStudents)
                                     {
-                                        <option label="@student.FullName" value="@student.Id,@student.FirstName,@student.LastName"/>
+                                        <option label="@student.FullName" value="@student.Id,@student.FirstName,@student.LastName" />
                                     }
-                                </StudentInputSelect>
+                                </CustomInputSelect>
                             </div>
                             <div class="form-group col-md-6">
                                 <label for="Date">Date</label>
@@ -37,29 +39,29 @@
                             </div>
                             <div class="form-group col-md-6">
                                 <label for="EndTime">End Time</label>
-                                <InputText type="time" class="form-control" @bind-Value="@FormSession.EndTime"/>
+                                <InputText type="time" class="form-control" @bind-Value="@FormSession.EndTime" />
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group col-md-6">
                                 <label for="Provider">Provider</label>
-                                <InputSelect class="custom-select form-control" @bind-Value="@FormSession.Provider">
+                                <CustomInputSelect class="custom-select form-control" @bind-Value="@FormSession.Provider">
                                     <option selected>Please Select...</option>
                                     @foreach (var provider in providers)
                                         {
-                                        <option>@provider</option>
+                                        <option label="@provider.Name" value="@provider.Id,@provider.Name" />
                                         }
-                                </InputSelect>
+                                </CustomInputSelect>
                             </div>
                             <div class="form-group col-md-6">
                                 <label for="BillingStatus">Billing Status</label>
-                                <InputSelect class="custom-select form-control" @bind-Value="@FormSession.BillingStatus">
+                                <CustomInputSelect class="custom-select form-control" @bind-Value="@FormSession.BillingStatus">
                                     <option selected>Please Select...</option>
                                     @foreach (var status in billingStatus)
                                         {
-                                        <option>@status</option>
+                                        <option label="@status.BillingStatus" value="@status.Id,@status.BillingStatus" />
                                         }
-                                </InputSelect>
+                                </CustomInputSelect>
                             </div>
                         </div>
                         <div class="form-row">
@@ -85,48 +87,35 @@
     private bool ShowDialog { get; set; }
 
     [Parameter]
+    [CascadingParameter]
     public ManageSessionModel FormSession { get; set; }
 
     [Parameter]
     public EventCallback SaveForm { get; set; }
 
     private List<DisplaySessionModel> sessions = new();
-    private List<StudentModel> availableStudents;
+    private List<StudentModel> availableStudents { get; set; }
 
 
-    private List<string> providers = new() { "Encore", "Legadel" };
-    private List<string> billingStatus = new() { "Open", "Invoiced", "Paid" };
+    private List<ProviderModel> providers { get; set; }
+    private List<BillingStatusModel> billingStatus { get; set; }
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-        availableStudents = new()
+        availableStudents = await _student.GetAll();
+
+        providers = new()
         {
-            new StudentModel() { FirstName = "Duvi", LastName = "Schwartz" },
-            new StudentModel() { FirstName = "Mendy", LastName = "Surkis" },
-            new StudentModel() { FirstName = "Shaya", LastName = "Spitzer" }
+            new ProviderModel() { Name = "Encore" },
+            new ProviderModel() { Name = "Legadel" }
         };
 
-        sessions.Add(new DisplaySessionModel
+        billingStatus = new()
         {
-            Student = availableStudents[0],
-            Date = DateTime.Now,
-            StartTime = new TimeSpan(1, 00, 00),
-            EndTime = new TimeSpan(4, 00, 00),
-            Provider = "Legadel",
-            BillingStatus = "Open",
-            Notes = "I was very tired!!"
-        });
-        sessions.Add(new DisplaySessionModel
-        {
-            Student = availableStudents[1],
-            Date = DateTime.Now.AddDays(2),
-            StartTime = new TimeSpan(10, 00, 00),
-            EndTime = new TimeSpan(12, 00, 00),
-            Provider = "Encore",
-            BillingStatus = "Open",
-            Notes = "I still am..."
-        });
-        return Task.CompletedTask;
+            new() { BillingStatus = "Open"},
+            new() { BillingStatus = "Invoiced"},
+            new() { BillingStatus = "Paid"}
+        };
     }
 
     public void Show()

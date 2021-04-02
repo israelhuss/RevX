@@ -5,10 +5,10 @@
 	@StartTime time(0),
 	@EndTime time(0),
 	@ProviderId int,
-	@StatusId int,
+	@BillingStatusId int,
 	@Notes nvarchar(250)
 AS
 BEGIN
-	INSERT INTO dbo.Sessions (StudentId, [Date], StartTime, EndTime, ProviderId, StatusId, Notes)
-	VALUES (@StudentId, @Date, @StartTime, @EndTime, @ProviderId, @StatusId, @Notes)
+	INSERT INTO dbo.Sessions (StudentId, [Date], StartTime, EndTime, ProviderId, BillingStatusId, Notes)
+	VALUES (@StudentId, @Date, @StartTime, @EndTime, @ProviderId, @BillingStatusId, @Notes)
 END

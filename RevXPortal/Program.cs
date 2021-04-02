@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using RevXPortal.API;
 using RevXPortal.Authentication;
 using System;
 using System.Collections.Generic;
@@ -25,7 +26,11 @@ namespace RevXPortal
 			builder.Services.AddAuthorizationCore();
 			builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
 
-			builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+			builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:44300/") });
+
+			//Endpoints
+			builder.Services.AddTransient<IStudentEndpoint, StudentEndpoint>();
+			builder.Services.AddTransient<ISessionEndpoint, SessionEndpoint>();
 
 			await builder.Build().RunAsync();
 		}

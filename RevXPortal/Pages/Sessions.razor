@@ -1,5 +1,7 @@
 ﻿@page "/sessions"
 @using RevXPortal.Models
+@inject ISessionEndpoint _sessionEndpoint
+
 @*@attribute [Authorize]*@
 
 <style>
@@ -61,7 +63,7 @@
     <table class="table table-bordered table-striped" style="margin-top: -1px">
         <thead>
             <tr>
-                @if (sessions.Count > 0)
+                @if (sessions is not null && sessions.Count > 0)
                 {
                     <th></th>
                 }
@@ -75,7 +77,7 @@
             </tr>
         </thead>
 
-        @if (sessions.Count > 0)
+        @if (sessions is not null && sessions.Count > 0)
         {
             <tbody>
                 @foreach (var session in sessions)
@@ -86,8 +88,8 @@
                         <td>@session.Date.ToShortDateString()</td>
                         <td>@session.StartTime</td>
                         <td>@session.EndTime</td>
-                        <td>@session.Provider</td>
-                        <td>@session.BillingStatus</td>
+                        <td>@session.Provider.Name</td>
+                        <td>@session.BillingStatus.BillingStatus</td>
                         <td>@session.Notes</td>
                     </tr>
                 }
@@ -95,9 +97,16 @@
         }
     </table>
 
+    @* Main Row while loading the sessions *@
+    @if (sessions is null)
+    {
+        <div class="empty-table-cell grid-cell">
+            <h4>Please wait... <br> Loading sessions!!!</h4>
+        </div>
+    }
 
     @* Main Row if sessions is empty *@
-    @if (sessions.Count == 0)
+    @if (sessions is not null && sessions.Count == 0)
     {
         <div class="empty-table-cell grid-cell">
             <h4>Please <a href="#">click here</a> to enter a session</h4>
@@ -123,30 +132,9 @@
 
     private List<DisplaySessionModel> sessions { get; set; }
 
-    protected override Task OnInitializedAsync()
+    protected async override Task OnInitializedAsync()
     {
-        sessions = new();
-        sessions.Add(new DisplaySessionModel
-        {
-            Student = availableStudents[0],
-            Date = DateTime.Now,
-            StartTime = new TimeSpan(1, 00, 00),
-            EndTime = new TimeSpan(4, 00, 00),
-            Provider = "Legadel",
-            BillingStatus = "Open",
-            Notes = "I was very tired!!"
-        });
-        sessions.Add(new DisplaySessionModel
-        {
-            Student = availableStudents[1],
-            Date = DateTime.Now.AddDays(2),
-            StartTime = new TimeSpan(10, 00, 00),
-            EndTime = new TimeSpan(12, 00, 00),
-            Provider = "Encore",
-            BillingStatus = "Open",
-            Notes = "I still am..."
-        });
-        return Task.CompletedTask;
+        sessions = await _sessionEndpoint.GetAll();
     }
 
 
@@ -154,11 +142,12 @@
     {
         Console.WriteLine(ManageSession.Student.FirstName);
         Console.WriteLine(ManageSession.Student.LastName);
+        Console.WriteLine(ManageSession.Student.Id);
         Console.WriteLine(ManageSession.Date);
         Console.WriteLine(ManageSession.StartTime);
         Console.WriteLine(ManageSession.EndTime);
-        Console.WriteLine(ManageSession.Provider);
-        Console.WriteLine(ManageSession.BillingStatus);
+        Console.WriteLine(ManageSession.Provider.Name);
+        Console.WriteLine(ManageSession.BillingStatus.BillingStatus);
 
         ManageSession = new();
 

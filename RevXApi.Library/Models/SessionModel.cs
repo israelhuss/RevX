@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace RevXApi.Models
+namespace RevXApi.Library.Models
 {
 	public class SessionModel
 	{
-		public string Student { get; set; }
+		public int Id { get; set; }
+		public StudentModel Student { get; set; }
 		public DateTime Date { get; set; }
-		public TimeSpan StartTime { get; set; }
-		public TimeSpan EndTime { get; set; }
-		public string Provider { get; set; }
-		public string BillingStatus { get; set; }
+		public string StartTime { get; set; }
+		public string EndTime { get; set; }
+		public ProviderModel Provider { get; set; }
+		public BillingStatusModel BillingStatus { get; set; }
 		public string Notes { get; set; }
 	}
 }

@@ -48,6 +48,8 @@ namespace RevXApi
 			services.AddTransient<ISqlDataAccess, SqlDataAccess>();
 			services.AddTransient<ISessionData, SessionData>();
 			services.AddTransient<IStudentData, StudentData>();
+			services.AddTransient<IProviderData, ProviderData>();
+			services.AddTransient<IBillingStatusData, BillingStatusData>();
 
 			// JWT Authentication
 			services.AddAuthentication(options =>
