@@ -94,6 +94,9 @@
                     </tr>
                 }
             </tbody>
+            <tfoot>
+                <tr>Hi</tr>
+            </tfoot>
         }
     </table>
 
@@ -121,14 +124,9 @@
 
 @code {
     private FormModal FormModalRef { get; set; }
-    public ManageSessionModel ManageSession { get; set; }
+    public ManageSessionModel ManageSession { get; set; } = new();
 
-    private List<StudentModel> availableStudents = new()
-    {
-        new StudentModel() { FirstName = "Duvi", LastName = "Schwartz" },
-        new StudentModel() { FirstName = "Mendy", LastName = "Surkis" },
-        new StudentModel() { FirstName = "Shaya", LastName = "Spitzer" }
-    };
+
 
     private List<DisplaySessionModel> sessions { get; set; }
 
@@ -138,28 +136,21 @@
     }
 
 
-    private void SaveForm()
+    private async void SaveForm()
     {
-        Console.WriteLine(ManageSession.Student.FirstName);
-        Console.WriteLine(ManageSession.Student.LastName);
-        Console.WriteLine(ManageSession.Student.Id);
-        Console.WriteLine(ManageSession.Date);
-        Console.WriteLine(ManageSession.StartTime);
-        Console.WriteLine(ManageSession.EndTime);
-        Console.WriteLine(ManageSession.Provider.Name);
-        Console.WriteLine(ManageSession.BillingStatus.BillingStatus);
+
+        FormModalRef.Hide();
+        await _sessionEndpoint.SaveSession(ManageSession);
+        sessions = await _sessionEndpoint.GetAll();
+
+        StateHasChanged();
 
         ManageSession = new();
 
-        FormModalRef.Hide();
     }
 
     private void ShowDialog()
     {
-        ManageSession = new()
-        {
-            Student = new StudentModel() { FirstName = "Duvi", LastName = "Schwartz"}
-        };
         FormModalRef.Show();
     }
 

@@ -39,15 +39,22 @@ namespace RevXPortal.API
 				StudentId = model.Student.Id,
 				Date = model.Date,
 				StartTime = ConvertToTimeSpan(model.StartTime),
-				EndTime = ConvertToTimeSpan(model.EndTime)
-
-				//FINISH
-
+				EndTime = ConvertToTimeSpan(model.EndTime),
+				ProviderId = model.Provider.Id,
+				BillingStatusId = model.BillingStatus.Id,
+				Notes = model.Notes
 			};
 
-			using (HttpResponseMessage response = await _client.PostAsJsonAsync("/api/Session", dbModel))
+			using (HttpResponseMessage response = await _client.PostAsJsonAsync("/api/Session", model))
 			{
-
+				if (response.IsSuccessStatusCode)
+				{
+					Console.WriteLine("Session was saved to the database.");
+				}
+				else
+				{
+					throw new Exception(response.ReasonPhrase);
+				}
 			}
 		}
 

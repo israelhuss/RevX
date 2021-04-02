@@ -87,7 +87,6 @@
     private bool ShowDialog { get; set; }
 
     [Parameter]
-    [CascadingParameter]
     public ManageSessionModel FormSession { get; set; }
 
     [Parameter]
@@ -106,15 +105,15 @@
 
         providers = new()
         {
-            new ProviderModel() { Name = "Encore" },
-            new ProviderModel() { Name = "Legadel" }
+            new ProviderModel() { Id = 1, Name = "Encore" },
+            new ProviderModel() { Id = 2, Name = "Legadel" }
         };
 
         billingStatus = new()
         {
-            new() { BillingStatus = "Open"},
-            new() { BillingStatus = "Invoiced"},
-            new() { BillingStatus = "Paid"}
+            new() { Id = 1, BillingStatus = "Open"},
+            new() { Id = 2, BillingStatus = "Invoiced"},
+            new() { Id = 3, BillingStatus = "Paid"}
         };
     }
 
