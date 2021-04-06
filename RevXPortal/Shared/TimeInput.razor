@@ -1,160 +1,223 @@
 ﻿@inject IJSRuntime jsRuntime
 
 <style>
-    .time-input {
-        user-select: none;
-        cursor: default !important;
-        outline: none;
-        border: none;
-        box-shadow: none;
-        padding: 0;
-        margin: 0;
-        border-radius: 0px;
-    }
+	.time-input {
+		user-select: none;
+		cursor: default !important;
+		outline: none;
+		border: none;
+		box-shadow: none;
+		padding: 0;
+		margin: 0;
+		border-radius: 0px;
+	}
 
-        .time-input:active,
-        .time-input:focus {
-            outline: none;
-            border: none;
-            box-shadow: none;
-            padding: 0;
-            margin: 0;
-            border-radius: 0px;
-        }
+		.time-input:active,
+		.time-input:focus {
+			outline: none;
+			border: none;
+			box-shadow: none;
+			padding: 0;
+			margin: 0;
+			border-radius: 0px;
+		}
 
-        .time-input:focus {
-            background-color: rgb(26, 115, 232);
-            color: white;
-            border-radius: 0px;
-        }
+		.time-input:focus {
+			background-color: rgb(26, 115, 232);
+			color: white;
+			border-radius: 0px;
+		}
 
-            .form-control:focus-within {
-                color: #495057;
-                background-color: #fff;
-                border-color: #80bdff;
-                box-shadow: 0 0 0 0.2rem rgb(0 123 255 / 25%);
-            }
+			.form-control:focus-within {
+				color: #495057;
+				background-color: #fff;
+				border-color: #80bdff;
+				box-shadow: 0 0 0 0.2rem rgb(0 123 255 / 25%);
+			}
 
-    .form-control > label {
-        margin-bottom: 0;
-    }
+	.form-control > label {
+		margin-bottom: 0;
+	}
 </style>
 
-<div class="d-flex align-items-center form-control" tabindex="-1" @ref="container" >
-    <button type="button" class="time-input btn" @onkeyup="@HoursInput" tabindex="0" @ref="hours" @onclick="(() => MoveFocus(hours))">@Hour</button>
-    <label style="padding-right: 1px; padding-left: 1px;">:</label>
-    <button type="button" class="time-input btn" @onkeyup="@MinutesInput" tabindex="0" @ref="minutes" @onclick="(() => MoveFocus(minutes))">@Minutes</button>
-    <label>&nbsp;</label>
-    <button type="button" class="time-input btn" @onkeyup="@PrefixInput" tabindex="0" @ref="prefix" @onclick="(() => MoveFocus(prefix))">@Prefix</button>
+<div class="d-flex align-items-center form-control" tabindex="-1" @ref="containerElement" >
+	<input type="button" class="time-input btn" @onkeyup="@HoursInput" tabindex="0" @ref="hoursElement" @onclick="(() => MoveFocus(hoursElement))" value="@Hour" />
+	<label style="padding-right: 1px; padding-left: 1px;">:</label>
+	<input type="button" class="time-input btn" @onkeyup="@MinutesInput" tabindex="0" @ref="minutesElement" @onclick="(() => MoveFocus(minutesElement))" value="@Minutes" />
+	<label>&nbsp;</label>
+	<input type="button" class="time-input btn" @onkeyup="@PrefixInput" tabindex="0" @ref="prefixElement" @onclick="(() => MoveFocus(prefixElement))" value="@Prefix" />
 </div>
 
 
 @code {
 
-    public string Hour { get; set; } = "--";
-    public string Minutes { get; set; } = "--";
-    public string Prefix { get; set; } = "--";
+	private string _hour = "--";
+
+	public string Hour
+	{
+		get { return _hour; }
+		set
+		{
+			_hour = value;
+			OnTimeChanged();
+		}
+	}
+
+	private string _minutes = "--";
+
+	public string Minutes
+	{
+		get { return _minutes; }
+		set
+		{
+			_minutes = value;
+			OnTimeChanged();
+		}
+	}
+
+	private string _prefix = "--";
+
+	public string Prefix
+	{
+		get { return _prefix; }
+		set
+		{
+			_prefix = value;
+			OnTimeChanged();
+		}
+	}
 
 
-    public string Time { get; set; }
+	//public string Hour { get; set; } = "--";
+	//public string Minutes { get; set; } = "--";
+	//public string Prefix { get; set; } = "--";
 
-    private bool hourInputIsInEditState { get; set; } = false;
+	[Parameter]
+	public string Time { get; set; }
+	[Parameter]
+	public EventCallback<string> TimeChanged { get; set; }
 
-    protected ElementReference container;
-    protected ElementReference hours;
-    protected ElementReference minutes;
-    protected ElementReference prefix;
+	private bool hourInputIsInEditState { get; set; } = false;
+
+	protected ElementReference containerElement;
+	protected ElementReference hoursElement;
+	protected ElementReference minutesElement;
+	protected ElementReference prefixElement;
 
 
-    private void HoursInput(KeyboardEventArgs e)
-    {
-        if (e.Key == "Backspace")
-        {
-            Hour = "--";
-        }
-        if (char.IsNumber(e.Key, 0))
-        {
-            int.TryParse(e.Key, out int n);
+	private void HoursInput(KeyboardEventArgs e)
+	{
+		if (e.Key == "Backspace")
+		{
+			Hour = "--";
+		}
+		if (char.IsNumber(e.Key, 0))
+		{
+			int.TryParse(e.Key, out int n);
 
-            if (Hour == "--")
-            {
-                if (n > 1)
-                {
-                    Hour = $"0{n}";
-                    MoveFocus(minutes);
-                    hourInputIsInEditState = false;
-                }
-                else if (n == 0 || n == 1)
-                {
-                    Hour = $"0{n}";
-                    hourInputIsInEditState = true;
-                }
-            }
-            else if (Hour != "--")
-            {
-                if (hourInputIsInEditState  && ((Hour[1] == '0' || Hour[1] == '1') && n <= 2))
-                {
-                    Hour = $"{Hour[1]}{n}";
-                    MoveFocus(minutes);
-                    hourInputIsInEditState = false;
-                }
-                else if (!hourInputIsInEditState && ((Hour[1] == '0' || Hour[1] == '1') && n <= 2))
-                {
-                    Hour = $"0{n}";
-                    hourInputIsInEditState = true;
-                }
-                else
-                {
-                    Hour = $"0{n}";
-                    hourInputIsInEditState = false;
-                    MoveFocus(minutes);
-                }
-            }
-        }
-    }
+			if (Hour == "--")
+			{
+				if (n > 1)
+				{
+					Hour = $"0{n}";
+					MoveFocus(minutesElement);
+					hourInputIsInEditState = false;
+				}
+				else if (n == 0 || n == 1)
+				{
+					Hour = $"0{n}";
+					hourInputIsInEditState = true;
+				}
+			}
+			else if (Hour != "--")
+			{
+				if (hourInputIsInEditState  && ((Hour[1] == '0' || Hour[1] == '1') && n <= 2))
+				{
+					Hour = $"{Hour[1]}{n}";
+					MoveFocus(minutesElement);
+					hourInputIsInEditState = false;
+				}
+				else if (!hourInputIsInEditState && ((Hour[1] == '0' || Hour[1] == '1') && n <= 2))
+				{
+					Hour = $"0{n}";
+					hourInputIsInEditState = true;
+				}
+				else
+				{
+					Hour = $"0{n}";
+					hourInputIsInEditState = false;
+					MoveFocus(minutesElement);
+				}
+			}
+		}
+	}
 
-    private void MinutesInput(KeyboardEventArgs e)
-    {
-        if (e.Key == "Backspace")
-        {
-            Minutes = "--";
-        }
+	private void MinutesInput(KeyboardEventArgs e)
+	{
+		if (e.Key == "Backspace")
+		{
+			Minutes = "--";
+		}
 
-        if (char.IsNumber(e.Key, 0))
-        {
-            int.TryParse(e.Key, out int n);
+		if (char.IsNumber(e.Key, 0))
+		{
+			int.TryParse(e.Key, out int n);
 
-            if (Minutes == "--")
-            {
-                Minutes = $"0{n}";
-            }
-            else if (Minutes != "--")
-            {
-                Minutes = $"{Minutes[1]}{n}";
-                MoveFocus(prefix);
-            }
-        }
-    }
+			if (Minutes == "--")
+			{
+				Minutes = $"0{n}";
+			}
+			else if (Minutes != "--")
+			{
+				Minutes = $"{Minutes[1]}{n}";
+				MoveFocus(prefixElement);
+			}
+		}
+	}
 
-    private void PrefixInput(KeyboardEventArgs e)
-    {
-        if (e.Key == "Backspace")
-        {
-            Minutes = "--";
-        }
+	private void PrefixInput(KeyboardEventArgs e)
+	{
+		if (e.Key == "Backspace")
+		{
+			Minutes = "--";
+		}
 
-        if (e.Key == "a" || e.Key == "A" || e.Key == "1")
-        {
-            Prefix = "AM";
-        }
-        else if (e.Key == "p" || e.Key == "P" || e.Key == "2")
-        {
-            Prefix = "PM";
-        }
-    }
+		if (e.Key == "a" || e.Key == "A" || e.Key == "1")
+		{
+			Prefix = "AM";
+		}
+		else if (e.Key == "p" || e.Key == "P" || e.Key == "2")
+		{
+			Prefix = "PM";
+		}
+	}
 
-    private void MoveFocus(ElementReference element)
-    {
-        element.FocusAsync();
-    }
+	private void OnTimeChanged()
+	{
+		if (Hour != "--" && Minutes != "--" && Prefix != "--")
+		{
+			if (Prefix == "AM")
+			{
+				if (int.Parse(Hour) == 12)
+				{
+					Time = $"00:{Minutes}:00";
+				}
+				else
+				{
+					Time = $"{Hour}:{Minutes}:00";
+				}
+			}
+			else if (Prefix == "PM")
+			{
+				Time = $"{int.Parse(Hour) + 12}:{Minutes}:00";
+			}
+		}
+
+		TimeChanged.InvokeAsync(Time);
+	}
+
+	private void MoveFocus(ElementReference element)
+	{
+		element.FocusAsync();
+	}
 }

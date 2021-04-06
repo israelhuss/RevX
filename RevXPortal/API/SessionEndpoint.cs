@@ -34,16 +34,16 @@ namespace RevXPortal.API
 
 		public async Task SaveSession(ManageSessionModel model)
 		{
-			SessionDbModel dbModel = new()
-			{
-				StudentId = model.Student.Id,
-				Date = model.Date,
-				StartTime = ConvertToTimeSpan(model.StartTime),
-				EndTime = ConvertToTimeSpan(model.EndTime),
-				ProviderId = model.Provider.Id,
-				BillingStatusId = model.BillingStatus.Id,
-				Notes = model.Notes
-			};
+			//SessionDbModel dbModel = new()
+			//{
+			//	StudentId = model.Student.Id,
+			//	Date = model.Date,
+			//	StartTime = ConvertToTimeSpan(model.StartTime),
+			//	EndTime = ConvertToTimeSpan(model.EndTime),
+			//	ProviderId = model.Provider.Id,
+			//	BillingStatusId = model.BillingStatus.Id,
+			//	Notes = model.Notes
+			//};
 
 			using (HttpResponseMessage response = await _client.PostAsJsonAsync("/api/Session", model))
 			{

@@ -59,7 +59,7 @@
     <Folder Include="dbo" />
     <Folder Include="dbo\Tables" />
     <Folder Include="dbo\Stored Procedures" />
-    <Folder Include="dbo\PublishLocations\" />
+    <Folder Include="PublishLocations" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\Providers.sql" />
@@ -83,6 +83,6 @@
     <RefactorLog Include="RevXData.refactorlog" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="dbo\PublishLocations\RevXData.publish.xml" />
+    <None Include="PublishLocations\RevXData.publish.xml" />
   </ItemGroup>
 </Project>

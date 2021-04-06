@@ -138,7 +138,7 @@
 
     private async void SaveForm()
     {
-
+        Console.WriteLine(ManageSession.StartTime);
         FormModalRef.Hide();
         await _sessionEndpoint.SaveSession(ManageSession);
         sessions = await _sessionEndpoint.GetAll();
