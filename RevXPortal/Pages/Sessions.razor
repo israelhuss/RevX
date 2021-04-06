@@ -83,7 +83,7 @@
                 @foreach (var session in sessions)
                 {
                     <tr>
-                        <td class=""><button type="button" class="btn btn-outline" @onclick="(() => Edit(session))"><i class="oi oi-trash icon"></i></button></td>
+                        <td class=""><button type="button" class="btn btn-outline" @onclick="(() => Edit(session))"><span class="oi oi-trash icon" aria-hidden="true"></span></button></td>
                         <td>@session.Student.FullName</td>
                         <td>@session.Date.ToShortDateString()</td>
                         <td>@session.StartTime</td>

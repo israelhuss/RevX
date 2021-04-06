@@ -1,0 +1,66 @@
+﻿@using Microsoft.AspNetCore.Components.Forms;
+@using System;
+@using System.Collections.Generic;
+@using System.Diagnostics.CodeAnalysis;
+@using System.Linq;
+@using System.Threading.Tasks;
+@using RevXPortal.Models;
+
+@inherits InputSelect<StudentModel>
+
+<select class="custom-select form-control" @onchange="@OnSelectStudent" >
+    <option value="null">Please Select...</option>
+    @foreach (var student in students)
+    {
+        <option label="@student.FullName" value="@student.Id,@student.FirstName,@student.LastName" />
+    }
+</select>
+
+
+
+@code {
+    [Parameter]
+    public Type TValue { get; set; }
+
+    [Parameter]
+    public List<StudentModel> students { get; set; }
+
+    [Parameter]
+    public StudentModel binding { get; set; }
+
+    protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out StudentModel result, [NotNullWhen(false)] out string validationErrorMessage)
+    {
+        var split = value.Split(',');
+        if (split is not null && split.Length == 3)
+        {
+            var model = new StudentModel()
+            {
+                Id = int.Parse(split[0]),
+                FirstName = split[1],
+                LastName = split[2]
+            };
+            validationErrorMessage = null;
+            result = (StudentModel)(object)model;
+            return true;
+        }
+        else
+        {
+            validationErrorMessage = "Please select a valid Student";
+            result = default;
+            return false;
+        }
+
+    }
+
+    protected override string FormatValueAsString(StudentModel? value)
+    {
+        return binding.FullName;
+        //return base.FormatValueAsString(value);
+    }
+
+    private void OnSelectStudent()
+    {
+        Console.WriteLine("In Callback!!!");
+        binding = CurrentValue;
+    }
+}

@@ -19,13 +19,9 @@
                         <div class="form-row">
                             <div class="form-group col-md-6">
                                 <label for="Student">Student</label>
-                                <CustomInputSelect class="custom-select form-control" @bind-Value="@FormSession.Student"> 
-                                    <option selected value="null">Please Select...</option>
-                                    @foreach (var student in availableStudents)
-                                    {
-                                        <option label="@student.FullName" value="@student.Id,@student.FirstName,@student.LastName" />
-                                    }
-                                </CustomInputSelect>
+                                <StudentInputSelect students="availableStudents" @bind-Student="@FormSession.Student" ValueExpression="( () => FormSession.Student)" binding="@FormSession.Student"> 
+                                    
+                                </StudentInputSelect>
                             </div>
                             <div class="form-group col-md-6">
                                 <label for="Date">Date</label>
@@ -35,7 +31,8 @@
                         <div class="form-row">
                             <div class="form-group col-md-6">
                                 <label for="StartTime">Start Time</label>
-                                <InputText type="time" class="form-control" @bind-Value="@FormSession.StartTime" />
+                                @*<InputText type="time" class="form-control" @bind-Value="@FormSession.StartTime" />*@
+                                <TimeInput/>
                             </div>
                             <div class="form-group col-md-6">
                                 <label for="EndTime">End Time</label>
