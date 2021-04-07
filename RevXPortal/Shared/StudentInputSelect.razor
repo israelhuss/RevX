@@ -8,7 +8,7 @@
 
 @inherits InputSelect<StudentModel>
 
-<select class="custom-select form-control" @onchange="@OnSelectStudent" >
+<select class="custom-select form-control" @oninput="@OnSelectStudent" >
     <option value="null">Please Select...</option>
     @foreach (var student in students)
     {
@@ -26,7 +26,7 @@
     public List<StudentModel> students { get; set; }
 
     [Parameter]
-    public StudentModel binding { get; set; }
+    public StudentModel Student { get; set; }
 
     protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out StudentModel result, [NotNullWhen(false)] out string validationErrorMessage)
     {
@@ -54,13 +54,14 @@
 
     protected override string FormatValueAsString(StudentModel? value)
     {
-        return binding.FullName;
+        CurrentValueAsString = Student.FullName;
+        return Student.FullName;
         //return base.FormatValueAsString(value);
     }
 
     private void OnSelectStudent()
     {
         Console.WriteLine("In Callback!!!");
-        binding = CurrentValue;
+        Student = CurrentValue;
     }
 }

@@ -49,175 +49,211 @@
 </div>
 
 
-@code {
-
-	private string _hour = "--";
-
-	public string Hour
-	{
-		get { return _hour; }
-		set
-		{
-			_hour = value;
-			OnTimeChanged();
-		}
-	}
-
-	private string _minutes = "--";
-
-	public string Minutes
-	{
-		get { return _minutes; }
-		set
-		{
-			_minutes = value;
-			OnTimeChanged();
-		}
-	}
-
-	private string _prefix = "--";
-
-	public string Prefix
-	{
-		get { return _prefix; }
-		set
-		{
-			_prefix = value;
-			OnTimeChanged();
-		}
-	}
+@code { 
 
 
-	//public string Hour { get; set; } = "--";
-	//public string Minutes { get; set; } = "--";
-	//public string Prefix { get; set; } = "--";
+    protected override Task OnInitializedAsync()
+    {
+        if (Time != "--")
+        {
+            var split = Time.Split(':');
+            if (split.Length == 3)
+            {
+                int.TryParse(split[0], out int hours);
+                int.TryParse(split[1], out int minutes);
+                if (hours == 0)
+                {
+                    Hour = "12";
+                    Minutes = minutes.ToString("D2");
+                    Prefix = "AM";
+                }
+                else if (hours <= 12)
+                {
+                    Hour = hours.ToString("D2");
+                    Minutes = minutes.ToString("D2");
+                    Prefix = "AM";
+                }
+                else if (hours > 12)
+                {
+                    Hour = (hours - 12).ToString("D2");
+                    Minutes = minutes.ToString("D2");
+                    Prefix = "PM";
+                }
+            }
+        }
+        return Task.CompletedTask;
+    }
 
-	[Parameter]
-	public string Time { get; set; }
-	[Parameter]
-	public EventCallback<string> TimeChanged { get; set; }
+    private string _hour = "--";
 
-	private bool hourInputIsInEditState { get; set; } = false;
+    public string Hour
+    {
+        get { return _hour; }
+        set
+        {
+            _hour = value;
+            OnTimeChanged();
+        }
+    }
 
-	protected ElementReference containerElement;
-	protected ElementReference hoursElement;
-	protected ElementReference minutesElement;
-	protected ElementReference prefixElement;
+    private string _minutes = "--";
+
+    public string Minutes
+    {
+        get { return _minutes; }
+        set
+        {
+            _minutes = value;
+            OnTimeChanged();
+        }
+    }
+
+    private string _prefix = "--";
+
+    public string Prefix
+    {
+        get { return _prefix; }
+        set
+        {
+            _prefix = value;
+            OnTimeChanged();
+        }
+    }
+
+    [Parameter]
+    public string Time { get; set; }
+    [Parameter]
+    public EventCallback<string> TimeChanged { get; set; }
+
+    private bool hourInputIsInEditState { get; set; } = false;
+
+    protected ElementReference containerElement;
+    protected ElementReference hoursElement;
+    protected ElementReference minutesElement;
+    protected ElementReference prefixElement;
 
 
-	private void HoursInput(KeyboardEventArgs e)
-	{
-		if (e.Key == "Backspace")
-		{
-			Hour = "--";
-		}
-		if (char.IsNumber(e.Key, 0))
-		{
-			int.TryParse(e.Key, out int n);
+    private void HoursInput(KeyboardEventArgs e)
+    {
+        if (e.Key == "Backspace")
+        {
+            Hour = "--";
+            OnTimeChanged();
+        }
+        if (char.IsNumber(e.Key, 0))
+        {
+            int.TryParse(e.Key, out int n);
 
-			if (Hour == "--")
-			{
-				if (n > 1)
-				{
-					Hour = $"0{n}";
-					MoveFocus(minutesElement);
-					hourInputIsInEditState = false;
-				}
-				else if (n == 0 || n == 1)
-				{
-					Hour = $"0{n}";
-					hourInputIsInEditState = true;
-				}
-			}
-			else if (Hour != "--")
-			{
-				if (hourInputIsInEditState  && ((Hour[1] == '0' || Hour[1] == '1') && n <= 2))
-				{
-					Hour = $"{Hour[1]}{n}";
-					MoveFocus(minutesElement);
-					hourInputIsInEditState = false;
-				}
-				else if (!hourInputIsInEditState && ((Hour[1] == '0' || Hour[1] == '1') && n <= 2))
-				{
-					Hour = $"0{n}";
-					hourInputIsInEditState = true;
-				}
-				else
-				{
-					Hour = $"0{n}";
-					hourInputIsInEditState = false;
-					MoveFocus(minutesElement);
-				}
-			}
-		}
-	}
+            if (Hour == "--")
+            {
+                if (n > 1)
+                {
+                    Hour = $"0{n}";
+                    MoveFocus(minutesElement);
+                    hourInputIsInEditState = false;
+                }
+                else if (n == 0 || n == 1)
+                {
+                    Hour = $"0{n}";
+                    hourInputIsInEditState = true;
+                }
+            }
+            else if (Hour != "--")
+            {
+                if (hourInputIsInEditState  && ((Hour[1] == '0' || Hour[1] == '1') && n <= 2))
+                {
+                    Hour = $"{Hour[1]}{n}";
+                    MoveFocus(minutesElement);
+                    hourInputIsInEditState = false;
+                }
+                else if (!hourInputIsInEditState && ((Hour[1] == '0' || Hour[1] == '1') && n <= 2))
+                {
+                    Hour = $"0{n}";
+                    hourInputIsInEditState = true;
+                }
+                else
+                {
+                    Hour = $"0{n}";
+                    hourInputIsInEditState = false;
+                    MoveFocus(minutesElement);
+                }
+            }
+        }
+    }
 
-	private void MinutesInput(KeyboardEventArgs e)
-	{
-		if (e.Key == "Backspace")
-		{
-			Minutes = "--";
-		}
+    private void MinutesInput(KeyboardEventArgs e)
+    {
+        if (e.Key == "Backspace")
+        {
+            Minutes = "--";
+            OnTimeChanged();
+        }
 
-		if (char.IsNumber(e.Key, 0))
-		{
-			int.TryParse(e.Key, out int n);
+        if (char.IsNumber(e.Key, 0))
+        {
+            int.TryParse(e.Key, out int n);
 
-			if (Minutes == "--")
-			{
-				Minutes = $"0{n}";
-			}
-			else if (Minutes != "--")
-			{
-				Minutes = $"{Minutes[1]}{n}";
-				MoveFocus(prefixElement);
-			}
-		}
-	}
+            if (Minutes == "--")
+            {
+                Minutes = $"0{n}";
+            }
+            else if (Minutes != "--")
+            {
+                Minutes = $"{Minutes[1]}{n}";
+                MoveFocus(prefixElement);
+            }
+        }
+    }
 
-	private void PrefixInput(KeyboardEventArgs e)
-	{
-		if (e.Key == "Backspace")
-		{
-			Minutes = "--";
-		}
+    private void PrefixInput(KeyboardEventArgs e)
+    {
+        if (e.Key == "Backspace")
+        {
+            Prefix = "--";
+            OnTimeChanged();
+        }
 
-		if (e.Key == "a" || e.Key == "A" || e.Key == "1")
-		{
-			Prefix = "AM";
-		}
-		else if (e.Key == "p" || e.Key == "P" || e.Key == "2")
-		{
-			Prefix = "PM";
-		}
-	}
+        if (e.Key == "Backspace")
+        {
+            Minutes = "--";
+        }
 
-	private void OnTimeChanged()
-	{
-		if (Hour != "--" && Minutes != "--" && Prefix != "--")
-		{
-			if (Prefix == "AM")
-			{
-				if (int.Parse(Hour) == 12)
-				{
-					Time = $"00:{Minutes}:00";
-				}
-				else
-				{
-					Time = $"{Hour}:{Minutes}:00";
-				}
-			}
-			else if (Prefix == "PM")
-			{
-				Time = $"{int.Parse(Hour) + 12}:{Minutes}:00";
-			}
-		}
+        if (e.Key == "a" || e.Key == "A" || e.Key == "1")
+        {
+            Prefix = "AM";
+        }
+        else if (e.Key == "p" || e.Key == "P" || e.Key == "2")
+        {
+            Prefix = "PM";
+        }
+    }
 
-		TimeChanged.InvokeAsync(Time);
-	}
+    private void OnTimeChanged()
+    {
+        if (Hour != "--" && Minutes != "--" && Prefix != "--")
+        {
+            if (Prefix == "AM")
+            {
+                if (int.Parse(Hour) == 12)
+                {
+                    Time = $"00:{Minutes}:00";
+                }
+                else
+                {
+                    Time = $"{Hour}:{Minutes}:00";
+                }
+            }
+            else if (Prefix == "PM")
+            {
+                Time = $"{int.Parse(Hour) + 12}:{Minutes}:00";
+            }
+        }
 
-	private void MoveFocus(ElementReference element)
-	{
-		element.FocusAsync();
-	}
+        TimeChanged.InvokeAsync(Time);
+    }
+
+    private void MoveFocus(ElementReference element)
+    {
+        element.FocusAsync();
+    }
 }
