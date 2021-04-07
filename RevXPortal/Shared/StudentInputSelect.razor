@@ -1,16 +1,9 @@
-﻿@using Microsoft.AspNetCore.Components.Forms;
-@using System;
-@using System.Collections.Generic;
-@using System.Diagnostics.CodeAnalysis;
-@using System.Linq;
-@using System.Threading.Tasks;
-@using RevXPortal.Models;
+﻿@inject IJSRuntime jsRuntime
 
-@inherits InputSelect<StudentModel>
 
-<select class="custom-select form-control" @oninput="@OnSelectStudent" >
-    <option value="null">Please Select...</option>
-    @foreach (var student in students)
+<select class="custom-select form-control" @onchange="OnStudentChanged" id="SelectId">
+    <option value="null" selected disabled>Please Select...</option>
+    @foreach (var student in Items)
     {
         <option label="@student.FullName" value="@student.Id,@student.FirstName,@student.LastName" />
     }
@@ -20,48 +13,79 @@
 
 @code {
     [Parameter]
-    public Type TValue { get; set; }
-
-    [Parameter]
-    public List<StudentModel> students { get; set; }
+    public RenderFragment ChildContent { get; set; }
 
     [Parameter]
     public StudentModel Student { get; set; }
 
-    protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out StudentModel result, [NotNullWhen(false)] out string validationErrorMessage)
+    [Parameter]
+    public EventCallback<StudentModel> StudentChanged { get; set; }
+
+    [Parameter]
+    public List<StudentModel> Items { get; set; }
+
+
+    protected override async void OnAfterRender(bool firstRender)
     {
-        var split = value.Split(',');
-        if (split is not null && split.Length == 3)
+        if (firstRender)
         {
-            var model = new StudentModel()
+            if (Student is not null)
             {
-                Id = int.Parse(split[0]),
-                FirstName = split[1],
-                LastName = split[2]
-            };
-            validationErrorMessage = null;
-            result = (StudentModel)(object)model;
-            return true;
+                int index = Items.FindIndex(s => s.Id == Student.Id);
+                await jsRuntime.InvokeVoidAsync("SelectOption", "SelectId", (index + 1));
+            }
         }
-        else
+    }
+
+    //protected override async Task OnInitializedAsync()
+    //{
+    //    if (Student is not null)
+    //    {
+    //        await jsRuntime.InvokeVoidAsync("SelectOption", "SelectId", 3);
+    //    }
+    //}
+
+    //protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out StudentModel result, [NotNullWhen(false)] out string validationErrorMessage)
+    //{
+    //    var split = value.Split(',');
+    //    if (split is not null && split.Length == 3)
+    //    {
+    //        var model = new StudentModel()
+    //        {
+    //            Id = int.Parse(split[0]),
+    //            FirstName = split[1],
+    //            LastName = split[2]
+    //        };
+    //        validationErrorMessage = null;
+    //        result = (StudentModel)(object)model;
+    //        return true;
+    //    }
+    //    else
+    //    {
+    //        validationErrorMessage = "Please select a valid Student";
+    //        result = default;
+    //        return false;
+    //    }
+
+    //}
+
+    //protected override string FormatValueAsString(StudentModel? value)
+    //{
+    //    CurrentValueAsString = Student.FullName;
+    //    return Student.FullName;
+    //    //return base.FormatValueAsString(value);
+    //}
+
+    private void OnStudentChanged(ChangeEventArgs e)
+    {
+        var split = e.Value.ToString().Split(',');
+        Student = new()
         {
-            validationErrorMessage = "Please select a valid Student";
-            result = default;
-            return false;
-        }
+            Id = int.Parse(split[0]),
+            FirstName = split[1],
+            LastName = split[2]
+        };
 
-    }
-
-    protected override string FormatValueAsString(StudentModel? value)
-    {
-        CurrentValueAsString = Student.FullName;
-        return Student.FullName;
-        //return base.FormatValueAsString(value);
-    }
-
-    private void OnSelectStudent()
-    {
-        Console.WriteLine("In Callback!!!");
-        Student = CurrentValue;
+        StudentChanged.InvokeAsync(Student);
     }
 }

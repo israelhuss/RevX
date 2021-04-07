@@ -56,7 +56,7 @@
 <div class="d-flex justify-content-between">
     <h3>Sessions</h3>
 
-    <button class="btn btn-primary" @onclick="ShowDialog">Add Session</button>
+    <button class="btn btn-primary" @onclick="AddSession">Add Session</button>
 </div>
 
 <div class="grid">
@@ -149,8 +149,9 @@
 
     }
 
-    private void ShowDialog()
+    private void AddSession()
     {
+        ManageSession = new();
         FormModalRef.Show();
     }
 

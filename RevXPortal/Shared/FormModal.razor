@@ -9,7 +9,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Add A Session</h5>
-                        <button type="button" class="close btn" @onclick="ToggleModal">
+                        <button type="button" class="close btn" @onclick="Hide">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -19,9 +19,7 @@
                         <div class="form-row">
                             <div class="form-group col-md-6">
                                 <label for="Student">Student</label>
-                                <StudentInputSelect students="availableStudents" @bind-Student="@FormSession.Student" ValueExpression="( () => FormSession.Student)" binding="@FormSession.Student"> 
-                                    
-                                </StudentInputSelect>
+                                <StudentInputSelect @bind-Student="@FormSession.Student" Items="availableStudents" />
                             </div>
                             <div class="form-group col-md-6">
                                 <label for="Date">Date</label>
@@ -32,7 +30,7 @@
                             <div class="form-group col-md-6">
                                 <label for="StartTime">Start Time</label>
                                 @*<InputText type="time" class="form-control" @bind-Value="@FormSession.StartTime" />*@
-                                <TimeInput @bind-Time="@FormSession.StartTime"/>
+                                <TimeInput @bind-Time="@FormSession.StartTime" />
                             </div>
                             <div class="form-group col-md-6">
                                 <label for="EndTime">End Time</label>
@@ -45,9 +43,9 @@
                                 <CustomInputSelect class="custom-select form-control" @bind-Value="@FormSession.Provider">
                                     <option selected>Please Select...</option>
                                     @foreach (var provider in providers)
-                                        {
+                                    {
                                         <option label="@provider.Name" value="@provider.Id,@provider.Name" />
-                                        }
+                                    }
                                 </CustomInputSelect>
                             </div>
                             <div class="form-group col-md-6">
@@ -70,7 +68,7 @@
 
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" @onclick="ToggleModal">Close</button>
+                        <button type="button" class="btn btn-secondary" @onclick="Hide">Close</button>
                         <button type="submit" class="btn btn-primary">Save changes</button>
                     </div>
                 </div>
@@ -85,6 +83,7 @@
 
     [Parameter]
     public ManageSessionModel FormSession { get; set; }
+
 
     [Parameter]
     public EventCallback SaveForm { get; set; }
