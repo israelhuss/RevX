@@ -14,7 +14,10 @@ window.ContainerClicked = (element) => {
     //element.focus();
 };
 
-window.SelectOption = (elementId, index) => {
+window.SetSelectOption = (elementId, index) => {
     document.getElementById(elementId).selectedIndex = index;
-    
+};
+
+window.GetSelectOption = (elementId) => {
+    return document.getElementById(elementId).selectedIndex;
 };

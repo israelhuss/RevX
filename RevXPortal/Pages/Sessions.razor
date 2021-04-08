@@ -5,7 +5,7 @@
 @*@attribute [Authorize]*@
 
 <style>
-    .grid {
+    .table-container {
         border: solid 1px #626263;
         border-radius: 4.5px;
         text-align: center;
@@ -51,6 +51,23 @@
     td > .btn {
         padding: 0;
     }
+
+    .overflow-auto::-webkit-scrollbar {
+        
+        width: 10px;
+    }
+    .overflow-auto::-webkit-scrollbar-track {
+        border-top-right-radius: 3.5px;
+        border-bottom-right-radius: 3.5px;
+        background: #f1f1f1;
+    }
+    .overflow-auto::-webkit-scrollbar-thumb {
+        border-radius: 3.5px;
+        background: #888;
+    }
+    .overflow-auto::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
 </style>
 
 <div class="d-flex justify-content-between">
@@ -59,9 +76,9 @@
     <button class="btn btn-primary" @onclick="AddSession">Add Session</button>
 </div>
 
-<div class="grid">
+<div class="table-container overflow-auto">
     <table class="table table-bordered table-striped" style="margin-top: -1px">
-        <thead>
+        <thead style="position: sticky; top: 0;">
             <tr>
                 @if (sessions is not null && sessions.Count > 0)
                 {
@@ -84,7 +101,7 @@
                 {
                     <tr>
                         <td class=""><button type="button" class="btn btn-outline" @onclick="(() => Edit(session))"><span class="oi oi-trash icon" aria-hidden="true"></span></button></td>
-                        <td>@session.Student.FullName</td>
+                        <td>@session.Student.DisplayName</td>
                         <td>@session.Date.ToShortDateString()</td>
                         <td>@session.StartTime</td>
                         <td>@session.EndTime</td>

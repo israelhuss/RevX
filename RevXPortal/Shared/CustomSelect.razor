@@ -1,0 +1,48 @@
+﻿@inject IJSRuntime jsRuntime
+
+@typeparam TValue
+
+
+<select class="custom-select form-control" @onchange="OnSelectionChanged" id="@typeof(TValue).Name-SelectId">
+    <option selected disabled>Please Select...</option>
+    @foreach (var item in Items)
+    {
+        <option label="@item.DisplayName" />
+    }
+</select>
+
+
+
+@code {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public ISelectionFriendly Value { get; set; }
+
+    [Parameter]
+    public EventCallback<TValue> ValueChanged { get; set; }
+
+    [Parameter]
+    public IEnumerable<ISelectionFriendly> Items { get; set; }
+
+    protected override async void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (Value is not null)
+            {
+                int index = Items.ToList().FindIndex(i => i.Id == Value.Id);
+                await jsRuntime.InvokeVoidAsync("SetSelectOption", $"{typeof(TValue).Name}-SelectId", (index + 1));
+            }
+        }
+    }
+
+    private async void OnSelectionChanged(ChangeEventArgs e)
+    {
+        int CurrentSelection = await jsRuntime.InvokeAsync<int>("GetSelectOption", $"{typeof(TValue).Name}-SelectId");
+        Value = Items.ElementAt(CurrentSelection - 1);
+
+        await ValueChanged.InvokeAsync((TValue)Value);
+    }
+}

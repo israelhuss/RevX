@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace RevXPortal.Models
 {
-	public class StudentModel
+	public class StudentModel : ISelectionFriendly
 	{
 		public int Id { get; set; }
 		public string FirstName { get; set; }
 		public string LastName { get; set; }
 
-		public string FullName => $"{FirstName} {LastName}";
+		public string DisplayName => $"{FirstName} {LastName}";
 	}
 }
