@@ -54,35 +54,29 @@
 
 	protected override Task OnInitializedAsync()
 	{
-		if (Time is not null)
+		if (Time != new TimeSpan())
 		{
-			if (Time != "--")
+			int hours = (int)Time.Hours;
+			int minutes = Time.Minutes;
+			if (hours == 0)
 			{
-				var split = Time.Split(':');
-				if (split.Length == 3)
-				{
-					int.TryParse(split[0], out int hours);
-					int.TryParse(split[1], out int minutes);
-					if (hours == 0)
-					{
-						Hour = "12";
-						Minutes = minutes.ToString("D2");
-						Prefix = "AM";
-					}
-					else if (hours <= 12)
-					{
-						Hour = hours.ToString("D2");
-						Minutes = minutes.ToString("D2");
-						Prefix = "AM";
-					}
-					else if (hours > 12)
-					{
-						Hour = (hours - 12).ToString("D2");
-						Minutes = minutes.ToString("D2");
-						Prefix = "PM";
-					}
-				}
+				Hour = "12";
+				Minutes = minutes.ToString("D2");
+				Prefix = "AM";
 			}
+			else if (hours <= 12)
+			{
+				Hour = hours.ToString("D2");
+				Minutes = minutes.ToString("D2");
+				Prefix = "AM";
+			}
+			else if (hours > 12)
+			{
+				Hour = (hours - 12).ToString("D2");
+				Minutes = minutes.ToString("D2");
+				Prefix = "PM";
+			}
+
 		}
 
 		return Task.CompletedTask;
@@ -125,9 +119,9 @@
 	}
 
 	[Parameter]
-	public string Time { get; set; }
+	public TimeSpan Time { get; set; }
 	[Parameter]
-	public EventCallback<string> TimeChanged { get; set; }
+	public EventCallback<TimeSpan> TimeChanged { get; set; }
 
 	private bool hourInputIsInEditState { get; set; } = false;
 
@@ -240,16 +234,16 @@
 			{
 				if (int.Parse(Hour) == 12)
 				{
-					Time = $"00:{Minutes}:00";
+					Time = new TimeSpan(00, int.Parse(Minutes), 00);  //$"00:{Minutes}:00";
 				}
 				else
 				{
-					Time = $"{Hour}:{Minutes}:00";
+					Time = new TimeSpan(int.Parse(Hour), int.Parse(Minutes), 00); // $"{Hour}:{Minutes}:00";
 				}
 			}
 			else if (Prefix == "PM")
 			{
-				Time = $"{int.Parse(Hour) + 12}:{Minutes}:00";
+				Time = new TimeSpan((int.Parse(Hour) + 12), int.Parse(Minutes), 00); // $"{int.Parse(Hour) + 12}:{Minutes}:00";
 			}
 		}
 

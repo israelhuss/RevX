@@ -34,8 +34,8 @@ namespace RevXApi.Library.DataAccess
 				{ 
 					Id = session.Id,
 					Date = session.Date,
-					StartTime = session.StartTime.ToString(),
-					EndTime = session.EndTime.ToString(),
+					StartTime = session.StartTime,
+					EndTime = session.EndTime,
 					Notes = session.Notes
 				};
 
@@ -56,8 +56,8 @@ namespace RevXApi.Library.DataAccess
 			{
 				StudentId = model.Student.Id,
 				Date = model.Date,
-				StartTime = ConvertToTimeSpan(model.StartTime),
-				EndTime = ConvertToTimeSpan(model.EndTime),
+				StartTime = model.StartTime,
+				EndTime = model.EndTime,
 				ProviderId = model.Provider.Id,
 				BillingStatusId = model.BillingStatus.Id,
 				Notes = model.Notes

@@ -20,9 +20,9 @@ namespace RevXPortal.Models
 		[NotAfterToday]
 		public DateTime Date { get; set; } = DateTime.Today;
 		[Required]
-		public string StartTime { get; set; }
+		public TimeSpan StartTime { get; set; }
 		[Required]
-		public string EndTime { get; set; }
+		public TimeSpan EndTime { get; set; }
 		[Required]
 		public ProviderModel Provider { get; set; }
 		[Required]
