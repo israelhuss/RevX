@@ -78,6 +78,8 @@
     <Build Include="dbo\Stored Procedures\spBillingStatus_GetAll.sql" />
     <Build Include="dbo\Stored Procedures\spBillingStatus_GetById.sql" />
     <Build Include="dbo\Stored Procedures\spBillingStatus_Insert.sql" />
+    <Build Include="dbo\Stored Procedures\spSession_Edit.sql" />
+    <Build Include="dbo\Stored Procedures\spSession_Delete.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="RevXData.refactorlog" />

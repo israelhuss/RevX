@@ -7,5 +7,7 @@ namespace RevXApi.Library.DataAccess
 	{
 		List<SessionModel> GetAllSessions();
 		void SaveSession(SessionModel model);
+		void EditSession(SessionModel model);
+		void DeleteSession(int id);
 	}
 }

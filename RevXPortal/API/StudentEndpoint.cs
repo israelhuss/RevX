@@ -1,4 +1,5 @@
-﻿using RevXPortal.Models;
+﻿using Microsoft.AspNetCore.Components;
+using RevXPortal.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

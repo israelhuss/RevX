@@ -8,7 +8,7 @@
             <EditForm Model="@FormSession" OnValidSubmit="@SaveForm">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Add A Session</h5>
+                        <h5 class="modal-title">@Title</h5>
                         <button type="button" class="close btn" @onclick="Hide">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -32,10 +32,11 @@
                                 @*<InputText type="time" class="form-control" @bind-Value="@FormSession.StartTime" />*@
                                 <TimeInput @bind-Time="@FormSession.StartTime" />
                             </div>
-                            @*<div class="form-group col-md-6">
+                            <div class="form-group col-md-6">
                                 <label for="EndTime">End Time</label>
-                                <InputText type="time" class="form-control" @bind-Value="@FormSession.EndTime" />
-                            </div>*@
+                                @*<InputText type="time" class="form-control" @bind-Value="@FormSession.EndTime" />*@
+                                <TimeInput @bind-Time="@FormSession.EndTime" />
+                            </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group col-md-6">
@@ -56,7 +57,7 @@
 
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" @onclick="Hide">Close</button>
+                        <button type="button" class="btn btn-secondary" @onclick="Hide">Cancel</button>
                         <button type="submit" class="btn btn-primary">Save changes</button>
                     </div>
                 </div>
@@ -72,11 +73,14 @@
     [Parameter]
     public ManageSessionModel FormSession { get; set; }
 
-
     [Parameter]
     public EventCallback SaveForm { get; set; }
 
-    private List<DisplaySessionModel> sessions = new();
+    [Parameter]
+    public string Title { get; set; }
+
+
+    private List<SessionApiModel> sessions = new();
     private List<StudentModel> availableStudents { get; set; }
 
 

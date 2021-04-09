@@ -12,6 +12,7 @@ namespace RevXApi.Controllers
 {
 	[Route("api/[controller]")]
 	[ApiController]
+	[Authorize]
 	public class StudentController : ControllerBase
 	{
 		private readonly IStudentData _studentData;

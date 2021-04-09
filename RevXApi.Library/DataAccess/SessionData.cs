@@ -34,8 +34,8 @@ namespace RevXApi.Library.DataAccess
 				{ 
 					Id = session.Id,
 					Date = session.Date,
-					StartTime = session.StartTime,
-					EndTime = session.EndTime,
+					StartTime = session.StartTime.ToString(),
+					EndTime = session.EndTime.ToString(),
 					Notes = session.Notes
 				};
 
@@ -56,14 +56,35 @@ namespace RevXApi.Library.DataAccess
 			{
 				StudentId = model.Student.Id,
 				Date = model.Date,
-				StartTime = model.StartTime,
-				EndTime = model.EndTime,
+				StartTime = ConvertToTimeSpan(model.StartTime),
+				EndTime = ConvertToTimeSpan(model.EndTime),
 				ProviderId = model.Provider.Id,
 				BillingStatusId = model.BillingStatus.Id,
 				Notes = model.Notes
 			};
 
 			_sql.SaveData("dbo.spSession_Insert", dbModel, "RevXData");
+		}
+
+		public void EditSession(SessionModel model)
+		{
+			var dbModel = new SessionDbModel()
+			{
+				StudentId = model.Student.Id,
+				Date = model.Date,
+				StartTime = ConvertToTimeSpan(model.StartTime),
+				EndTime = ConvertToTimeSpan(model.EndTime),
+				ProviderId = model.Provider.Id,
+				BillingStatusId = model.BillingStatus.Id,
+				Notes = model.Notes
+			};
+
+			_sql.SaveData("dbo.spSession_Edit", dbModel, "RevXData");
+		}
+
+		public void DeleteSession(int id)
+		{
+			_sql.SaveData("dbo.spSession_Delete", new { Id = id }, "RevXData");
 		}
 
 		private TimeSpan ConvertToTimeSpan(string timeString)

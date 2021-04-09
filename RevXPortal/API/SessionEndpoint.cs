@@ -16,14 +16,31 @@ namespace RevXPortal.API
 			_client = client;
 		}
 
-		public async Task<List<DisplaySessionModel>> GetAll()
+		public async Task<List<ManageSessionModel>> GetAll()
 		{
 			using (HttpResponseMessage response = await _client.GetAsync("/api/Session"))
 			{
 				if (response.IsSuccessStatusCode)
 				{
-					var result = await response.Content.ReadAsAsync<List<DisplaySessionModel>>();
-					return result;
+					var resultsAsDbModel = await response.Content.ReadAsAsync<List<SessionApiModel>>();
+					var output = new List<ManageSessionModel>();
+					foreach (var result in resultsAsDbModel)
+					{
+						ManageSessionModel model = new()
+						{
+							Id = result.Id,
+							Student = result.Student,
+							Date = result.Date,
+							StartTime = ConvertToTimeSpan(result.StartTime),
+							EndTime = ConvertToTimeSpan(result.EndTime),
+							Provider = result.Provider,
+							BillingStatus = result.BillingStatus,
+							Notes = result.Notes
+						};
+
+						output.Add(model);
+					}
+					return output;
 				}
 				else
 				{
@@ -50,6 +67,36 @@ namespace RevXPortal.API
 				if (response.IsSuccessStatusCode)
 				{
 					Console.WriteLine("Session was saved to the database.");
+				}
+				else
+				{
+					throw new Exception(response.ReasonPhrase);
+				}
+			}
+		}
+
+		public async Task EditSession(ManageSessionModel model)
+		{
+			using (HttpResponseMessage response = await _client.PostAsJsonAsync("/api/session/edit", model))
+			{
+				if (response.IsSuccessStatusCode)
+				{
+					Console.WriteLine("Session was successfully updated.");
+				}
+				else
+				{
+					throw new Exception(response.ReasonPhrase);
+				}
+			}
+		}
+
+		public async Task DeleteSession(int id)
+		{
+			using (HttpResponseMessage response = await _client.PostAsJsonAsync($"/api/session/delete/{id}", new { }))
+			{
+				if (response.IsSuccessStatusCode)
+				{
+					Console.WriteLine("Session was successfully deleted.");
 				}
 				else
 				{

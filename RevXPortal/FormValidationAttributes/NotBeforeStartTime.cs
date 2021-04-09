@@ -12,17 +12,14 @@ namespace RevXPortal.FormValidationAttributes
 		protected override ValidationResult IsValid(object value, ValidationContext validationContext)
 		{
 			var model = (ManageSessionModel)value;
-			string[] startTimeSplit = model.StartTime.ToString().Split(':');
-			TimeSpan startTimeAsTimeSpan = new TimeSpan(int.Parse(startTimeSplit[0]), int.Parse(startTimeSplit[1]), 0);
-
-			string[] endTimeSplit = model.EndTime.ToString().Split(':');
-			TimeSpan endTimeAsTimeSpan = new TimeSpan(int.Parse(endTimeSplit[0]), int.Parse(endTimeSplit[1]), 0);
-
-			if (endTimeAsTimeSpan > startTimeAsTimeSpan)
+			if (model.StartTime >= new TimeSpan() && model.EndTime >= new TimeSpan() && model.StartTime < model.EndTime)
 			{
 				return ValidationResult.Success;
 			}
-			return new ValidationResult(ErrorMessage ?? "End Time cannot be before Start Time.");
+			else
+			{
+				return new ValidationResult(ErrorMessage ?? "End Time cannot be before Start Time.");
+			}
 		}
 	}
 }

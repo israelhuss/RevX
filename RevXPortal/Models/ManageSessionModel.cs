@@ -14,15 +14,16 @@ namespace RevXPortal.Models
 	[Duration(12)]
 	public class ManageSessionModel
 	{
-		[NotNull]
+		public int Id { get; set; }
+		[Required]
 		public StudentModel Student { get; set; }
 		[Required]
 		[NotAfterToday]
 		public DateTime Date { get; set; } = DateTime.Today;
-		[Required]
-		public TimeSpan StartTime { get; set; }
-		[Required]
-		public TimeSpan EndTime { get; set; }
+		[NotNegative]
+		public TimeSpan StartTime { get; set; } = new(-1);
+		[NotNegative]
+		public TimeSpan EndTime { get; set; } = new(-1);
 		[Required]
 		public ProviderModel Provider { get; set; }
 		[Required]

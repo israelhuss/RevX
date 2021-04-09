@@ -54,9 +54,9 @@
 
 	protected override Task OnInitializedAsync()
 	{
-		if (Time != new TimeSpan())
+		if (Time >= new TimeSpan())
 		{
-			int hours = (int)Time.Hours;
+			int hours = Time.Hours;
 			int minutes = Time.Minutes;
 			if (hours == 0)
 			{
@@ -245,6 +245,10 @@
 			{
 				Time = new TimeSpan((int.Parse(Hour) + 12), int.Parse(Minutes), 00); // $"{int.Parse(Hour) + 12}:{Minutes}:00";
 			}
+		}
+		else
+		{
+			Time = new(-1);
 		}
 
 		TimeChanged.InvokeAsync(Time);
