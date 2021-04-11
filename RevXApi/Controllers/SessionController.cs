@@ -28,6 +28,13 @@ namespace RevXApi.Controllers
 			return _sessionData.GetAllSessions();
 		}
 
+		// FIX this method - get is not supposed to have body
+		[HttpPost("GetByBillingStatus")]
+		public List<SessionModel> GetByBillingStatus(BillingStatusModel billingStatus)
+		{
+			return _sessionData.GetByBillingStatus(billingStatus);
+		}
+
 		[HttpPost]
 		public void SaveSession(SessionModel model)
 		{

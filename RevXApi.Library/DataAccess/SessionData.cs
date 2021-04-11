@@ -50,6 +50,36 @@ namespace RevXApi.Library.DataAccess
 			return output;
 		}
 
+
+		// FIX this method - get is not supposed to have body
+		public List<SessionModel> GetByBillingStatus(BillingStatusModel billingStatus)
+		{
+			var sessions = _sql.LoadData<SessionDbModel, dynamic>("dbo.spSession_GetByBillingStatus", new { BillingStatusId = billingStatus.Id }, "RevXData");
+
+			List<SessionModel> output = new();
+
+			foreach (var session in sessions)
+			{
+				SessionModel model = new()
+				{
+					Id = session.Id,
+					Date = session.Date,
+					StartTime = session.StartTime.ToString(),
+					EndTime = session.EndTime.ToString(),
+					Notes = session.Notes
+				};
+
+				model.Student = _studentData.GetById(session.StudentId);
+				model.Provider = _providerData.GetById(session.ProviderId);
+				model.BillingStatus = _billingStatusData.GetById(session.BillingStatusId);
+
+
+				output.Add(model);
+			}
+
+			return output;
+		}
+
 		public void SaveSession(SessionModel model)
 		{
 			var dbModel = new SessionDbModel()

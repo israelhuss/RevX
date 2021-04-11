@@ -1,5 +1,4 @@
 ﻿@page "/sessions"
-@using RevXPortal.Models
 @inject ISessionEndpoint _sessionEndpoint
 @inject NavigationManager NavManager
 
@@ -11,6 +10,10 @@
         margin: 1rem;
         height: 75vh;
         overflow: hidden;
+    }
+
+    .table {
+        margin-bottom: 0;
     }
 
     th {
@@ -49,17 +52,22 @@
         margin-bottom: 0;
     }
 
-    td > .btn {
-        border: solid 1px #212529;
+    td > .btn,
+    th > .btn{
         line-height: 1;
         padding: 0rem 0.2rem;
         margin-right: 2.5px;
         margin-left: 2.5px;
     }
 
-    .overflow-auto::-webkit-scrollbar {
-        width: 5px;
-    }
+        td > .btn:focus,
+        th > .btn:focus{
+            box-shadow: none;
+        }
+
+        .overflow-auto::-webkit-scrollbar {
+            width: 5px;
+        }
 
     .overflow-auto::-webkit-scrollbar-track {
         border-top-right-radius: 3.5px;
@@ -90,7 +98,11 @@
                     <tr>
                         @if (sessions is not null && sessions.Count > 0)
                         {
-                            <th></th>
+                            <th colspan="2">
+                                <button class="btn">
+                                    <i class="fas fa-file-invoice-dollar"  style="font-size: 2.1rem"></i>
+                                </button>
+                            </th>
                         }
                         <th>Student</th>
                         <th>Date</th>
@@ -110,6 +122,8 @@
                             <tr>
                                 <td style="padding-right: .25rem; padding-left: .25rem;">
                                     <button type="button" class="btn btn-outline" @onclick="(() => ConfirmDelete(session))"><i class="far fa-trash-alt icon"></i></button>
+                                    </td>
+                                <td style="padding-right: .25rem; padding-left: .25rem;">
                                     <button type="button" class="btn btn-outline" @onclick="(() => EditSession(session))"><i class="fas fa-pencil-alt icon"></i></button>
                                 </td>
                                 <td>@session.Student.DisplayName</td>
@@ -142,7 +156,7 @@
             }
         </div>
 
-        <FormModal @ref="FormModalRef" FormSession="ManageSession" SaveForm="SaveForm" Title="@formTitle"></FormModal>
+        <ManageSessionDialog @ref="ManageDialogRef" FormSession="ManageSession" SaveForm="SaveForm" Title="@formTitle" />
         <ConfirmationDialog IdToDelete="ManageSession.Id" ConfirmationChanged="OnConfirmClicked" @ref="DeleteConfirmation" />
     </Authorized>
     <NotAuthorized>
@@ -155,7 +169,7 @@
 
 
 @code {
-    private FormModal FormModalRef { get; set; }
+    private ManageSessionDialog ManageDialogRef { get; set; }
     public ManageSessionModel ManageSession { get; set; } = new();
 
     protected ConfirmationDialog DeleteConfirmation { get; set; }
@@ -170,16 +184,23 @@
     {
         try
         {
-            sessions = await _sessionEndpoint.GetAll();
+
+            //TODO - getting only open sessions manually - change to dynamic...
+            var allSessions = await _sessionEndpoint.GetAll();
+
+            sessions = (from s in allSessions
+                        where s.BillingStatus.Id == 1
+                        select s).ToList();
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            Console.WriteLine(e.Message);
         }
     }
 
     private async void SaveForm()
     {
-        FormModalRef.Hide();
+        ManageDialogRef.Hide();
 
         if (formState == "add")
         {
@@ -202,7 +223,7 @@
         formState = "add";
         ManageSession = new();
         formTitle = "Add A Session";
-        FormModalRef.Show();
+        ManageDialogRef.Show();
     }
 
     private void EditSession(ManageSessionModel session)
@@ -210,7 +231,7 @@
         formState = "edit";
         ManageSession = session;
         formTitle = "Edit A Session";
-        FormModalRef.Show();
+        ManageDialogRef.Show();
     }
 
     private void ConfirmDelete(ManageSessionModel session)
