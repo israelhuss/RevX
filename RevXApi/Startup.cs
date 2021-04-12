@@ -57,6 +57,7 @@ namespace RevXApi
 			// FluentEmail Configuration
 			services.AddTransient<IEmailService, EmailService>();
 			services.AddFluentEmail(Configuration["EmailConfig:FaigyEmailAddress"], "Faigy Huss")
+				.AddRazorRenderer()
 				.AddSmtpSender(new SmtpClient("smtp.gmail.com", 587)
 				{
 					Credentials = new NetworkCredential(Configuration["EmailConfig:FaigyEmailAddress"], Configuration["EmailConfig:FaigyAppPassword"]),
