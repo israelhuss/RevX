@@ -1,0 +1,151 @@
+﻿@inject RevXPortal.Services.IPdfService pdfService
+@inject IJSRuntime jsRuntime
+
+<style>
+    .invoice-table-container {
+        border: solid 1px #626263;
+        border-radius: 4.5px;
+        text-align: center;
+        margin: 1rem;
+        overflow: hidden;
+    }
+</style>
+@if (ShowDialog)
+{
+    <div class="modal show d-block" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered fade-in" role="document" style="max-width: max-content;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Invoicing</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="Hide">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="modal-body">
+                    <div class="invoice-table-container">
+                        <table class="table table-bordered table-striped" style="margin-top: -1px" @ref="TableRef">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Student</th>
+                                    <th>Date</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in InvoicingItems.OrderBy(s => s.Date).ThenBy(s => s.StartTime))
+                                {
+                                    <tr>
+                                        <td>
+                                            <input class="checkbox" type="checkbox" value="" checked @onchange="( (e) => CheckBoxClicked(e, item))">
+                                        </td>
+                                        <td>@item.Student.DisplayName</td>
+                                        <td>@item.Date.ToShortDateString()</td>
+                                        <td>@ConvertTimeSpanToString(item.StartTime)</td>
+                                        <td>@ConvertTimeSpanToString(item.EndTime)</td>
+                                        <td>@item.Notes</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="Hide">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" @onclick="InvoiceClicked">
+                        Invoice
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@code {
+    protected bool ShowDialog { get; set; }
+
+    [Parameter]
+    public List<ManageSessionModel> InvoicingItems { get; set; }
+
+    private List<ManageSessionModel> finalList { get; set; }
+
+    private ElementReference TableRef { get; set; }
+
+    protected override Task OnParametersSetAsync()
+    {
+        if (InvoicingItems is not null)
+        {
+            finalList = new(InvoicingItems);
+        }
+        return Task.CompletedTask;
+    }
+
+
+    public void Show()
+    {
+        ShowDialog = true;
+        StateHasChanged();
+    }
+
+    public void Hide()
+    {
+        ShowDialog = false;
+        StateHasChanged();
+    }
+
+    private void CheckBoxClicked(ChangeEventArgs e, ManageSessionModel model)
+    {
+        if ((bool)e.Value)
+        {
+            finalList.Add(model);
+        }
+        else if (!(bool)e.Value)
+        {
+            finalList.Remove(model);
+        }
+    }
+
+    private async void InvoiceClicked()
+    {
+        ConsoleWriter(finalList);
+        Console.WriteLine("-----------------------------------");
+        finalList.OrderBy(s => s.Date);
+        ConsoleWriter(finalList.OrderBy(s => s.Date).ThenBy(s => s.StartTime).ToList());
+        Console.WriteLine("-----------------------------------");
+
+        string stuff = await jsRuntime.InvokeAsync<string>("GetInnerHtml", "modal-body");
+        pdfService.Write(stuff);
+    }
+
+    private string ConvertTimeSpanToString(TimeSpan time)
+    {
+        string output = String.Empty;
+
+        int hours = time.Hours;
+        int minutes = time.Minutes;
+        if (hours == 0)
+        {
+            output = $"12:{minutes.ToString("D2")} AM";
+        }
+        else if (hours <= 12)
+        {
+            output = $"{hours.ToString()}:{minutes.ToString("D2")} AM";
+        }
+        else if (hours > 12)
+        {
+            output = $"{(hours - 12).ToString()}:{minutes.ToString("D2")} PM";
+        }
+        return output;
+    }
+
+    private void ConsoleWriter(List<ManageSessionModel> models)
+    {
+        foreach (var model in models)
+        {
+            Console.WriteLine($"{model.Student.DisplayName} | {model.Date} | {model.StartTime} | {model.EndTime}");
+        }
+    }
+}

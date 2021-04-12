@@ -9,6 +9,6 @@
 	@Notes nvarchar(250)
 AS
 BEGIN
-	INSERT INTO dbo.Sessions (StudentId, [Date], StartTime, EndTime, ProviderId, BillingStatusId, Notes)
+	INSERT INTO dbo.Session (StudentId, [Date], StartTime, EndTime, ProviderId, BillingStatusId, Notes)
 	VALUES (@StudentId, @Date, @StartTime, @EndTime, @ProviderId, @BillingStatusId, @Notes)
 END

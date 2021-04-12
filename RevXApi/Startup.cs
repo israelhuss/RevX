@@ -9,7 +9,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RevXApi.Data;
 using RevXApi.Library.DataAccess;
+using RevXApi.Library.Services;
 using System;
+using System.Net;
+using System.Net.Mail;
 using System.Text;
 
 namespace RevXApi
@@ -50,6 +53,15 @@ namespace RevXApi
 			services.AddTransient<IStudentData, StudentData>();
 			services.AddTransient<IProviderData, ProviderData>();
 			services.AddTransient<IBillingStatusData, BillingStatusData>();
+
+			// FluentEmail Configuration
+			services.AddTransient<IEmailService, EmailService>();
+			services.AddFluentEmail(Configuration["EmailConfig:FaigyEmailAddress"], "Faigy Huss")
+				.AddSmtpSender(new SmtpClient("smtp.gmail.com", 587)
+				{
+					Credentials = new NetworkCredential(Configuration["EmailConfig:FaigyEmailAddress"], Configuration["EmailConfig:FaigyAppPassword"]),
+					EnableSsl = true
+				});
 
 			// JWT Authentication
 			services.AddAuthentication(options =>

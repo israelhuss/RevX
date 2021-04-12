@@ -2,5 +2,5 @@
 	@Id int
 AS
 BEGIN
-	DELETE FROM dbo.Sessions WHERE Id = @Id;
+	DELETE FROM dbo.[Session] WHERE Id = @Id;
 END

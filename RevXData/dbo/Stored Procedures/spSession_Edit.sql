@@ -9,7 +9,13 @@
 	@Notes nvarchar(250)
 AS
 BEGIN
-	UPDATE dbo.Sessions
-	SET StudentId = @StudentId, [Date] = @Date, StartTime =  @StartTime, EndTime = @EndTime, ProviderId = @ProviderId, BillingStatusId = @BillingStatusId, Notes = @Notes
+	UPDATE dbo.[Session]
+	SET StudentId = @StudentId, 
+		[Date] = @Date, 
+		StartTime =  @StartTime,
+		EndTime = @EndTime, 
+		ProviderId = @ProviderId, 
+		BillingStatusId = @BillingStatusId, 
+		Notes = @Notes
 	WHERE Id = @Id;
 END

@@ -73,7 +73,6 @@ namespace RevXApi.Library.DataAccess
 				model.Provider = _providerData.GetById(session.ProviderId);
 				model.BillingStatus = _billingStatusData.GetById(session.BillingStatusId);
 
-
 				output.Add(model);
 			}
 
@@ -100,6 +99,7 @@ namespace RevXApi.Library.DataAccess
 		{
 			var dbModel = new SessionDbModel()
 			{
+				Id = model.Id,
 				StudentId = model.Student.Id,
 				Date = model.Date,
 				StartTime = ConvertToTimeSpan(model.StartTime),

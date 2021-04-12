@@ -4,5 +4,5 @@ AS
 BEGIN
 	SET NOCOUNT ON
 	SELECT [Id], [StudentId], [Date], [StartTime], [EndTime], [ProviderId], [BillingStatusId], [Notes]
-	FROM dbo.Sessions
+	FROM dbo.[Session]
 END

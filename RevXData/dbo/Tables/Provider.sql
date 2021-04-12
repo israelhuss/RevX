@@ -1,4 +1,4 @@
-﻿CREATE TABLE [dbo].[Providers]
+﻿CREATE TABLE [dbo].[Provider]
 (
 	[Id] INT NOT NULL PRIMARY KEY IDENTITY, 
 	[Name] VARCHAR(20) NOT NULL

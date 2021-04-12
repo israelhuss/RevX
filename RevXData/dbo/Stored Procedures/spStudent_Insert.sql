@@ -4,6 +4,6 @@
 	@LastName nvarchar(50)
 AS
 BEGIN
-	INSERT INTO dbo.Students (FirstName, LastName)
+	INSERT INTO dbo.Student (FirstName, LastName)
 	VALUES (@FirstName, @LastName)
 END

@@ -3,6 +3,6 @@
 AS
 BEGIN
 	SELECT [Id], [Name] 
-	FROM dbo.Providers 
+	FROM dbo.Provider
 	WHERE Id = @Id;
 END

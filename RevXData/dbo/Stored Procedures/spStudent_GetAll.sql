@@ -5,5 +5,5 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT [Id], [FirstName], [LastName]
-	FROM dbo.Students
+	FROM dbo.Student
 END

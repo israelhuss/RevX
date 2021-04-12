@@ -3,5 +3,5 @@
 AS
 BEGIN
 	SELECT [Id], [FirstName], [LastName] 
-	FROM dbo.Students WHERE Id = @Id;
+	FROM dbo.Student WHERE Id = @Id;
 END

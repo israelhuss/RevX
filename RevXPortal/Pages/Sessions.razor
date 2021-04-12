@@ -16,6 +16,10 @@
         margin-bottom: 0;
     }
 
+    .table td {
+        vertical-align: middle;
+    }
+
     th {
         font-size: 1.3rem;
     }
@@ -99,7 +103,7 @@
                         @if (sessions is not null && sessions.Count > 0)
                         {
                             <th colspan="2">
-                                <button class="btn">
+                                <button class="btn" @onclick="InvoiceClicked">
                                     <i class="fas fa-file-invoice-dollar"  style="font-size: 2.1rem"></i>
                                 </button>
                             </th>
@@ -157,7 +161,9 @@
         </div>
 
         <ManageSessionDialog @ref="ManageDialogRef" FormSession="ManageSession" SaveForm="SaveForm" Title="@formTitle" />
-        <ConfirmationDialog IdToDelete="ManageSession.Id" ConfirmationChanged="OnConfirmClicked" @ref="DeleteConfirmation" />
+        <ConfirmationDialog @ref="DeleteConfirmation" IdToDelete="ManageSession.Id" ConfirmationChanged="OnConfirmClicked" />
+        <InvoicingDialog @ref="InvoicingRef" InvoicingItems="sessions" />
+
     </Authorized>
     <NotAuthorized>
         <div style="position: relative; height: calc(100vh - 3.5rem)">
@@ -169,10 +175,13 @@
 
 
 @code {
+    // Dialog references
     private ManageSessionDialog ManageDialogRef { get; set; }
-    public ManageSessionModel ManageSession { get; set; } = new();
-
+    private InvoicingDialog InvoicingRef { get; set; }
     protected ConfirmationDialog DeleteConfirmation { get; set; }
+
+
+    public ManageSessionModel ManageSession { get; set; } = new();
 
     public string formTitle { get; set; }
 
@@ -256,6 +265,11 @@
         }
     }
 
+    private void InvoiceClicked()
+	{
+        InvoicingRef.Show();
+	}
+
     private TimeSpan ConvertToTimeSpan(string timeString)
     {
         var split = timeString.Split(':');
@@ -270,6 +284,8 @@
         }
     }
 
+
+    // TODO - move this kind of helpers to central place in app
     private string ConvertTimeSpanToString(TimeSpan time)
     {
         string output = String.Empty;

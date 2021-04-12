@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RevXPortal.API;
 using RevXPortal.Authentication;
+using RevXPortal.Services;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -31,6 +32,9 @@ namespace RevXPortal
 			//Endpoints
 			builder.Services.AddTransient<IStudentEndpoint, StudentEndpoint>();
 			builder.Services.AddTransient<ISessionEndpoint, SessionEndpoint>();
+
+			//Services
+			builder.Services.AddTransient<IPdfService, PdfService>();
 
 			await builder.Build().RunAsync();
 		}
