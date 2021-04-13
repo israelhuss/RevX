@@ -56,6 +56,15 @@ namespace RevXApi
 
 			// FluentEmail Configuration
 			services.AddTransient<IEmailService, EmailService>();
+
+			//services.AddFluentEmail(Configuration["EmailConfig:FaigyEmailAddress"], "Faigy Huss")
+			//	.AddRazorRenderer()
+			//	.AddSmtpSender(new SmtpClient("localhost", 25)
+			//	{
+			//		EnableSsl = false
+			//	});
+
+			// Gmail Setup
 			services.AddFluentEmail(Configuration["EmailConfig:FaigyEmailAddress"], "Faigy Huss")
 				.AddRazorRenderer()
 				.AddSmtpSender(new SmtpClient("smtp.gmail.com", 587)

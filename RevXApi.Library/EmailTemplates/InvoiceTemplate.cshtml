@@ -1,3 +1,74 @@
-﻿
+﻿@using System 
 
-<h2>Hi, This is text from a template @Model.Name.</h2>
+<!DOCTYPE html>
+<head>
+    @*<link href="@($"{System.IO.Directory.GetCurrentDirectory()}/wwwroot/css/bootstrap.min.css")" rel="stylesheet" />*@
+    <style>
+        .invoice-table-container {
+            border: solid 1px #626263;
+            border-radius: 4.5px;
+            text-align: center;
+            margin: 1rem;
+            overflow: hidden;
+            width: 65%;
+            margin: 0 auto;
+        }
+        .table {
+            width: calc(100% + 2px);
+            display: table;
+            border-collapse: collapse;
+            color: rgb(33,37,41);
+            margin-bottom: 0;
+            box-sizing: border-box;
+            border-spacing: 2px;
+            text-align: center;
+            font-family: Nunito,"Helvetica Neue",Helvetica,Arial,sans-serif;
+            margin-top: -1px;
+            margin-left: -1px;
+        }
+        .table-bordered th {
+            border: solid 1px rgb(222, 226, 230);
+            font-size: 20px;
+            padding: .75rem;
+        }
+        .table-bordered td {
+            border: solid 1px rgb(222, 226, 230);
+            padding: .75rem;
+        }
+
+        .table-striped tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body>
+
+
+    <h1>@($"{System.IO.Directory.GetCurrentDirectory()}/wwwroot/css/bootstrap.min.css")</h1>
+    <h2>Hi, This is text from a template @Model.Name.</h2>
+    <div class="invoice-table-container">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Date</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Sessions)
+                {
+                    <tr>
+                        <td>@($"{@item.Student.FirstName} {@item.Student.LastName}")</td>
+                        <td>@item.Date.ToShortDateString()</td>
+                        <td>@item.StartTime</td>
+                        <td>@item.EndTime</td>
+                        <td>@item.Notes</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</body>
