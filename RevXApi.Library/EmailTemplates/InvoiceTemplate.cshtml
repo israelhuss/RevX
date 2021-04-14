@@ -52,7 +52,7 @@
         <tbody>
             <tr>
                 <td>
-                    <h1>@(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), @"..\Logo\Logo-text.png"))</h1>
+                    <h1>@(System.IO.Path.Combine(System.IO.Directory.GetParent(System.IO.Directory.GetCurrentDirectory()).ToString(), @"Logo\Logo-text.png"))</h1>
                 </td>
                 </tr>
             <tr>
@@ -93,7 +93,7 @@
         <tfoot>
             <tr>
                 <td>
-                    <img src="@(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), @"..\Logo\Logo-text.png"))" />
+                    <img src="C:/Users/israe/Documents/Visual Studio Projects/RevX/Logo/Logo-text.jpg" alt="RevX" />
                 </td>
             </tr>
         </tfoot>
