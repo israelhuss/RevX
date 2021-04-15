@@ -10,20 +10,10 @@
             box-sizing: border-box;
         }
         .outer-table {
-            width: 65%;
+            width: 60%;
             margin: 0 auto;
             text-align: center;
         }
-
-        /*.invoice-table-container {
-            border: solid 1px #626263;
-            border-radius: 4.5px;
-            text-align: center;
-            margin: 1rem;
-            overflow: hidden;
-            width: 65%;
-            margin: 0 auto;
-        }*/
 
         .table {
             width: calc(100% + 2px);
@@ -44,6 +34,10 @@
         .table-striped tbody tr:nth-child(odd) {
             background-color: rgba(0, 0, 0, 0.06);
         }
+
+        img + div {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -52,12 +46,7 @@
         <tbody>
             <tr>
                 <td>
-                    <h1>@(System.IO.Path.Combine(System.IO.Directory.GetParent(System.IO.Directory.GetCurrentDirectory()).ToString(), @"Logo\Logo-text.png"))</h1>
-                </td>
-                </tr>
-            <tr>
-                <td>
-                    <h2>Hi, This is text from a template @Model.Name.</h2>
+                    <h1>March 2021</h1>
                 </td>
             </tr>
             <tr>
@@ -89,11 +78,21 @@
                     </div>
                 </td>
             </tr>
+            <tr>
+                <td>
+                    <h2 style="text-align: end;">Total Hours: 25</h2>
+                </td>
+            </tr>
         </tbody>
         <tfoot>
             <tr>
-                <td>
-                    <img src="C:/Users/israe/Documents/Visual Studio Projects/RevX/Logo/Logo-text.jpg" alt="RevX" />
+                <td style="padding: 2rem;">
+                    <p style=" display: flex; width: max-content; margin-left: auto; margin-right: auto;">
+                        <span style="font-weight: bold;">Powered by:</span>
+                        <span style="line-height: 1;">
+                            <img src="https://timcohussstorage.blob.core.windows.net/revxlogo/Logo-text.jpg" alt="RevX" style="height: 1.1rem; margin-left: .5rem;" />
+                        </span>
+                    </p>
                 </td>
             </tr>
         </tfoot>
