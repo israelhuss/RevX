@@ -16,24 +16,24 @@ namespace RevXApi.Library.DataAccess
 			_sql = sql;
 		}
 
-		public void SaveInvoice(InvoiceModel invoice)
+		public async void SaveInvoice(InvoiceModel invoice)
 		{
 			try
 			{
 				_sql.StartTransaction("RevXData");
 
 				// Save the Invoice
-				_sql.SaveDataInTransaction("dbo.spInvoice_Insert", invoice);
+				await _sql.SaveDataInTransaction("dbo.spInvoice_Insert", new { invoice.Id, invoice.InvoiceDate, invoice.TotalHours });
 
 				// Get back the Id of this invoice
 				invoice.Id = _sql.LoadDataInTransaction<int, dynamic>("dbo.spInvoice_Lookup", new { invoice.InvoiceDate, invoice.TotalHours }).FirstOrDefault();
 
-				foreach (var s in invoice.InvoiceDetails)
+				foreach (var id in invoice.SessionIds)
 				{
-					s.InvoiceId = invoice.Id;
+					var detail = new InvoiceDetailModel() { InvoiceId = invoice.Id, SessionId = id};
 
 					// Save the Detail to database
-					_sql.SaveDataInTransaction("dbo.spInvoiceDetail_Insert", s);
+					await _sql.SaveDataInTransaction("dbo.spInvoiceDetail_Insert", detail);
 				}
 
 				_sql.CommitTransaction();

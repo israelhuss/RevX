@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace RevXApi.Library.DataAccess
 {
@@ -51,13 +52,13 @@ namespace RevXApi.Library.DataAccess
 			}
 		}
 
-		public int SaveData<T>(string storedProcedure, T parameters, string connectionStringName)
+		public async Task SaveData<T>(string storedProcedure, T parameters, string connectionStringName)
 		{
 			string connectionString = GetConnectionString(connectionStringName);
 
 			using (IDbConnection connection = new SqlConnection(connectionString))
 			{
-				return connection.Execute(storedProcedure, parameters,
+				await connection.ExecuteAsync(storedProcedure, parameters,
 					commandType: CommandType.StoredProcedure);
 			}
 		}
@@ -84,9 +85,9 @@ namespace RevXApi.Library.DataAccess
 			return rows;
 		}
 
-		public int SaveDataInTransaction<T>(string storedProcedure, T parameters)
+		public async Task SaveDataInTransaction<T>(string storedProcedure, T parameters)
 		{
-			return _connection.Execute(storedProcedure, parameters,
+			await _connection.ExecuteAsync(storedProcedure, parameters,
 				commandType: CommandType.StoredProcedure, transaction: _transaction);
 		}
 

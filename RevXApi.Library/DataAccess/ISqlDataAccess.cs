@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace RevXApi.Library.DataAccess
 {
@@ -11,8 +12,8 @@ namespace RevXApi.Library.DataAccess
 		List<T> LoadData<T>(string storedProcedure, string connectionStringName);
 		List<T> LoadDataInTransaction<T, U>(string storedProcedure, U parameters);
 		void RollBackTransaction();
-		int SaveData<T>(string storedProcedure, T parameters, string connectionStringName);
-		int SaveDataInTransaction<T>(string storedProcedure, T parameters);
+		Task SaveData<T>(string storedProcedure, T parameters, string connectionStringName);
+		Task SaveDataInTransaction<T>(string storedProcedure, T parameters);
 		void StartTransaction(string connectionStringName);
 	}
 }
