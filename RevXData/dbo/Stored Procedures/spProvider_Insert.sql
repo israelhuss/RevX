@@ -3,6 +3,6 @@
 	@Name varchar(20)
 AS
 BEGIN
-	INSERT INTO dbo.Provider (Name)
+	INSERT INTO dbo.[Provider] ([Name])
 	VALUES (@Name)
 END

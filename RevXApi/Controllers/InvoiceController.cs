@@ -1,6 +1,7 @@
 ﻿using FluentEmail.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using RevXApi.Library.DataAccess;
 using RevXApi.Library.Models;
 using RevXApi.Library.Services;
 using System;
@@ -15,10 +16,12 @@ namespace RevXApi.Controllers
 	public class InvoiceController : ControllerBase
 	{
 		private readonly IEmailService _emailService;
+		private readonly IInvoiceData _invoiceData;
 
-		public InvoiceController(IEmailService emailService)
+		public InvoiceController(IEmailService emailService, IInvoiceData invoiceData)
 		{
 			_emailService = emailService;
+			_invoiceData = invoiceData;
 		}
 
 		[HttpPost]
@@ -29,9 +32,9 @@ namespace RevXApi.Controllers
 		}
 
 		[HttpPost]
-		public void SaveInvoice(List<int> sessionIds)
+		public void SaveInvoice(InvoiceModel invoice)
 		{
-
+			_invoiceData.SaveInvoice(invoice);
 		}
 	}
 }

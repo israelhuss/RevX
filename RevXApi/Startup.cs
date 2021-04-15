@@ -53,6 +53,7 @@ namespace RevXApi
 			services.AddTransient<IStudentData, StudentData>();
 			services.AddTransient<IProviderData, ProviderData>();
 			services.AddTransient<IBillingStatusData, BillingStatusData>();
+			services.AddTransient<IInvoiceData, InvoiceData>();
 
 			// FluentEmail Configuration
 			services.AddTransient<IEmailService, EmailService>();
