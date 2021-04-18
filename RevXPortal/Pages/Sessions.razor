@@ -92,7 +92,6 @@
     <Authorized>
         <div class="d-flex justify-content-between mt-4">
             <h3>Sessions</h3>
-
             <button class="btn btn-primary" @onclick="AddSession">Add Session</button>
         </div>
 
@@ -175,11 +174,10 @@
 
 
 @code {
-        // Dialog references
+    // Dialog references
     private ManageSessionDialog ManageDialogRef { get; set; }
     private InvoicingDialog InvoicingRef { get; set; }
     protected ConfirmationDialog DeleteConfirmation { get; set; }
-
 
     public ManageSessionModel ManageSession { get; set; } = new();
 
@@ -206,7 +204,7 @@
                         select s).ToList();
             StateHasChanged();
         }
-        catch (Exception e)
+        catch (HttpRequestException e)
         {
             Console.WriteLine(e.Message);
         }
@@ -226,7 +224,6 @@
             await _sessionEndpoint.EditSession(ManageSession);
             await RefreshSessionsList();
         }
-
         StateHasChanged();
 
         ManageSession = new();

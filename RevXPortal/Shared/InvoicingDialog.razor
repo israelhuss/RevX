@@ -22,42 +22,51 @@
 					</button>
 				</div>
 				<div class="modal-body" id="modal-body">
-					<div class="invoice-table-container">
-						<table class="table table-bordered table-striped" style="margin-top: -1px" @ref="TableRef">
-							<thead>
-								<tr>
-									<th></th>
-									<th>Student</th>
-									<th>Date</th>
-									<th>Start Time</th>
-									<th>End Time</th>
-									<th>Notes</th>
-								</tr>
-							</thead>
-							<tbody>
-								@foreach (var item in InvoicingItems.OrderBy(s => s.Date).ThenBy(s => s.StartTime))
-								{
-									<tr>
-										<td>
-											<input class="checkbox" type="checkbox" value="" checked @onchange="( (e) => CheckBoxClicked(e, item))">
-										</td>
-										<td>@item.Student.DisplayName</td>
-										<td>@item.Date.ToShortDateString()</td>
-										<td>@ConvertTimeSpanToString(item.StartTime)</td>
-										<td>@ConvertTimeSpanToString(item.EndTime)</td>
-										<td>@item.Notes</td>
-									</tr>
-								}
-							</tbody>
-							<tfoot>
-								<tr>
-									<td colspan="6">
-										<h3 style="margin-bottom: 0;">Total Hours: @TotalHours</h3>
-									</td>
-								</tr>
-							</tfoot>
-						</table>
-					</div>
+                    <div class="invoice-table-container" style="position:relative">
+                        @if (SavingInProgress)
+                        {
+                            <div style="height: 100%; width: 100%; position: absolute; top: 0; left: 0; z-index: 10000; background-color: rgb(16 16 16 / 0.75)">
+                                <div class="spinner-parent">
+                                    <div class="spinner spinner-border" style="border: .15em solid #ffffff; border-right-color: transparent"></div>
+                                    <div class="loading-text" style="color: #fff;">Saving Invoice</div>
+                                </div>
+                            </div>
+                        }
+                        <table class="table table-bordered table-striped" style="margin-top: -1px" @ref="TableRef">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Student</th>
+                                    <th>Date</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in InvoicingItems.OrderBy(s => s.Date).ThenBy(s => s.StartTime))
+                                {
+                                    <tr>
+                                        <td>
+                                            <input class="checkbox" type="checkbox" value="" checked @onchange="( (e) => CheckBoxClicked(e, item))">
+                                        </td>
+                                        <td>@item.Student.DisplayName</td>
+                                        <td>@item.Date.ToShortDateString()</td>
+                                        <td>@ConvertTimeSpanToString(item.StartTime)</td>
+                                        <td>@ConvertTimeSpanToString(item.EndTime)</td>
+                                        <td>@item.Notes</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="6">
+                                        <h3 style="margin-bottom: 0;">Total Hours: @TotalHours</h3>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="Hide">
@@ -73,12 +82,13 @@
 }
 @code {
     protected bool ShowDialog { get; set; }
+    protected bool SavingInProgress { get; set; } = false;
 
     [Parameter]
     public List<ManageSessionModel> InvoicingItems { get; set; }
 
     [Parameter]
-    public EventCallback<List<ManageSessionModel>> InvoicingItemsChanged { get; set; }  
+    public EventCallback<List<ManageSessionModel>> InvoicingItemsChanged { get; set; }
 
     public double TotalHours { get; set; } = 0;
 
@@ -130,9 +140,12 @@
         {
             invoiceModel.SessionIds.Add(item.Id);
         }
+        SavingInProgress = true;
+        await Task.Delay(3000);
         await _invoiceEndpoint.SaveInvoice(invoiceModel);
 
         ShowDialog = false;
+        SavingInProgress = false;
         await InvoicingItemsChanged.InvokeAsync();
         StateHasChanged();
 

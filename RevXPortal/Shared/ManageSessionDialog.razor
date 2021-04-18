@@ -89,7 +89,15 @@
 
     protected override async Task OnInitializedAsync()
     {
-        availableStudents = await _student.GetAll();
+
+        try
+        {
+            availableStudents = await _student.GetAll();
+        }
+        catch (HttpRequestException e)
+        {
+            Console.WriteLine(e.Message);
+        }
 
         providers = new()
         {
