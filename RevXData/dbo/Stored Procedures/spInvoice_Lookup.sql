@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE [dbo].[spInvoice_Lookup]
-	@InvoiceDate datetime,
+	@InvoiceDate datetime2,
 	@TotalHours decimal(4,2)
 AS
 BEGIN

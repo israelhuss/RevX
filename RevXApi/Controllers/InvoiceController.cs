@@ -7,6 +7,7 @@ using RevXApi.Library.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace RevXApi.Controllers
@@ -32,9 +33,12 @@ namespace RevXApi.Controllers
 		}
 
 		[HttpPost]
-		public void SaveInvoice(InvoiceModel invoice)
+		public IActionResult SaveInvoice(InvoiceModel invoice)
 		{
+			InvoiceEmailModel emailModel = _invoiceData.PrepareEmailModel(invoice);
 			_invoiceData.SaveInvoice(invoice);
+			_emailService.SendInvoiceEmail("israelmhuss@gmail.com", emailModel);
+			return Ok();
 		}
 	}
 }

@@ -21,12 +21,15 @@ namespace RevXPortal.API
 		{
 			using (HttpResponseMessage response = await _client.PostAsJsonAsync("/api/invoice", invoice))
 			{
-				if (response.StatusCode == HttpStatusCode.Created)
+
+				Console.WriteLine(response.StatusCode);
+				if (response.IsSuccessStatusCode)
 				{
 					Console.WriteLine("Invoice was saved to the database.");
 				}
 				else
 				{
+					Console.WriteLine(response.StatusCode);
 					throw new Exception(response.ReasonPhrase);
 				}
 			}

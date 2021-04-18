@@ -5,4 +5,5 @@ BEGIN
 	SET NOCOUNT ON
 	SELECT [Id], [StudentId], [Date], [StartTime], [EndTime], [ProviderId], [BillingStatusId], [Notes]
 	FROM dbo.[Session]
+	ORDER BY [Date] , [StartTime]
 END

@@ -162,7 +162,7 @@
 
         <ManageSessionDialog @ref="ManageDialogRef" FormSession="ManageSession" SaveForm="SaveForm" Title="@formTitle" />
         <ConfirmationDialog @ref="DeleteConfirmation" IdToDelete="ManageSession.Id" ConfirmationChanged="OnConfirmClicked" />
-        <InvoicingDialog @ref="InvoicingRef" InvoicingItems="sessions" />
+        <InvoicingDialog @ref="InvoicingRef" InvoicingItems="sessions" InvoicingItemsChanged="RefreshSessionsList"/>
 
     </Authorized>
     <NotAuthorized>
@@ -191,15 +191,20 @@
 
     protected async override Task OnInitializedAsync()
     {
+        await RefreshSessionsList();
+    }
+
+    private async Task RefreshSessionsList()
+    {
         try
         {
-
             //TODO - getting only open sessions manually - change to dynamic...
             var allSessions = await _sessionEndpoint.GetAll();
 
             sessions = (from s in allSessions
                         where s.BillingStatus.Id == 1
                         select s).ToList();
+            StateHasChanged();
         }
         catch (Exception e)
         {
@@ -266,9 +271,9 @@
     }
 
     private void InvoiceClicked()
-	{
+    {
         InvoicingRef.Show();
-	}
+    }
 
     private TimeSpan ConvertToTimeSpan(string timeString)
     {

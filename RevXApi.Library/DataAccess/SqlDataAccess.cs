@@ -52,13 +52,13 @@ namespace RevXApi.Library.DataAccess
 			}
 		}
 
-		public async Task SaveData<T>(string storedProcedure, T parameters, string connectionStringName)
+		public void SaveData<T>(string storedProcedure, T parameters, string connectionStringName)
 		{
 			string connectionString = GetConnectionString(connectionStringName);
 
 			using (IDbConnection connection = new SqlConnection(connectionString))
 			{
-				await connection.ExecuteAsync(storedProcedure, parameters,
+				connection.Execute(storedProcedure, parameters,
 					commandType: CommandType.StoredProcedure);
 			}
 		}
@@ -85,9 +85,9 @@ namespace RevXApi.Library.DataAccess
 			return rows;
 		}
 
-		public async Task SaveDataInTransaction<T>(string storedProcedure, T parameters)
+		public void SaveDataInTransaction<T>(string storedProcedure, T parameters)
 		{
-			await _connection.ExecuteAsync(storedProcedure, parameters,
+			_connection.Execute(storedProcedure, parameters,
 				commandType: CommandType.StoredProcedure, transaction: _transaction);
 		}
 

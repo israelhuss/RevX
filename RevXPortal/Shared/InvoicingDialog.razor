@@ -52,7 +52,7 @@
 							<tfoot>
 								<tr>
 									<td colspan="6">
-										<h3>Total Hours: @TotalHours</h3>
+										<h3 style="margin-bottom: 0;">Total Hours: @TotalHours</h3>
 									</td>
 								</tr>
 							</tfoot>
@@ -72,103 +72,107 @@
 	</div>
 }
 @code {
-	protected bool ShowDialog { get; set; }
+    protected bool ShowDialog { get; set; }
 
-	[Parameter]
-	public List<ManageSessionModel> InvoicingItems { get; set; }
+    [Parameter]
+    public List<ManageSessionModel> InvoicingItems { get; set; }
 
-	public double TotalHours { get; set; } = 0;
+    [Parameter]
+    public EventCallback<List<ManageSessionModel>> InvoicingItemsChanged { get; set; }  
 
-	private List<ManageSessionModel> finalList { get; set; }
+    public double TotalHours { get; set; } = 0;
 
-	private ElementReference TableRef { get; set; }
+    private List<ManageSessionModel> finalList { get; set; }
 
-	protected override Task OnParametersSetAsync()
-	{
-		if (InvoicingItems is not null)
-		{
-			finalList = new(InvoicingItems);
-			TotalHours = CalculateTotalHours(finalList);
-		}
-		return Task.CompletedTask;
-	}
+    private ElementReference TableRef { get; set; }
+
+    protected override Task OnParametersSetAsync()
+    {
+        if (InvoicingItems is not null)
+        {
+            finalList = new(InvoicingItems);
+            TotalHours = CalculateTotalHours(finalList);
+        }
+        return Task.CompletedTask;
+    }
 
 
-	public void Show()
-	{
-		ShowDialog = true;
-		StateHasChanged();
-	}
+    public void Show()
+    {
+        ShowDialog = true;
+        StateHasChanged();
+    }
 
-	public void Hide()
-	{
-		ShowDialog = false;
-		StateHasChanged();
-	}
+    public void Hide()
+    {
+        ShowDialog = false;
+        StateHasChanged();
+    }
 
-	private void CheckBoxClicked(ChangeEventArgs e, ManageSessionModel model)
-	{
-		if ((bool)e.Value)
-		{
-			finalList.Add(model);
-			TotalHours = CalculateTotalHours(finalList);
-		}
-		else if (!(bool)e.Value)
-		{
-			finalList.Remove(model);
-			TotalHours = CalculateTotalHours(finalList);
-		}
-	}
+    private void CheckBoxClicked(ChangeEventArgs e, ManageSessionModel model)
+    {
+        if ((bool)e.Value)
+        {
+            finalList.Add(model);
+            TotalHours = CalculateTotalHours(finalList);
+        }
+        else if (!(bool)e.Value)
+        {
+            finalList.Remove(model);
+            TotalHours = CalculateTotalHours(finalList);
+        }
+    }
 
-	private void InvoiceClicked()
-	{
-		InvoiceModel invoiceModel = new() { SessionIds = new List<int>(), TotalHours = TotalHours};
-		foreach (var item in finalList)
-		{
-			invoiceModel.SessionIds.Add(item.Id);
-		}
-		_invoiceEndpoint.SaveInvoice(invoiceModel);
+    private async void InvoiceClicked()
+    {
+        InvoiceModel invoiceModel = new() { SessionIds = new List<int>(), TotalHours = TotalHours};
+        foreach (var item in finalList)
+        {
+            invoiceModel.SessionIds.Add(item.Id);
+        }
+        await _invoiceEndpoint.SaveInvoice(invoiceModel);
 
-		Console.WriteLine(invoiceModel.SessionIds[0]);
-		Console.WriteLine(invoiceModel.TotalHours);
+        ShowDialog = false;
+        await InvoicingItemsChanged.InvokeAsync();
+        StateHasChanged();
 
-		
-	}
 
-	private string ConvertTimeSpanToString(TimeSpan time)
-	{
-		string output = String.Empty;
+    }
 
-		int hours = time.Hours;
-		int minutes = time.Minutes;
-		if (hours == 0)
-		{
-			output = $"12:{minutes.ToString("D2")} AM";
-		}
-		else if (hours <= 12)
-		{
-			output = $"{hours.ToString()}:{minutes.ToString("D2")} AM";
-		}
-		else if (hours > 12)
-		{
-			output = $"{(hours - 12).ToString()}:{minutes.ToString("D2")} PM";
-		}
-		return output;
-	}
+    private string ConvertTimeSpanToString(TimeSpan time)
+    {
+        string output = String.Empty;
 
-	private void ConsoleWriter(List<ManageSessionModel> models)
-	{
-		foreach (var model in models)
-		{
-			Console.WriteLine($"{model.Student.DisplayName} | {model.Date} | {model.StartTime} | {model.EndTime}");
-		}
-	}
+        int hours = time.Hours;
+        int minutes = time.Minutes;
+        if (hours == 0)
+        {
+            output = $"12:{minutes.ToString("D2")} AM";
+        }
+        else if (hours <= 12)
+        {
+            output = $"{hours.ToString()}:{minutes.ToString("D2")} AM";
+        }
+        else if (hours > 12)
+        {
+            output = $"{(hours - 12).ToString()}:{minutes.ToString("D2")} PM";
+        }
+        return output;
+    }
 
-	private double CalculateTotalHours(List<ManageSessionModel> sessions)
-	{
-		double output = 0;
-		output = sessions.Sum(s => (s.EndTime - s.StartTime).TotalHours);
-		return Math.Round(output, 2);
-	}
+    private void ConsoleWriter(List<ManageSessionModel> models)
+    {
+        foreach (var model in models)
+        {
+            Console.WriteLine($"{model.Student.DisplayName} | {model.Date} | {model.StartTime} | {model.EndTime}");
+        }
+    }
+
+    private double CalculateTotalHours(List<ManageSessionModel> sessions)
+    {
+        double output = 0;
+        output = sessions.Sum(s => (s.EndTime - s.StartTime).TotalHours);
+        return Math.Round(output, 2);
+    }
 
 }

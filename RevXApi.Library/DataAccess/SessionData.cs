@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -46,6 +47,26 @@ namespace RevXApi.Library.DataAccess
 
 				output.Add(model);
 			}
+
+			return output;
+		}
+
+		public SessionModel GetById(int id)
+		{
+			SessionDbModel session = _sql.LoadData<SessionDbModel, dynamic>("dbo.spSession_GetById", new { Id = id}, "RevXData").FirstOrDefault();
+
+			SessionModel output = new()
+			{
+				Id = session.Id,
+				Date = session.Date,
+				StartTime = session.StartTime.ToString(),
+				EndTime = session.EndTime.ToString(),
+				Notes = session.Notes
+			};
+
+			output.Student = _studentData.GetById(session.StudentId);
+			output.Provider = _providerData.GetById(session.ProviderId);
+			output.BillingStatus = _billingStatusData.GetById(session.BillingStatusId);
 
 			return output;
 		}

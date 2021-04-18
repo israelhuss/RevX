@@ -10,39 +10,109 @@ namespace RevXApi.Library.DataAccess
 	public class InvoiceData : IInvoiceData
 	{
 		private readonly ISqlDataAccess _sql;
+		private readonly ISessionData _sessionData;
 
-		public InvoiceData(ISqlDataAccess sql)
+		public InvoiceData(ISqlDataAccess sql, ISessionData sessionData)
 		{
 			_sql = sql;
+			_sessionData = sessionData;
 		}
 
-		public async void SaveInvoice(InvoiceModel invoice)
+		public void SaveInvoice(InvoiceModel invoice)
 		{
 			try
 			{
 				_sql.StartTransaction("RevXData");
 
 				// Save the Invoice
-				await _sql.SaveDataInTransaction("dbo.spInvoice_Insert", new { invoice.Id, invoice.InvoiceDate, invoice.TotalHours });
+				_sql.SaveDataInTransaction("dbo.spInvoice_Insert", new { invoice.Id, invoice.InvoiceDate, invoice.TotalHours });
 
 				// Get back the Id of this invoice
 				invoice.Id = _sql.LoadDataInTransaction<int, dynamic>("dbo.spInvoice_Lookup", new { invoice.InvoiceDate, invoice.TotalHours }).FirstOrDefault();
-
-				foreach (var id in invoice.SessionIds)
+				
+				if (invoice.Id > 0)
 				{
-					var detail = new InvoiceDetailModel() { InvoiceId = invoice.Id, SessionId = id};
+					foreach (var id in invoice.SessionIds)
+					{
+						var detail = new InvoiceDetailModel() { InvoiceId = invoice.Id, SessionId = id };
 
-					// Save the Detail to database
-					await _sql.SaveDataInTransaction("dbo.spInvoiceDetail_Insert", detail);
+						// Save the Detail to database
+						_sql.SaveDataInTransaction("dbo.spInvoiceDetail_Insert", detail);
+
+						// Update the sessions billing status to invoiced
+						// TODO - the status id should be looked up, not manually typed!!!!
+						_sql.SaveDataInTransaction("dbo.spSession_EditBillingStatus", new { Id = id, StatusId = 2 });
+					}
+
+					_sql.CommitTransaction();
 				}
-
-				_sql.CommitTransaction();
+				else throw new Exception();
 			}
 			catch
 			{
 				_sql.RollBackTransaction();
 				throw;
 			}
+		}
+
+		public InvoiceEmailModel PrepareEmailModel(InvoiceModel invoice)
+		{
+			// Fill in the basics
+			InvoiceEmailModel output = new() { InvoiceDate = invoice.InvoiceDate, TotalHours = invoice.TotalHours };
+
+			// Get the full session models, and change to email model
+			output.InvoiceSessions = new();
+			foreach (var item in invoice.SessionIds)
+			{
+				var temp = _sessionData.GetById(item);
+				SessionEmailModel model = new()
+				{
+					Student = $"{temp.Student.FirstName} {temp.Student.LastName}",
+					Date = temp.Date,
+					StartTime = Convert24HourTo12Hour(temp.StartTime),
+					EndTime = Convert24HourTo12Hour(temp.EndTime),
+					Notes = temp.Notes
+				};
+				output.InvoiceSessions.Add(model);
+			}
+
+			// Calculate the invoicing period
+			List<string> tempMonth = new();
+			List<string> tempYear = new();
+			foreach (var item in output.InvoiceSessions)
+			{
+				tempMonth.Add(item.Date.ToString("MMMM"));
+				tempYear.Add(item.Date.Year.ToString());
+			}
+			var monthString = String.Join(" - ", tempMonth.Distinct());
+			var yearString = String.Join(" - ", tempYear.Distinct());
+
+			output.InvoicePeriod = $"{monthString} {yearString}";
+
+			return output;
+
+		}
+
+		private string Convert24HourTo12Hour(string twentyfour)
+		{
+			string output = string.Empty;
+			var split = twentyfour.Split(":");
+			if (split?.Length == 3)
+			{
+				if (int.Parse(split[0]) == 12 )
+				{
+					output = $"12:{split[1]} PM";
+				}
+				else if (int.Parse(split[0]) < 12)
+				{
+					output = $"{split[0]}:{split[1]} AM";
+				}
+				else if (int.Parse(split[0]) > 12)
+				{
+					output = $"{int.Parse(split[0]) - 12}:{split[1]} PM";
+				}
+			}
+			return output;
 		}
 	}
 }

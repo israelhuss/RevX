@@ -16,19 +16,19 @@
         }
 
         .table {
-            width: calc(100% + 2px);
+            width: 100%;
+            border: 1px solid #dadada;
             border-collapse: collapse;
             color: rgb(33,37,41);
             border-spacing: 2px;
         }
         .table-bordered th {
-            border: solid 1px rgb(207 207 207);
+            border: 1px solid #dadada;
             font-size: 20px;
             padding: .75rem;
-            border-bottom: solid 2px rgb(190,190,190);
         }
         .table-bordered td {
-            border: solid 1px rgb(207 207 207);
+            border: 1px solid #dadada;
             padding: .75rem;
         }
 
@@ -47,7 +47,7 @@
         <tbody>
             <tr>
                 <td>
-                    <h1>March 2021</h1>
+                    <h1>@Model.InvoicePeriod</h1>
                 </td>
             </tr>
             <tr>
@@ -64,10 +64,10 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var item in Model.Sessions)
+                                @foreach (var item in Model.InvoiceSessions)
                                 {
                                     <tr>
-                                        <td>@($"{@item.Student.FirstName} {@item.Student.LastName}")</td>
+                                        <td>@item.Student</td>
                                         <td>@item.Date.ToShortDateString()</td>
                                         <td>@item.StartTime</td>
                                         <td>@item.EndTime</td>
@@ -81,7 +81,7 @@
             </tr>
             <tr>
                 <td>
-                    <h2 style="text-align: end;">Total Hours: 25</h2>
+                    <h2 style="text-align: end;">Total Hours: @Model.TotalHours</h2>
                 </td>
             </tr>
         </tbody>
