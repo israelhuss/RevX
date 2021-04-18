@@ -1,4 +1,5 @@
 ﻿using FluentEmail.Core;
+using FluentEmail.Core.Models;
 using FluentEmail.Smtp;
 using Microsoft.Extensions.Configuration;
 using RevXApi.Library.Models;
@@ -41,13 +42,14 @@ namespace RevXApi.Library.Services
 				.SendAsync();
 		}
 
-		public async Task SendInvoiceEmail(string emailAddress, InvoiceEmailModel emailModel)
+		public async Task<SendResponse> SendInvoiceEmail(string emailAddress, InvoiceEmailModel emailModel)
 		{
-			await _fluentEmail
+			var email = await _fluentEmail
 				.To(emailAddress)
 				.Subject($"Faigy Huss {emailModel.InvoicePeriod} Hours")
 				.UsingTemplateFromFile($"{Directory.GetCurrentDirectory()}/../RevXApi.Library/EmailTemplates/InvoiceTemplate.cshtml", emailModel, true)
 				.SendAsync();
+			return email;
 		}
 	}
 }

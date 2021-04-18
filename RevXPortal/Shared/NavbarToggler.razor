@@ -1,0 +1,39 @@
+﻿<style>
+    .custom-btn,
+    .custom-btn:focus {
+        outline: none;
+        border: none;
+        border-top-right-radius: 3px;
+        border-bottom-right-radius: 3px;
+        position: absolute;
+        top: 95.5vh;
+        left: 0;
+        background-color: #3a0647;
+        padding: 4px 3px;
+        font-size: 20px;
+        line-height: 1;
+        transition: all .4s
+    }
+
+        .custom-btn:hover {
+            padding: 4px 6px;
+        }
+</style>
+<button class="custom-btn" @onclick="ToggleNavBar"><i class="fas fa-angle-double-left" style="color: white; transform: rotate(@($"{@rotate}deg"));"></i></button>
+
+@code {
+    [Parameter]
+    public bool collapseNavBar { get; set; } = false;
+
+    [Parameter]
+    public EventCallback CollapseChanged { get; set; }
+
+    public int rotate = 0;
+
+    public void ToggleNavBar()
+    {
+        collapseNavBar = !collapseNavBar;
+        rotate += 180;
+        CollapseChanged.InvokeAsync(collapseNavBar);
+    }
+}

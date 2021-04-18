@@ -103,9 +103,13 @@ namespace RevXApi.Library.DataAccess
 				{
 					output = $"12:{split[1]} PM";
 				}
+				else if (int.Parse(split[0]) == 0)
+				{
+					output = $"12:{split[1]} AM";
+				}
 				else if (int.Parse(split[0]) < 12)
 				{
-					output = $"{split[0]}:{split[1]} AM";
+					output = $"{int.Parse(split[0])}:{split[1]} AM";
 				}
 				else if (int.Parse(split[0]) > 12)
 				{

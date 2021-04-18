@@ -146,8 +146,8 @@
             @* Main Row while loading the sessions *@
             @if (sessions is null)
             {
-                <div class="empty-table-cell grid-cell">
-                    <h4>Please wait... <br> Loading sessions!!!</h4>
+                <div class="empty-table-cell grid-cell" style="position: relative; height: 85%">
+                    <LoadingIndicator />
                 </div>
             }
 
@@ -175,7 +175,7 @@
 
 
 @code {
-    // Dialog references
+        // Dialog references
     private ManageSessionDialog ManageDialogRef { get; set; }
     private InvoicingDialog InvoicingRef { get; set; }
     protected ConfirmationDialog DeleteConfirmation { get; set; }
@@ -219,12 +219,12 @@
         if (formState == "add")
         {
             await _sessionEndpoint.SaveSession(ManageSession);
-            sessions.Add(ManageSession);
+            await RefreshSessionsList();
         }
         else if (formState == "edit")
         {
             await _sessionEndpoint.EditSession(ManageSession);
-            await _sessionEndpoint.GetAll();
+            await RefreshSessionsList();
         }
 
         StateHasChanged();
