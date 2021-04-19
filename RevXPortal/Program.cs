@@ -6,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RevXPortal.API;
 using RevXPortal.Authentication;
+using RevXPortal.Services;
+using RevXPortal.Shared;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -25,6 +27,7 @@ namespace RevXPortal
 			builder.Services.AddBlazoredLocalStorage();
 			builder.Services.AddAuthorizationCore();
 			builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
+			builder.Services.AddScoped<ToastService>();
 
 			builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:44300/") });
 
@@ -32,7 +35,6 @@ namespace RevXPortal
 			builder.Services.AddTransient<IStudentEndpoint, StudentEndpoint>();
 			builder.Services.AddTransient<ISessionEndpoint, SessionEndpoint>();
 			builder.Services.AddTransient<IInvoiceEndpoint, InvoiceEndpoint>();
-
 
 			await builder.Build().RunAsync();
 		}

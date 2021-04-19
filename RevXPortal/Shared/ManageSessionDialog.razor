@@ -1,10 +1,11 @@
 ﻿@inject IStudentEndpoint _student
+@inject ToastService toastService
 
 @if (ShowDialog)
 {
     <div class="modal show d-block" tabindex="-1" role="dialog">
 
-        <div class="modal-dialog modal-dialog-centered fade-in" role="document">
+        <div class="modal-dialog modal-dialog-centered fade-in-and-grow" role="document">
             <EditForm Model="@FormSession" OnValidSubmit="@SaveForm">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -98,6 +99,10 @@
         {
             Console.WriteLine(e.Message);
         }
+        catch (Exception e)
+		{
+            toastService.ShowToast($"Unhandled exeption. {e.Message}", ToastLevel.Error);
+		}
 
         providers = new()
         {

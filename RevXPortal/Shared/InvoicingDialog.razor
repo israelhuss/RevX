@@ -1,4 +1,5 @@
 ﻿@inject IInvoiceEndpoint _invoiceEndpoint
+@inject ToastService toastService
 
 
 <style>
@@ -13,7 +14,7 @@
 @if (ShowDialog)
 {
 	<div class="modal show d-block" tabindex="-1" role="dialog">
-		<div class="modal-dialog modal-dialog-centered fade-in" role="document" style="max-width: max-content;">
+		<div class="modal-dialog modal-dialog-centered fade-in-and-grow" role="document" style="max-width: max-content;">
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title" id="exampleModalLabel">Invoicing</h5>
@@ -135,19 +136,28 @@
 
     private async void InvoiceClicked()
     {
-        InvoiceModel invoiceModel = new() { SessionIds = new List<int>(), TotalHours = TotalHours};
-        foreach (var item in finalList)
+        try
         {
-            invoiceModel.SessionIds.Add(item.Id);
-        }
-        SavingInProgress = true;
-        await Task.Delay(3000);
-        await _invoiceEndpoint.SaveInvoice(invoiceModel);
+            InvoiceModel invoiceModel = new() { SessionIds = new List<int>(), TotalHours = TotalHours };
+            foreach (var item in finalList)
+            {
+                invoiceModel.SessionIds.Add(item.Id);
+            }
+            SavingInProgress = true;
+            await Task.Delay(3000);
+            await _invoiceEndpoint.SaveInvoice(invoiceModel);
 
-        ShowDialog = false;
-        SavingInProgress = false;
-        await InvoicingItemsChanged.InvokeAsync();
-        StateHasChanged();
+            ShowDialog = false;
+            SavingInProgress = false;
+            await InvoicingItemsChanged.InvokeAsync();
+            StateHasChanged();
+
+            toastService.ShowToast("The invoice was successfully submitted.", ToastLevel.Success);
+        }
+        catch (Exception)
+        {
+            toastService.ShowToast("There was a error proccessing your invoice.", ToastLevel.Error);
+        }
 
 
     }

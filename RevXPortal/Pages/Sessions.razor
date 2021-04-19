@@ -1,6 +1,7 @@
 ﻿@page "/sessions"
 @inject ISessionEndpoint _sessionEndpoint
 @inject NavigationManager NavManager
+@inject ToastService toastService
 
 <style>
     .table-container {
@@ -47,8 +48,8 @@
         background-color: rgb(0 0 0 / 0.70)
     }
 
-    .fade-in {
-        animation: fade-in;
+    .fade-in-and-grow {
+        animation: fade-in-and-grow;
         animation-duration: .6s;
     }
 
@@ -206,7 +207,12 @@
         }
         catch (HttpRequestException e)
         {
+            toastService.ShowToast("The API seems to be offline.", ToastLevel.Error);
             Console.WriteLine(e.Message);
+        }
+        catch (Exception)
+        {
+            NavManager.NavigateTo("/login");
         }
     }
 
@@ -224,6 +230,7 @@
             await _sessionEndpoint.EditSession(ManageSession);
             await RefreshSessionsList();
         }
+        toastService.ShowToast("Changes saved successfully.", ToastLevel.Success);
         StateHasChanged();
 
         ManageSession = new();
@@ -255,10 +262,19 @@
     {
         if (isConfirmed)
         {
-            await _sessionEndpoint.DeleteSession(DeleteConfirmation.IdToDelete);
-            sessions.RemoveAll(s => s.Id == DeleteConfirmation.IdToDelete);
+            try
+            {
+                await _sessionEndpoint.DeleteSession(DeleteConfirmation.IdToDelete);
+                toastService.ShowToast("Session was successfully deleted.", ToastLevel.Success);
+                await RefreshSessionsList();
 
-            StateHasChanged();
+
+                StateHasChanged();
+            }
+            catch (Exception)
+            {
+                toastService.ShowToast("Sorry. We are having some trouble deleting the session :(", ToastLevel.Error);
+            }
         }
         else
         {
