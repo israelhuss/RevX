@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Operations Version="1.0" xmlns="http://schemas.microsoft.com/sqlserver/dac/Serialization/2012/02">
+  <Operation Name="Rename Refactor" Key="cdbf0ea5-b95d-40ce-beee-67941e5cb6f4" ChangeDateTime="03/15/2021 20:30:57">
+    <Property Name="ElementName" Value="[dbo].[Sessions].[TimeIn]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Sessions]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="StartTime" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="33259d06-ecf6-4292-b410-0459fa8117b6" ChangeDateTime="03/15/2021 20:31:06">
+    <Property Name="ElementName" Value="[dbo].[Sessions].[TimeOut]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Sessions]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="EndTime" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="b6753286-e17a-4d6e-b419-bcbe7853e1dc" ChangeDateTime="04/01/2021 02:23:42">
+    <Property Name="ElementName" Value="[dbo].[Sessions].[StatusId]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Sessions]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="BillingStatusId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="500e6a43-90d8-4ef3-a767-46ce414fd112" ChangeDateTime="04/01/2021 16:13:57">
+    <Property Name="ElementName" Value="[dbo].[Providers].[Provider]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Providers]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="Name" />
+  </Operation>
+</Operations>

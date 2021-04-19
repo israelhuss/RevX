@@ -1,0 +1,41 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager NavManager
+
+<div class="page">
+
+    
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <div class="main">
+        <ToastNotification />
+        <div class="top-row px-4">
+            <AuthorizeView>
+                <Authorized>
+                    Hello @context.User.FindFirst(ClaimTypes.Name).Value!
+                    <button class="btn btn-info m-3" @onclick="OnLogout">Log Out</button>
+                </Authorized>
+                <NotAuthorized>
+                    <button class="btn btn-info" @onclick="OnLogin">Log In</button>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+
+        <div class="content px-4">
+            @Body
+        </div>
+    </div>
+</div>
+
+@code {
+    private void OnLogin()
+    {
+        NavManager.NavigateTo("/login");
+    }
+
+    private void OnLogout()
+    {
+        NavManager.NavigateTo("/logout");
+    }
+}

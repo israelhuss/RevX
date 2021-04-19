@@ -3,9 +3,59 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31025.194
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "API", "API", "{E540829F-34E0-449A-A751-D4AB57CBFEFD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RevXApi.Library", "RevXApi.Library\RevXApi.Library.csproj", "{EA86D783-62C9-407A-B427-742A3EA33E7C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Database", "Database", "{9D07D3C7-B86E-4934-B045-3FAA39CB2CC0}"
+EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "RevXData", "RevXData\RevXData.sqlproj", "{4BD79826-9B2E-4DC2-90A8-8009C5F557DB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Logo", "Logo", "{8B8E49CA-730F-4080-AF0D-41C4CA878F0C}"
+	ProjectSection(SolutionItems) = preProject
+		RevXUI\RevX-Logo-trans.ico = RevXUI\RevX-Logo-trans.ico
+		RevXUI\RevX-Logo-transparent.ico = RevXUI\RevX-Logo-transparent.ico
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RevXApi", "RevXApi\RevXApi.csproj", "{64CCBF30-D64F-41E4-8428-D6302A940D7A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebApps", "WebApps", "{17FB98BB-550C-4910-808B-1FD4CCD94219}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RevXPortal", "RevXPortal\RevXPortal.csproj", "{420EF2DF-C5A8-4DF7-8848-960D9C2AF455}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EA86D783-62C9-407A-B427-742A3EA33E7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA86D783-62C9-407A-B427-742A3EA33E7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA86D783-62C9-407A-B427-742A3EA33E7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA86D783-62C9-407A-B427-742A3EA33E7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BD79826-9B2E-4DC2-90A8-8009C5F557DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BD79826-9B2E-4DC2-90A8-8009C5F557DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BD79826-9B2E-4DC2-90A8-8009C5F557DB}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{4BD79826-9B2E-4DC2-90A8-8009C5F557DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BD79826-9B2E-4DC2-90A8-8009C5F557DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BD79826-9B2E-4DC2-90A8-8009C5F557DB}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{64CCBF30-D64F-41E4-8428-D6302A940D7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64CCBF30-D64F-41E4-8428-D6302A940D7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64CCBF30-D64F-41E4-8428-D6302A940D7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64CCBF30-D64F-41E4-8428-D6302A940D7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{420EF2DF-C5A8-4DF7-8848-960D9C2AF455}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{420EF2DF-C5A8-4DF7-8848-960D9C2AF455}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{420EF2DF-C5A8-4DF7-8848-960D9C2AF455}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{420EF2DF-C5A8-4DF7-8848-960D9C2AF455}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EA86D783-62C9-407A-B427-742A3EA33E7C} = {E540829F-34E0-449A-A751-D4AB57CBFEFD}
+		{4BD79826-9B2E-4DC2-90A8-8009C5F557DB} = {9D07D3C7-B86E-4934-B045-3FAA39CB2CC0}
+		{64CCBF30-D64F-41E4-8428-D6302A940D7A} = {E540829F-34E0-449A-A751-D4AB57CBFEFD}
+		{420EF2DF-C5A8-4DF7-8848-960D9C2AF455} = {17FB98BB-550C-4910-808B-1FD4CCD94219}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5D59A401-18CB-4DE9-B1B1-52B21031B876}

@@ -1,0 +1,135 @@
+﻿@inject IStudentEndpoint _student
+@inject ToastService toastService
+
+@if (ShowDialog)
+{
+    <div class="modal show d-block" tabindex="-1" role="dialog">
+
+        <div class="modal-dialog modal-dialog-centered fade-in-and-grow" role="document">
+            <EditForm Model="@FormSession" OnValidSubmit="@SaveForm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@Title</h5>
+                        <button type="button" class="close btn" @onclick="Hide">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="Student">Student</label>
+                                <CustomSelect TValue="StudentModel" @bind-Value="@FormSession.Student" Items="availableStudents" />
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="Date">Date</label>
+                                <InputDate type="date" min="2021-01-01" class="form-control" @bind-Value="@FormSession.Date" />
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="StartTime">Start Time</label>
+                                @*<InputText type="time" class="form-control" @bind-Value="@FormSession.StartTime" />*@
+                                <TimeInput @bind-Time="@FormSession.StartTime" />
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="EndTime">End Time</label>
+                                @*<InputText type="time" class="form-control" @bind-Value="@FormSession.EndTime" />*@
+                                <TimeInput @bind-Time="@FormSession.EndTime" />
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="Provider">Provider</label>
+                                <CustomSelect TValue="ProviderModel" @bind-Value="@FormSession.Provider" Items="providers"/>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="BillingStatus">Billing Status</label>
+                                <CustomSelect  TValue="BillingStatusModel" @bind-Value="@FormSession.BillingStatus" Items="billingStatus"/>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-12">
+                                <label for="Notes">Notes</label>
+                                <textarea rows="2" type="text" class="form-control" @bind="@FormSession.Notes"></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="Hide">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
+
+
+            </EditForm>
+        </div>
+    </div>
+}
+@code {
+    private bool ShowDialog { get; set; }
+
+    [Parameter]
+    public ManageSessionModel FormSession { get; set; }
+
+    [Parameter]
+    public EventCallback SaveForm { get; set; }
+
+    [Parameter]
+    public string Title { get; set; }
+
+
+    private List<SessionApiModel> sessions = new();
+    private List<StudentModel> availableStudents { get; set; }
+
+
+    private List<ProviderModel> providers { get; set; }
+    private List<BillingStatusModel> billingStatus { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        try
+        {
+            availableStudents = await _student.GetAll();
+        }
+        catch (HttpRequestException e)
+        {
+            Console.WriteLine(e.Message);
+        }
+        catch (Exception e)
+		{
+            toastService.ShowToast($"Unhandled exeption. {e.Message}", ToastLevel.Error);
+		}
+
+        providers = new()
+        {
+            new ProviderModel() { Id = 1, Name = "Encore" },
+            new ProviderModel() { Id = 2, Name = "Legadel" }
+        };
+
+        billingStatus = new()
+        {
+            new() { Id = 1, BillingStatus = "Open"},
+            new() { Id = 2, BillingStatus = "Invoiced"},
+            new() { Id = 3, BillingStatus = "Paid"}
+        };
+    }
+
+    public void Show()
+    {
+        ShowDialog = true;
+    }
+
+    public void Hide()
+    {
+        ShowDialog = false;
+    }
+
+    private void ToggleModal()
+    {
+        ShowDialog = !ShowDialog;
+    }
+}

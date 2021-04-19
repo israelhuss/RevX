@@ -1,0 +1,327 @@
+﻿@page "/sessions"
+@inject ISessionEndpoint _sessionEndpoint
+@inject NavigationManager NavManager
+@inject ToastService toastService
+
+<style>
+    .table-container {
+        border: solid 1px #626263;
+        border-radius: 4.5px;
+        text-align: center;
+        margin: 1rem;
+        height: 75vh;
+        overflow: hidden;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+    th {
+        font-size: 1.3rem;
+    }
+
+    .d-flex {
+        align-items: baseline;
+    }
+
+    .icon {
+        font-size: 1rem;
+        padding-top: 2px;
+        padding-bottom: 2px;
+    }
+
+    .custom-select:focus {
+        box-shadow: none;
+    }
+
+    .valid.modified:not([type=checkbox]) {
+        outline: none;
+        border: solid 1px #26b050;
+    }
+
+    .modal {
+        background-color: rgb(0 0 0 / 0.70)
+    }
+
+    .fade-in-and-grow {
+        animation: fade-in-and-grow;
+        animation-duration: .6s;
+    }
+
+    .form-group > label {
+        margin-bottom: 0;
+    }
+
+    td > .btn,
+    th > .btn{
+        line-height: 1;
+        padding: 0rem 0.2rem;
+        margin-right: 2.5px;
+        margin-left: 2.5px;
+    }
+
+        td > .btn:focus,
+        th > .btn:focus{
+            box-shadow: none;
+        }
+
+        .overflow-auto::-webkit-scrollbar {
+            width: 5px;
+        }
+
+    .overflow-auto::-webkit-scrollbar-track {
+        border-top-right-radius: 3.5px;
+        border-bottom-right-radius: 3.5px;
+        background: rgb(241 241 241 / 0.00);
+    }
+
+    .overflow-auto::-webkit-scrollbar-thumb {
+        border-radius: 3.5px;
+        background: #888;
+    }
+
+        .overflow-auto::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+</style>
+<AuthorizeView>
+    <Authorized>
+        <div class="d-flex justify-content-between mt-4">
+            <h3>Sessions</h3>
+            <button class="btn btn-primary" @onclick="AddSession">Add Session</button>
+        </div>
+
+        <div class="table-container overflow-auto">
+            <table class="table table-bordered table-striped" style="margin-top: -1px">
+                <thead style="position: sticky; top: 0;">
+                    <tr>
+                        @if (sessions is not null && sessions.Count > 0)
+                        {
+                            <th colspan="2">
+                                <button class="btn" @onclick="InvoiceClicked">
+                                    <i class="fas fa-file-invoice-dollar"  style="font-size: 2.1rem"></i>
+                                </button>
+                            </th>
+                        }
+                        <th>Student</th>
+                        <th>Date</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Provider</th>
+                        <th>Billing Status</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+
+                @if (sessions is not null && sessions.Count > 0)
+                {
+                    <tbody>
+                        @foreach (var session in sessions)
+                        {
+                            <tr>
+                                <td style="padding-right: .25rem; padding-left: .25rem;">
+                                    <button type="button" class="btn btn-outline" @onclick="(() => ConfirmDelete(session))"><i class="far fa-trash-alt icon"></i></button>
+                                    </td>
+                                <td style="padding-right: .25rem; padding-left: .25rem;">
+                                    <button type="button" class="btn btn-outline" @onclick="(() => EditSession(session))"><i class="fas fa-pencil-alt icon"></i></button>
+                                </td>
+                                <td>@session.Student.DisplayName</td>
+                                <td>@session.Date.ToShortDateString()</td>
+                                <td>@ConvertTimeSpanToString(session.StartTime)</td>
+                                <td>@ConvertTimeSpanToString(session.EndTime)</td>
+                                <td>@session.Provider.Name</td>
+                                <td>@session.BillingStatus.BillingStatus</td>
+                                <td>@session.Notes</td>
+                            </tr>
+                        }
+                    </tbody>
+                }
+            </table>
+
+            @* Main Row while loading the sessions *@
+            @if (sessions is null)
+            {
+                <div class="empty-table-cell grid-cell" style="position: relative; height: 85%">
+                    <LoadingIndicator />
+                </div>
+            }
+
+            @* Main Row if sessions is empty *@
+            @if (sessions is not null && sessions.Count == 0)
+            {
+                <div class="empty-table-cell grid-cell" style="margin-top: 10rem">
+                    <h4>You don't have any open sessions now.<br />Please <button class="btn" style="font-size: inherit; padding: 0; vertical-align: baseline;" @onclick="AddSession">click here</button> to enter a session</h4>
+                </div>
+            }
+        </div>
+
+        <ManageSessionDialog @ref="ManageDialogRef" FormSession="ManageSession" SaveForm="SaveForm" Title="@formTitle" />
+        <ConfirmationDialog @ref="DeleteConfirmation" IdToDelete="ManageSession.Id" ConfirmationChanged="OnConfirmClicked" />
+        <InvoicingDialog @ref="InvoicingRef" InvoicingItems="sessions" InvoicingItemsChanged="RefreshSessionsList"/>
+
+    </Authorized>
+    <NotAuthorized>
+        <div style="position: relative; height: calc(100vh - 3.5rem)">
+            <h3 style="text-align: center; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: max-content;">You need to be logged in to view sessions.</h3>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+
+@code {
+    // Dialog references
+    private ManageSessionDialog ManageDialogRef { get; set; }
+    private InvoicingDialog InvoicingRef { get; set; }
+    protected ConfirmationDialog DeleteConfirmation { get; set; }
+
+    public ManageSessionModel ManageSession { get; set; } = new();
+
+    public string formTitle { get; set; }
+
+    private string formState { get; set; } = string.Empty;
+
+    private List<ManageSessionModel> sessions { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await RefreshSessionsList();
+    }
+
+    private async Task RefreshSessionsList()
+    {
+        try
+        {
+            //TODO - getting only open sessions manually - change to dynamic...
+            var allSessions = await _sessionEndpoint.GetAll();
+
+            sessions = (from s in allSessions
+                        where s.BillingStatus.Id == 1
+                        select s).ToList();
+            StateHasChanged();
+        }
+        catch (HttpRequestException e)
+        {
+            toastService.ShowToast("The API seems to be offline.", ToastLevel.Error);
+            Console.WriteLine(e.Message);
+        }
+        catch (Exception)
+        {
+            NavManager.NavigateTo("/login");
+        }
+    }
+
+    private async void SaveForm()
+    {
+        ManageDialogRef.Hide();
+
+        if (formState == "add")
+        {
+            await _sessionEndpoint.SaveSession(ManageSession);
+            await RefreshSessionsList();
+        }
+        else if (formState == "edit")
+        {
+            await _sessionEndpoint.EditSession(ManageSession);
+            await RefreshSessionsList();
+        }
+        toastService.ShowToast("Changes saved successfully.", ToastLevel.Success);
+        StateHasChanged();
+
+        ManageSession = new();
+    }
+
+    private void AddSession()
+    {
+        formState = "add";
+        ManageSession = new();
+        formTitle = "Add A Session";
+        ManageDialogRef.Show();
+    }
+
+    private void EditSession(ManageSessionModel session)
+    {
+        formState = "edit";
+        ManageSession = session;
+        formTitle = "Edit A Session";
+        ManageDialogRef.Show();
+    }
+
+    private void ConfirmDelete(ManageSessionModel session)
+    {
+        ManageSession = session;
+        DeleteConfirmation.Show();
+    }
+
+    private async Task OnConfirmClicked(bool isConfirmed)
+    {
+        if (isConfirmed)
+        {
+            try
+            {
+                await _sessionEndpoint.DeleteSession(DeleteConfirmation.IdToDelete);
+                toastService.ShowToast("Session was successfully deleted.", ToastLevel.Success);
+                await RefreshSessionsList();
+
+
+                StateHasChanged();
+            }
+            catch (Exception)
+            {
+                toastService.ShowToast("Sorry. We are having some trouble deleting the session :(", ToastLevel.Error);
+            }
+        }
+        else
+        {
+            Console.WriteLine("Not Confirmed");
+            Console.WriteLine(DeleteConfirmation.IdToDelete);
+        }
+    }
+
+    private void InvoiceClicked()
+    {
+        InvoicingRef.Show();
+    }
+
+    private TimeSpan ConvertToTimeSpan(string timeString)
+    {
+        var split = timeString.Split(':');
+        if (int.TryParse(split[0], out int hours) && int.TryParse(split[1], out int minutes))
+        {
+            var output = new TimeSpan(hours, minutes, 00);
+            return output;
+        }
+        else
+        {
+            throw new FormatException();
+        }
+    }
+
+
+    // TODO - move this kind of helpers to central place in app
+    private string ConvertTimeSpanToString(TimeSpan time)
+    {
+        string output = String.Empty;
+
+        int hours = time.Hours;
+        int minutes = time.Minutes;
+        if (hours == 0)
+        {
+            output = $"12:{minutes.ToString("D2")} AM";
+        }
+        else if (hours <= 12)
+        {
+            output = $"{hours.ToString()}:{minutes.ToString("D2")} AM";
+        }
+        else if (hours > 12)
+        {
+            output = $"{(hours - 12).ToString()}:{minutes.ToString("D2")} PM";
+        }
+        return output;
+    }
+}
