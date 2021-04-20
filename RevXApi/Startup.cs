@@ -42,10 +42,13 @@ namespace RevXApi
 				options.UseSqlServer(
 					Configuration.GetConnectionString("RevXApiAuthDb")));
 			services.AddDatabaseDeveloperPageExceptionFilter();
+			
 
 			services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
 				.AddEntityFrameworkStores<ApplicationDbContext>();
 			services.AddControllersWithViews();
+
+			
 
 			//Personal Services
 			services.AddTransient<ISqlDataAccess, SqlDataAccess>();
@@ -120,6 +123,13 @@ namespace RevXApi
 				// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
 				app.UseHsts();
 			}
+
+			//// Make sure database is created
+			//using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
+			//{
+			//	scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.EnsureCreated();
+			//}
+
 			app.UseHttpsRedirection();
 			app.UseCors("OpenCorsPolicy");
 			app.UseStaticFiles();
