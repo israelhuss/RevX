@@ -1,15 +1,10 @@
 ﻿using FluentEmail.Core;
 using FluentEmail.Core.Models;
-using FluentEmail.Smtp;
 using Microsoft.Extensions.Configuration;
 using RevXApi.Library.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net.Mail;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace RevXApi.Library.Services
@@ -35,7 +30,7 @@ namespace RevXApi.Library.Services
 			var email = await _fluentEmail
 				.To(_config["EmailConfig:IsraelEmailAddress"], "Israel Huss")
 				.Subject("Hi from the RevX Team")
-				.UsingTemplateFromFile($"{Directory.GetCurrentDirectory()}/../RevXApi.Library/EmailTemplates/InvoiceTemplate.cshtml", new { Name = "Israel", InvoiceSessions = sessions, TotalHours = 79, InvoicePeriod = "Hello" }, true)
+				.UsingTemplateFromFile($"{Directory.GetCurrentDirectory()}/EmailTemplates/InvoiceTemplate.cshtml", new { Name = "Israel", InvoiceSessions = sessions, TotalHours = 79, InvoicePeriod = "Hello" }, true)
 				//.Body("This is a email confirming that if the body is different.")
 				//.UsingTemplate("Hi @Model.Name, greetings from a template.", new { Name = "Israel" })
 				//.UsingTemplateFromEmbedded("RevXApi.Library.InvoiceTemplate.cshtml", new { Name = "Israel", Sessions = sessions }, Assembly.Load("RevXApi.Library"))
@@ -45,10 +40,14 @@ namespace RevXApi.Library.Services
 		public async Task<SendResponse> SendInvoiceEmail(string emailAddress, InvoiceEmailModel emailModel)
 		{
 			var email = await _fluentEmail
-				.To(emailAddress)
-				.Subject($"Faigy Huss {emailModel.InvoicePeriod} Hours")
-				.UsingTemplateFromFile($"{Directory.GetCurrentDirectory()}/../RevXApi.Library/EmailTemplates/InvoiceTemplate.cshtml", emailModel, true)
-				.SendAsync();
+					.To(emailAddress)
+					.Subject($"Faigy Huss {emailModel.InvoicePeriod} Hours")
+					.UsingTemplateFromFile($"{Directory.GetCurrentDirectory()}/EmailTemplates/InvoiceTemplate.cshtml", emailModel, true)
+					.SendAsync();
+			if (email.ErrorMessages.Count > 1)
+			{
+				Console.WriteLine(email.ErrorMessages);
+			}
 			return email;
 		}
 	}

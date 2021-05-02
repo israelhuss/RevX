@@ -38,6 +38,7 @@ namespace RevXApi.Controllers
 
 		private async Task<bool> IsValidUsernameAndPassword(string username, string password)
 		{
+			Console.WriteLine(await _userManager.FindByEmailAsync(username));
 			IdentityUser user = await _userManager.FindByEmailAsync(username);
 			return await _userManager.CheckPasswordAsync(user, password);
 		}

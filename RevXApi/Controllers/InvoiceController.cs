@@ -1,14 +1,8 @@
-﻿using FluentEmail.Core;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using RevXApi.Library.DataAccess;
 using RevXApi.Library.Models;
 using RevXApi.Library.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 
 namespace RevXApi.Controllers
 {
@@ -18,11 +12,13 @@ namespace RevXApi.Controllers
 	{
 		private readonly IEmailService _emailService;
 		private readonly IInvoiceData _invoiceData;
+		private readonly IConfiguration _config;
 
-		public InvoiceController(IEmailService emailService, IInvoiceData invoiceData)
+		public InvoiceController(IEmailService emailService, IInvoiceData invoiceData, IConfiguration config)
 		{
 			_emailService = emailService;
 			_invoiceData = invoiceData;
+			_config = config;
 		}
 
 		[HttpPost]
@@ -37,8 +33,20 @@ namespace RevXApi.Controllers
 		{
 			InvoiceEmailModel emailModel = _invoiceData.PrepareEmailModel(invoice);
 			_invoiceData.SaveInvoice(invoice);
-			_emailService.SendInvoiceEmail("israelmhuss@gmail.com", emailModel);
-			return Ok();
+			var status = _emailService.SendInvoiceEmail(_config["EmailConfig:SecretaryEmail"], emailModel);
+			if (status.Exception is null)
+			{
+				return Ok();
+			}
+			else if (status.Exception is not null)
+			{
+				System.Console.WriteLine(status.Exception);
+				return StatusCode(500);
+			}
+			else
+			{
+				return StatusCode(500);
+			}
 		}
 	}
 }

@@ -42,13 +42,13 @@ namespace RevXApi
 				options.UseSqlServer(
 					Configuration.GetConnectionString("RevXApiAuthDb")));
 			services.AddDatabaseDeveloperPageExceptionFilter();
-			
+
 
 			services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
 				.AddEntityFrameworkStores<ApplicationDbContext>();
 			services.AddControllersWithViews();
 
-			
+
 
 			//Personal Services
 			services.AddTransient<ISqlDataAccess, SqlDataAccess>();
