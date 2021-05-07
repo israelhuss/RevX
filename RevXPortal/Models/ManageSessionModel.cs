@@ -1,12 +1,6 @@
-﻿using RevXPortal.Converters;
-using RevXPortal.FormValidationAttributes;
+﻿using RevXPortal.FormValidationAttributes;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace RevXPortal.Models
 {
@@ -14,6 +8,7 @@ namespace RevXPortal.Models
 	[Duration(12)]
 	public class ManageSessionModel
 	{
+
 		public int Id { get; set; }
 		[Required]
 		public StudentModel Student { get; set; }
@@ -28,7 +23,7 @@ namespace RevXPortal.Models
 		public ProviderModel Provider { get; set; }
 		[Required]
 		public BillingStatusModel BillingStatus { get; set; }
-		
+
 		public string Notes { get; set; }
 	}
 }

@@ -1,4 +1,6 @@
 ﻿@inject IStudentEndpoint _student
+@inject IProviderEndpoint _provider
+@inject IBillingStatusEndpoint _billingStatus
 @inject ToastService toastService
 
 @if (ShowDialog)
@@ -42,11 +44,11 @@
                         <div class="form-row">
                             <div class="form-group col-md-6">
                                 <label for="Provider">Provider</label>
-                                <CustomSelect TValue="ProviderModel" @bind-Value="@FormSession.Provider" Items="providers"/>
+                                <CustomSelect TValue="ProviderModel" @bind-Value="@FormSession.Provider" Items="providers" />
                             </div>
                             <div class="form-group col-md-6">
                                 <label for="BillingStatus">Billing Status</label>
-                                <CustomSelect  TValue="BillingStatusModel" @bind-Value="@FormSession.BillingStatus" Items="billingStatus"/>
+                                <CustomSelect TValue="BillingStatusModel" @bind-Value="@FormSession.BillingStatus" Items="billingStatus" />
                             </div>
                         </div>
                         <div class="form-row">
@@ -94,28 +96,17 @@
         try
         {
             availableStudents = await _student.GetAll();
+            providers = await _provider.GetAll();
+            billingStatus = await _billingStatus.GetAll();
         }
         catch (HttpRequestException e)
         {
             Console.WriteLine(e.Message);
         }
         catch (Exception e)
-		{
+        {
             toastService.ShowToast($"Unhandled exeption. {e.Message}", ToastLevel.Error);
-		}
-
-        providers = new()
-        {
-            new ProviderModel() { Id = 1, Name = "Encore" },
-            new ProviderModel() { Id = 2, Name = "Legadel" }
-        };
-
-        billingStatus = new()
-        {
-            new() { Id = 1, BillingStatus = "Open"},
-            new() { Id = 2, BillingStatus = "Invoiced"},
-            new() { Id = 3, BillingStatus = "Paid"}
-        };
+        }
     }
 
     public void Show()

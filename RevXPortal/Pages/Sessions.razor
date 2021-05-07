@@ -17,9 +17,9 @@
         margin-bottom: 0;
     }
 
-    .table td {
-        vertical-align: middle;
-    }
+        .table td {
+            vertical-align: middle;
+        }
 
     th {
         font-size: 1.3rem;
@@ -58,7 +58,7 @@
     }
 
     td > .btn,
-    th > .btn{
+    th > .btn {
         line-height: 1;
         padding: 0rem 0.2rem;
         margin-right: 2.5px;
@@ -66,13 +66,13 @@
     }
 
         td > .btn:focus,
-        th > .btn:focus{
+        th > .btn:focus {
             box-shadow: none;
         }
 
-        .overflow-auto::-webkit-scrollbar {
-            width: 5px;
-        }
+    .overflow-auto::-webkit-scrollbar {
+        width: 5px;
+    }
 
     .overflow-auto::-webkit-scrollbar-track {
         border-top-right-radius: 3.5px;
@@ -104,7 +104,7 @@
                         {
                             <th colspan="2">
                                 <button class="btn" @onclick="InvoiceClicked">
-                                    <i class="fas fa-file-invoice-dollar"  style="font-size: 2.1rem"></i>
+                                    <i class="fas fa-file-invoice-dollar" style="font-size: 2.1rem"></i>
                                 </button>
                             </th>
                         }
@@ -126,7 +126,7 @@
                             <tr>
                                 <td style="padding-right: .25rem; padding-left: .25rem;">
                                     <button type="button" class="btn btn-outline" @onclick="(() => ConfirmDelete(session))"><i class="far fa-trash-alt icon"></i></button>
-                                    </td>
+                                </td>
                                 <td style="padding-right: .25rem; padding-left: .25rem;">
                                     <button type="button" class="btn btn-outline" @onclick="(() => EditSession(session))"><i class="fas fa-pencil-alt icon"></i></button>
                                 </td>
@@ -162,7 +162,7 @@
 
         <ManageSessionDialog @ref="ManageDialogRef" FormSession="ManageSession" SaveForm="SaveForm" Title="@formTitle" />
         <ConfirmationDialog @ref="DeleteConfirmation" IdToDelete="ManageSession.Id" ConfirmationChanged="OnConfirmClicked" />
-        <InvoicingDialog @ref="InvoicingRef" InvoicingItems="sessions" InvoicingItemsChanged="RefreshSessionsList"/>
+        <InvoicingDialog @ref="InvoicingRef" InvoicingItems="sessions" InvoicingItemsChanged="RefreshSessionsList" />
 
     </Authorized>
     <NotAuthorized>
@@ -240,6 +240,10 @@
     {
         formState = "add";
         ManageSession = new();
+
+        //Make sure the database id match ---- BAD PRACTICE!!!
+        ManageSession.Provider = new ProviderModel() { Id = 1, Name = "Legadel" };
+        ManageSession.BillingStatus = new BillingStatusModel() { Id = 1, BillingStatus = "Open" };
         formTitle = "Add A Session";
         ManageDialogRef.Show();
     }

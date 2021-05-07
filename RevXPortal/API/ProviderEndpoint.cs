@@ -6,22 +6,22 @@ using System.Threading.Tasks;
 
 namespace RevXPortal.API
 {
-	public class StudentEndpoint : IStudentEndpoint
+	public class ProviderEndpoint : IProviderEndpoint
 	{
 		private readonly HttpClient _client;
 
-		public StudentEndpoint(HttpClient client)
+		public ProviderEndpoint(HttpClient client)
 		{
 			_client = client;
 		}
 
-		public async Task<List<StudentModel>> GetAll()
+		public async Task<List<ProviderModel>> GetAll()
 		{
-			using (HttpResponseMessage response = await _client.GetAsync("/api/Student"))
+			using (HttpResponseMessage response = await _client.GetAsync("/api/Provider"))
 			{
 				if (response.IsSuccessStatusCode)
 				{
-					var result = await response.Content.ReadAsAsync<List<StudentModel>>();
+					var result = await response.Content.ReadAsAsync<List<ProviderModel>>();
 					return result;
 				}
 				else
@@ -31,9 +31,9 @@ namespace RevXPortal.API
 			}
 		}
 
-		public async Task AddStudent(StudentModel model)
+		public async Task AddProvider(ProviderModel model)
 		{
-			using (HttpResponseMessage response = await _client.PostAsJsonAsync("/api/Student", model))
+			using (HttpResponseMessage response = await _client.PostAsJsonAsync("/api/Provider", model))
 			{
 				if (response.IsSuccessStatusCode)
 				{
