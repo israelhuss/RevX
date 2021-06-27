@@ -1,0 +1,23 @@
+﻿@page "/reports"
+@inject IReportEndpoint _reportEndpoint
+
+
+<h3>Reports</h3>
+
+<StackedBarChart RowCount="6" Data="MonthlyIncome" />
+
+@code {
+
+    public List<IncomeReportModel> MonthlyIncome { get; set; }
+
+    public List<int> Values { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        MonthlyIncome = await _reportEndpoint.GetMonthlyIncome(DateTime.Parse("2020-09-01"));
+        foreach (var item in MonthlyIncome)
+        {
+            item.Date = DateTime.Parse(item.Title).ToString("MMMM");
+        }
+    }
+}

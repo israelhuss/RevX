@@ -1,7 +1,7 @@
-﻿using RevXPortal.Models;
+﻿using RevXPortal.Converters;
+using RevXPortal.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -31,8 +31,8 @@ namespace RevXPortal.API
 							Id = result.Id,
 							Student = result.Student,
 							Date = result.Date,
-							StartTime = ConvertToTimeSpan(result.StartTime),
-							EndTime = ConvertToTimeSpan(result.EndTime),
+							StartTime = TimeConverters.Convert24HourStringToTimeSpan(result.StartTime),
+							EndTime = TimeConverters.Convert24HourStringToTimeSpan(result.EndTime),
 							Provider = result.Provider,
 							BillingStatus = result.BillingStatus,
 							Notes = result.Notes
@@ -103,15 +103,6 @@ namespace RevXPortal.API
 					throw new Exception(response.ReasonPhrase);
 				}
 			}
-		}
-
-		private TimeSpan ConvertToTimeSpan(string timeString)
-		{
-			var split = timeString.Split(':');
-			int.TryParse(split[0], out int hours);
-			int.TryParse(split[1], out int minutes);
-			var output = new TimeSpan(hours, minutes, 00);
-			return output;
 		}
 	}
 }

@@ -1,0 +1,7 @@
+﻿CREATE TABLE [dbo].[HourlyRate]
+(
+	[Id] INT NOT NULL PRIMARY KEY IDENTITY, 
+	[StartDate] DATETIME2 NOT NULL, 
+	[EndDate] DATETIME2 NOT NULL, 
+	[Rate] INT NOT NULL
+)

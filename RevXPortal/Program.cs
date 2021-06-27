@@ -34,6 +34,7 @@ namespace RevXPortal
 			builder.Services.AddTransient<IInvoiceEndpoint, InvoiceEndpoint>();
 			builder.Services.AddTransient<IProviderEndpoint, ProviderEndpoint>();
 			builder.Services.AddTransient<IBillingStatusEndpoint, BillingStatusEndpoint>();
+			builder.Services.AddTransient<IReportEndpoint, ReportEndpoint>();
 
 			await builder.Build().RunAsync();
 		}

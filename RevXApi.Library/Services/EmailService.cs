@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using RevXApi.Library.Models;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace RevXApi.Library.Services
@@ -13,11 +12,13 @@ namespace RevXApi.Library.Services
 	{
 		private readonly IFluentEmail _fluentEmail;
 		private readonly IConfiguration _config;
+		private readonly string _templateLocation;
 
 		public EmailService(IFluentEmail fluentEmail, IConfiguration config)
 		{
 			_fluentEmail = fluentEmail;
 			_config = config;
+			_templateLocation = _config["EmailConfig:TemplateLocation"];
 		}
 		public async Task SendEmail()
 		{
@@ -30,7 +31,7 @@ namespace RevXApi.Library.Services
 			var email = await _fluentEmail
 				.To(_config["EmailConfig:IsraelEmailAddress"], "Israel Huss")
 				.Subject("Hi from the RevX Team")
-				.UsingTemplateFromFile($"{Directory.GetCurrentDirectory()}/EmailTemplates/InvoiceTemplate.cshtml", new { Name = "Israel", InvoiceSessions = sessions, TotalHours = 79, InvoicePeriod = "Hello" }, true)
+				.UsingTemplateFromFile(_templateLocation, new { Name = "Israel", InvoiceSessions = sessions, TotalHours = 79, InvoicePeriod = "Hello" }, true)
 				//.Body("This is a email confirming that if the body is different.")
 				//.UsingTemplate("Hi @Model.Name, greetings from a template.", new { Name = "Israel" })
 				//.UsingTemplateFromEmbedded("RevXApi.Library.InvoiceTemplate.cshtml", new { Name = "Israel", Sessions = sessions }, Assembly.Load("RevXApi.Library"))
@@ -42,7 +43,7 @@ namespace RevXApi.Library.Services
 			var email = await _fluentEmail
 					.To(emailAddress)
 					.Subject($"Faigy Huss {emailModel.InvoicePeriod} Hours")
-					.UsingTemplateFromFile($"{Directory.GetCurrentDirectory()}/EmailTemplates/InvoiceTemplate.cshtml", emailModel, true)
+					.UsingTemplateFromFile(_templateLocation, emailModel, true)
 					.SendAsync();
 			if (email.ErrorMessages.Count > 1)
 			{

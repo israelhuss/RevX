@@ -7,7 +7,6 @@ using System.Timers;
 
 namespace RevXPortal.Services
 {
-
     public class ToastService : IDisposable
     {
         public event Action<string, ToastLevel> OnShow;

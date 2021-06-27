@@ -132,8 +132,8 @@
                                 </td>
                                 <td>@session.Student.DisplayName</td>
                                 <td>@session.Date.ToShortDateString()</td>
-                                <td>@ConvertTimeSpanToString(session.StartTime)</td>
-                                <td>@ConvertTimeSpanToString(session.EndTime)</td>
+                                <td>@TimeConverters.ConvertTimeSpanTo12HourString(session.StartTime)</td>
+                                <td>@TimeConverters.ConvertTimeSpanTo12HourString(session.EndTime)</td>
                                 <td>@session.Provider.Name</td>
                                 <td>@session.BillingStatus.BillingStatus</td>
                                 <td>@session.Notes</td>
@@ -203,6 +203,7 @@
             sessions = (from s in allSessions
                         where s.BillingStatus.Id == 1
                         select s).ToList();
+
             StateHasChanged();
         }
         catch (HttpRequestException e)
@@ -215,7 +216,6 @@
             NavManager.NavigateTo("/login");
         }
     }
-
     private async void SaveForm()
     {
         ManageDialogRef.Hide();
@@ -241,7 +241,7 @@
         formState = "add";
         ManageSession = new();
 
-        //Make sure the database id match ---- BAD PRACTICE!!!
+        // Make sure the database id match ---- BAD PRACTICE!!!
         ManageSession.Provider = new ProviderModel() { Id = 1, Name = "Legadel" };
         ManageSession.BillingStatus = new BillingStatusModel() { Id = 1, BillingStatus = "Open" };
         formTitle = "Add A Session";
@@ -290,42 +290,5 @@
     private void InvoiceClicked()
     {
         InvoicingRef.Show();
-    }
-
-    private TimeSpan ConvertToTimeSpan(string timeString)
-    {
-        var split = timeString.Split(':');
-        if (int.TryParse(split[0], out int hours) && int.TryParse(split[1], out int minutes))
-        {
-            var output = new TimeSpan(hours, minutes, 00);
-            return output;
-        }
-        else
-        {
-            throw new FormatException();
-        }
-    }
-
-
-    // TODO - move this kind of helpers to central place in app
-    private string ConvertTimeSpanToString(TimeSpan time)
-    {
-        string output = String.Empty;
-
-        int hours = time.Hours;
-        int minutes = time.Minutes;
-        if (hours == 0)
-        {
-            output = $"12:{minutes.ToString("D2")} AM";
-        }
-        else if (hours <= 12)
-        {
-            output = $"{hours.ToString()}:{minutes.ToString("D2")} AM";
-        }
-        else if (hours > 12)
-        {
-            output = $"{(hours - 12).ToString()}:{minutes.ToString("D2")} PM";
-        }
-        return output;
     }
 }
