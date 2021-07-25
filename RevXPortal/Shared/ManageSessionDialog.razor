@@ -92,7 +92,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-
         try
         {
             availableStudents = await _student.GetAll();
@@ -105,7 +104,10 @@
         }
         catch (Exception e)
         {
-            toastService.ShowToast($"Unhandled exeption. {e.Message}", ToastLevel.Error);
+            if (e.Message != "Unauthorized")
+            {
+                toastService.ShowToast($"Unhandled exeption. {e.Message}", ToastLevel.Error);
+            }
         }
     }
 

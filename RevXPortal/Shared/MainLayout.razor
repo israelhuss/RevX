@@ -31,7 +31,7 @@
 @code {
     private void OnLogin()
     {
-        NavManager.NavigateTo("/login");
+        NavManager.NavigateTo($"/login?url={NavManager.Uri.Replace(NavManager.BaseUri, "")}");
     }
 
     private void OnLogout()

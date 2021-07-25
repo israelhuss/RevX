@@ -11,6 +11,7 @@
 
     .container {
         width: var(--container-width);
+        -webkit-print-color-adjust: exact;
     }
 
     .card-header {
@@ -187,30 +188,30 @@
                         {
                             <div class="bar-group">
                                 <div class="bar bar-1">
-                                    <Tooltip Text="@($"{item.BarOnePrimary} Hours\n{((item.BarOnePrimary) * 32).ToString("C") }")">
-                                        <div class="stack-1" style="height: @(((item.BarOnePrimary * 32) * 25) / MaxValue + "rem"); background-color: #1365fc; border-top-left-radius: @(item.BarOneSecondary > 0 ? "0" : "5px"); border-top-right-radius: @(item.BarOneSecondary > 0 ? "0" : "5px"); ">
+                                    <Tooltip Text="@($"{item.BarOnePrimary} Hours\n{((item.BarOnePrimary) * HourlyRate).ToString("C") }")">
+                                        <div class="stack-1" style="height: @(((item.BarOnePrimary * HourlyRate) * 25) / MaxValue + "rem"); background-color: #1365fc; border-top-left-radius: @(item.BarOneSecondary > 0 ? "0" : "5px"); border-top-right-radius: @(item.BarOneSecondary > 0 ? "0" : "5px"); ">
                                             <p style="color: white; display: inline;"></p>
                                         </div>
                                     </Tooltip>
-                                    <Tooltip Text="@($"{item.BarOneSecondary} Hours\n{((item.BarOneSecondary) * 32).ToString("C") }")">
-                                        <div class="stack-2" style="height: @(((item.BarOneSecondary * 32) * 25) / MaxValue + "rem"); background-color: #6299ff;">
+                                    <Tooltip Text="@($"{item.BarOneSecondary} Hours\n{((item.BarOneSecondary) * HourlyRate).ToString("C") }")">
+                                        <div class="stack-2" style="height: @(((item.BarOneSecondary * HourlyRate) * 25) / MaxValue + "rem"); background-color: #1365fc; background-image: linear-gradient(rgb(255 255 255 / 0.35), rgb(255 255 255 / 0.35));">
                                             <p style="color: white; display: inline;"></p>
                                         </div>
                                     </Tooltip>
-                                    <div>$@((item.BarOnePrimary * 32) + (item.BarOneSecondary * 32))</div>
+                                    <div>$@((item.BarOnePrimary * HourlyRate) + (item.BarOneSecondary * HourlyRate))</div>
                                 </div>
                                 <div class="bar bar-2">
-                                    <Tooltip Text="@($"{item.BarTwoPrimary} Hours\n{(item.BarTwoPrimary * 32).ToString("C") }")">
-                                        <div class=" stack-1" style="height: @(((item.BarTwoPrimary * 32) * 25) / MaxValue + "rem"); background-color: #298a00; border-top-left-radius: @(item.BarTwoSecondary > 0 ? "0" : "5px"); border-top-right-radius: @(item.BarTwoSecondary > 0 ? "0" : "5px"); ">
+                                    <Tooltip Text="@($"{item.BarTwoPrimary} Hours\n{(item.BarTwoPrimary * HourlyRate).ToString("C") }")">
+                                        <div class=" stack-1" style="height: @(((item.BarTwoPrimary *@HourlyRate) * 25) / MaxValue + "rem"); background-color: #298a00; border-top-left-radius: @(item.BarTwoSecondary > 0 ? "0" : "5px"); border-top-right-radius: @(item.BarTwoSecondary > 0 ? "0" : "5px"); ">
                                             <p style="color: white; display: inline;"></p>
                                         </div>
                                     </Tooltip>
-                                    <Tooltip Text="@($"{item.BarTwoSecondary} Hours\n{((item.BarTwoSecondary) * 32).ToString("C") }")">
-                                        <div class="stack-2" style="height: @(((item.BarTwoSecondary * 32)  * 25) / MaxValue + "rem"); background-color: #4dac25;">
+                                    <Tooltip Text="@($"{item.BarTwoSecondary} Hours\n{((item.BarTwoSecondary) * HourlyRate).ToString("C") }")">
+                                        <div class="stack-2" style="height: @(((item.BarTwoSecondary * HourlyRate)  * 25) / MaxValue + "rem"); background-color: #298a00; background-image: linear-gradient(rgb(255 255 255 / 0.35), rgb(255 255 255 / 0.35));">
                                             <p style="color: white; display: inline;"></p>
                                         </div>
                                     </Tooltip>
-                                    <div>$@((item.BarTwoPrimary * 32) + (item.BarTwoSecondary * 32))</div>
+                                    <div>$@((item.BarTwoPrimary * HourlyRate) + (item.BarTwoSecondary * HourlyRate))</div>
 
                                 </div>
                             </div>
@@ -246,12 +247,13 @@
 
     public double BarTwoTotals { get; set; }
 
+    public double HourlyRate { get; set; } = 32;
+
     [Parameter]
     public IEnumerable<IStackedBarData> Data { get; set; }
 
     [Parameter]
     public List<string> Titles { get; set; }
-
 
     private List<double> Values { get; set; } = new();
     private double MaxValue { get; set; }
@@ -265,8 +267,8 @@
             DataLength = Data.Count();
             foreach (var item in Data)
             {
-                double barOne = ((item.BarOnePrimary) * 32) + ((item.BarOneSecondary) * 32);
-                double barTwo = ((item.BarTwoPrimary) * 32) + ((item.BarTwoSecondary) * 32);
+                double barOne = ((item.BarOnePrimary) * HourlyRate) + ((item.BarOneSecondary) * HourlyRate);
+                double barTwo = ((item.BarTwoPrimary) * HourlyRate) + ((item.BarTwoSecondary) * HourlyRate);
                 Values.Add(barOne);
                 Values.Add(barTwo);
                 BarOneTotals += barOne;

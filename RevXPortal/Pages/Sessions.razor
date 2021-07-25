@@ -211,9 +211,12 @@
             toastService.ShowToast("The API seems to be offline.", ToastLevel.Error);
             Console.WriteLine(e.Message);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            NavManager.NavigateTo("/login");
+            if (e.Message == "Unauthorized")
+            {
+                NavManager.NavigateTo($"/login?url={NavManager.Uri.Replace(NavManager.BaseUri, "")}");
+            }
         }
     }
     private async void SaveForm()

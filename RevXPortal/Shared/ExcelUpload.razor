@@ -2,6 +2,7 @@
 @inject IProviderEndpoint _providerEndpoint
 @inject IBillingStatusEndpoint _billingStatusEndpoint
 @inject ISessionEndpoint _sessionEndpoint
+@inject NavigationManager NavManager
 
 <div class="container">
     <h3>Upload Excel File</h3>
@@ -16,9 +17,19 @@
 
     protected override async Task OnInitializedAsync()
     {
-        StudentList = await _studentEndpoint.GetAll();
-        ProviderList = await _providerEndpoint.GetAll();
-        BillingStatusList = await _billingStatusEndpoint.GetAll();
+        try
+        {
+            StudentList = await _studentEndpoint.GetAll();
+            ProviderList = await _providerEndpoint.GetAll();
+            BillingStatusList = await _billingStatusEndpoint.GetAll();
+        }
+        catch (Exception e)
+        {
+            if (e.Message == "Unauthorized")
+            {
+                NavManager.NavigateTo($"/login?url={NavManager.Uri.Replace(NavManager.BaseUri, "")}");
+            }
+        }
     }
 
     // 0 = Date, 1 = StartTime, 2 = EndTime, 4 = Student
