@@ -1,0 +1,172 @@
+﻿@inject IJSRuntime jsRuntime
+@inject IStudentEndpoint _studentEndpoint
+
+
+@if (students is not null)
+{
+    <EditTable>
+        <thead>
+            <tr>
+                <th></th>
+                @foreach (var col in new List<string>() { "First Name", "Last Name" })
+                {
+                    <th>@col</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var student in students)
+            {
+                <tr>
+                    <td>
+                        <Switch TValue="StudentModel" Item="student" ValueChanged="OnSwitchChange"></Switch>
+                    </td>
+                    <td class="@(student.Enabled ? "" : "disabled")">
+                        @if (student.isEditMode && ElementEditing == "First")
+                        {
+                            <div class="edit-table-td">
+
+                                <input class="form-control" type="text" @bind-value="student.FirstName" @onfocusout="() => DoneEditing(student)" style="width:70%; margin: auto;" />
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(student, "First"))" style="min-height: 15px">
+                                @student.FirstName
+                            </div>
+                        }
+                    </td>
+                    <td class="@(student.Enabled ? "" : "disabled")">
+                        @if (student.isEditMode && ElementEditing == "Last")
+                        {
+                            <div class="edit-table-td">
+
+                                <input class="form-control" type="text" @bind-value="student.LastName" @onfocusout="() => DoneEditing(student)" style="width:70%; margin: auto;" />
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(student, "Last"))" style="min-height: 15px">
+                                @student.LastName
+                            </div>
+                        }
+                    </td>
+                </tr>
+
+            }
+            <tr>
+                <td class="additional"></td>
+                <td class="additional">
+                    @if (additionalStudent.isEditMode)
+                    {
+                        <div class="edit-table-td">
+                            <input class="form-control" type="text" @bind-value="additionalStudent.FirstName" @onfocusout="() => DoneCreating(additionalStudent)" style="width:70%; margin: auto;" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(additionalStudent, ""))" style="min-height: 15px">
+                            @additionalStudent.FirstName
+                        </div>
+                    }
+                </td>
+                <td class="additional">
+                    @if (additionalStudent.isEditMode)
+                    {
+                        <div class="edit-table-td">
+
+                            <input class="form-control" type="text" @bind-value="additionalStudent.LastName" @onfocusout="() => DoneCreating(additionalStudent)" style="width:70%; margin: auto;" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(additionalStudent, ""))" style="min-height: 15px">
+                            @additionalStudent.LastName
+                        </div>
+                    }
+                </td>
+            </tr>
+        </tbody>
+    </EditTable>
+}
+else
+{
+    <div class="empty-table-cell grid-cell" style="position: relative; height: 85%; z-index: 0">
+        <LoadingIndicator />
+    </div>
+}
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    private string userId { get; set; }
+
+    public List<StudentModel> students { get; set; }
+
+    public IEditTable StudentTableData { get; set; }
+
+    public string ElementEditing { get; set; }
+
+    private StudentModel additionalStudent { get; set; } = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        userId = ( await authenticationStateTask ).User.FindFirst(ClaimTypes.NameIdentifier).Value;
+        await RefreshStudentList();
+    }
+
+    public void YouClickedMe(StudentModel student, string el)
+    {
+        if (student.Enabled || student.FirstName is null)
+        {
+            ElementEditing = el;
+            student.isEditMode = true;
+            jsRuntime.InvokeVoidAsync("log", student);
+        }
+        else
+        {
+            jsRuntime.InvokeVoidAsync("log", student);
+        }
+    }
+
+    public void OnSwitchChange(StudentModel e)
+    {
+        jsRuntime.InvokeVoidAsync("log", e);
+        _studentEndpoint.EditStudent(e);
+    }
+
+    public async void DoneEditing(StudentModel student)
+    {
+        student.isEditMode = false;
+        await _studentEndpoint.EditStudent(student);
+        await RefreshStudentList();
+    }
+
+    public async void DoneCreating(StudentModel student)
+    {
+        if (( student.FirstName is null || student.FirstName == "" ) && student.LastName is null || student.LastName == "")
+        {
+            student.isEditMode = false;
+            additionalStudent = new();
+        }
+        else if (student.FirstName is not null && student.LastName is not null)
+        {
+            await jsRuntime.InvokeVoidAsync("log", additionalStudent);
+            student.isEditMode = false;
+            student.UserId = userId;
+            await _studentEndpoint.AddStudent(student);
+            additionalStudent = new();
+            await RefreshStudentList();
+        }
+        else
+        {
+            await jsRuntime.InvokeVoidAsync("log", "Waiting you should finish");
+            await jsRuntime.InvokeVoidAsync("log", student);
+        }
+    }
+
+    private async Task RefreshStudentList()
+    {
+        students = await _studentEndpoint.GetAll(userId);
+        StateHasChanged();
+    }
+}

@@ -2,9 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RevXApi.Library.DataAccess
 {
@@ -23,25 +20,26 @@ namespace RevXApi.Library.DataAccess
 			_billingStatusData = billingStatusData;
 		}
 
-		public List<SessionModel> GetAllSessions()
+		public List<SessionModel> GetAllSessions(string userId)
 		{
-			List<SessionDbModel> sessions = _sql.LoadData<SessionDbModel>("dbo.spSession_GetAll", "RevXData");
+			List<SessionDbModel> sessions = _sql.LoadData<SessionDbModel, dynamic>("dbo.spSession_GetAll", new { userId }, "RevXData");
 
 			List<SessionModel> output = new();
 
 			foreach (var session in sessions)
 			{
 				SessionModel model = new()
-				{ 
+				{
 					Id = session.Id,
+					UserId = session.UserId,
 					Date = session.Date,
 					StartTime = session.StartTime.ToString(),
 					EndTime = session.EndTime.ToString(),
 					Notes = session.Notes
 				};
 
-				model.Student = _studentData.GetById(session.StudentId);
-				model.Provider = _providerData.GetById(session.ProviderId);
+				model.Student = _studentData.GetById(session.StudentId, session.UserId);
+				model.Provider = _providerData.GetById(session.ProviderId, session.UserId);
 				model.BillingStatus = _billingStatusData.GetById(session.BillingStatusId);
 
 
@@ -51,21 +49,22 @@ namespace RevXApi.Library.DataAccess
 			return output;
 		}
 
-		public SessionModel GetById(int id)
+		public SessionModel GetById(int id, string userId)
 		{
-			SessionDbModel session = _sql.LoadData<SessionDbModel, dynamic>("dbo.spSession_GetById", new { Id = id}, "RevXData").FirstOrDefault();
+			SessionDbModel session = _sql.LoadData<SessionDbModel, dynamic>("dbo.spSession_GetById", new { Id = id, userId }, "RevXData").FirstOrDefault();
 
 			SessionModel output = new()
 			{
 				Id = session.Id,
+				UserId = session.UserId,
 				Date = session.Date,
 				StartTime = session.StartTime.ToString(),
 				EndTime = session.EndTime.ToString(),
 				Notes = session.Notes
 			};
 
-			output.Student = _studentData.GetById(session.StudentId);
-			output.Provider = _providerData.GetById(session.ProviderId);
+			output.Student = _studentData.GetById(session.StudentId, session.UserId);
+			output.Provider = _providerData.GetById(session.ProviderId, session.UserId);
 			output.BillingStatus = _billingStatusData.GetById(session.BillingStatusId);
 
 			return output;
@@ -84,14 +83,15 @@ namespace RevXApi.Library.DataAccess
 				SessionModel model = new()
 				{
 					Id = session.Id,
+					UserId = session.UserId,
 					Date = session.Date,
 					StartTime = session.StartTime.ToString(),
 					EndTime = session.EndTime.ToString(),
 					Notes = session.Notes
 				};
 
-				model.Student = _studentData.GetById(session.StudentId);
-				model.Provider = _providerData.GetById(session.ProviderId);
+				model.Student = _studentData.GetById(session.StudentId, session.UserId);
+				model.Provider = _providerData.GetById(session.ProviderId, session.UserId);
 				model.BillingStatus = _billingStatusData.GetById(session.BillingStatusId);
 
 				output.Add(model);
@@ -105,6 +105,7 @@ namespace RevXApi.Library.DataAccess
 			var dbModel = new SessionDbModel()
 			{
 				StudentId = model.Student.Id,
+				UserId = model.UserId,
 				Date = model.Date,
 				StartTime = ConvertToTimeSpan(model.StartTime),
 				EndTime = ConvertToTimeSpan(model.EndTime),
@@ -121,6 +122,7 @@ namespace RevXApi.Library.DataAccess
 			var dbModel = new SessionDbModel()
 			{
 				Id = model.Id,
+				UserId = model.UserId,
 				StudentId = model.Student.Id,
 				Date = model.Date,
 				StartTime = ConvertToTimeSpan(model.StartTime),
@@ -133,16 +135,16 @@ namespace RevXApi.Library.DataAccess
 			_sql.SaveData("dbo.spSession_Edit", dbModel, "RevXData");
 		}
 
-		public void DeleteSession(int id)
+		public void DeleteSession(int id, string userId)
 		{
-			_sql.SaveData("dbo.spSession_Delete", new { Id = id }, "RevXData");
+			_sql.SaveData("dbo.spSession_Delete", new { Id = id, userId }, "RevXData");
 		}
 
 		private TimeSpan ConvertToTimeSpan(string timeString)
 		{
 			var split = timeString.Split(':');
-			int.TryParse(split[0], out int hours);
-			int.TryParse(split[1], out int minutes);
+			int.TryParse(split[ 0 ], out int hours);
+			int.TryParse(split[ 1 ], out int minutes);
 			var output = new TimeSpan(hours, minutes, 00);
 			return output;
 		}

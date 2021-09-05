@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace RevXApi.Library.Models
 {
 	public class SessionModel
 	{
 		public int Id { get; set; }
+		public string UserId { get; set; }
 		public StudentModel Student { get; set; }
 		public DateTime Date { get; set; }
 		public string StartTime { get; set; }

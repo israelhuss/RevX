@@ -1,12 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RevXApi.Library.DataAccess;
 using RevXApi.Library.Models;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace RevXApi.Controllers
 {
@@ -23,9 +19,9 @@ namespace RevXApi.Controllers
 		}
 
 		[HttpGet]
-		public List<SessionModel> GetAllSessions()
+		public List<SessionModel> GetAllSessions([FromQuery] string userId)
 		{
-			return _sessionData.GetAllSessions();
+			return _sessionData.GetAllSessions(userId);
 		}
 
 		// FIX this method - get is not supposed to have body
@@ -50,9 +46,9 @@ namespace RevXApi.Controllers
 
 		[HttpPost]
 		[Route("Delete/{id}")]
-		public void DeleteSession(int id)
+		public void DeleteSession(int id, [FromQuery] string userId)
 		{
-			_sessionData.DeleteSession(id);
+			_sessionData.DeleteSession(id, userId);
 		}
 	}
 }

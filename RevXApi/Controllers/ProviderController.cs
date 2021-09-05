@@ -19,21 +19,33 @@ namespace RevXApi.Controllers
 		}
 
 		[HttpGet]
-		public List<ProviderModel> GetAllProviders()
+		public List<ProviderModel> GetAllProviders([FromQuery] string userId)
 		{
-			return _providerData.GetAll();
+			return _providerData.GetAll(userId);
 		}
 
-		[HttpPost]
+		[HttpGet("enabled")]
+		public List<ProviderModel> GetEnabled([FromQuery] string userId)
+		{
+			return _providerData.GetEnabled(userId);
+		}
+
+		[HttpPost("add")]
 		public void AddProvider(ProviderModel model)
 		{
 			_providerData.AddProvider(model);
 		}
 
-		[HttpGet("{id}")]
-		public ProviderModel GetProviderById(int id)
+		[HttpPost("edit")]
+		public void EditProvider(ProviderModel model)
 		{
-			return _providerData.GetById(id);
+			_providerData.EditProvider(model);
+		}
+
+		[HttpGet("{id}")]
+		public ProviderModel GetProviderById(int id, [FromQuery] string userId)
+		{
+			return _providerData.GetById(id, userId);
 		}
 	}
 }

@@ -40,9 +40,41 @@ namespace RevXPortal.API
 			}
 		}
 
+		public async Task<List<BillingStatusModel>> GetEnabled()
+		{
+			using (HttpResponseMessage response = await _client.GetAsync($"/api/BillingStatus/enabled"))
+			{
+				if (response.IsSuccessStatusCode)
+				{
+					var result = await response.Content.ReadAsAsync<List<BillingStatusModel>>();
+					BillingStatuses = result;
+					return result;
+				}
+				else
+				{
+					throw new Exception(response.ReasonPhrase);
+				}
+			}
+		}
+
 		public async Task AddBillingStatus(BillingStatusModel model)
 		{
-			using (HttpResponseMessage response = await _client.PostAsJsonAsync("/api/BillingStatus", model))
+			using (HttpResponseMessage response = await _client.PostAsJsonAsync("/api/BillingStatus/add", model))
+			{
+				if (response.IsSuccessStatusCode)
+				{
+					//TODO - Log successful post
+				}
+				else
+				{
+					throw new Exception(response.ReasonPhrase);
+				}
+			}
+		}
+
+		public async Task EditBillingStatus(BillingStatusModel model)
+		{
+			using (HttpResponseMessage response = await _client.PostAsJsonAsync("/api/BillingStatus/edit", model))
 			{
 				if (response.IsSuccessStatusCode)
 				{

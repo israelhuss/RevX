@@ -52,12 +52,14 @@ namespace RevXApi
 
 			//Personal Services
 			services.AddTransient<ISqlDataAccess, SqlDataAccess>();
+			services.AddTransient<IUserData, UserData>();
 			services.AddTransient<ISessionData, SessionData>();
 			services.AddTransient<IStudentData, StudentData>();
 			services.AddTransient<IProviderData, ProviderData>();
 			services.AddTransient<IBillingStatusData, BillingStatusData>();
 			services.AddTransient<IInvoiceData, InvoiceData>();
 			services.AddTransient<IReportData, ReportData>();
+			services.AddTransient<IHourlyRateData, HourlyRateData>();
 
 			// FluentEmail Configuration
 			services.AddTransient<IEmailService, EmailService>();
@@ -70,11 +72,11 @@ namespace RevXApi
 			//	});
 
 			// Gmail Setup
-			services.AddFluentEmail(Configuration["EmailConfig:FaigyEmailAddress"], "Faigy Huss")
+			services.AddFluentEmail(Configuration[ "EmailConfig:FaigyEmailAddress" ], "Faigy Huss")
 				.AddRazorRenderer()
 				.AddSmtpSender(new SmtpClient("smtp.gmail.com", 587)
 				{
-					Credentials = new NetworkCredential(Configuration["EmailConfig:FaigyEmailAddress"], Configuration["EmailConfig:FaigyAppPassword"]),
+					Credentials = new NetworkCredential(Configuration[ "EmailConfig:FaigyEmailAddress" ], Configuration[ "EmailConfig:FaigyAppPassword" ]),
 					EnableSsl = true
 				});
 

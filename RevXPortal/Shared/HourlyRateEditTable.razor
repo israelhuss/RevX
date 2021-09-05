@@ -1,0 +1,198 @@
+﻿@inject IJSRuntime jsRuntime
+@inject IHourlyRateEndpoint _rateEndpoint
+
+
+@if (Rates is not null)
+{
+    <EditTable>
+        <thead>
+            <tr>
+                @foreach (var col in new List<string>() { "Start Date", "End Date", "Rate" })
+                {
+                    <th>@col</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var rate in Rates)
+            {
+                <tr>
+                    <td>
+                        @if (rate.isEditMode && ElementEditing == "Start")
+                        {
+                            <div class="edit-table-td">
+                                <InputDate TValue="DateTime" class="form-control" @bind-value="rate.StartDate" @onkeyup="(e) => DoneEditing(e, rate)" style="width:70%; margin: auto;" />
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(rate, "Start"))" style="min-height: 15px">
+                                @rate.StartDate.Value.ToShortDateString()
+                            </div>
+                        }
+                    </td>
+                    <td>
+                        @if (rate.isEditMode && ElementEditing == "End")
+                        {
+                            <div class="edit-table-td" @onkeyup="(e) => DoneEditing(e, rate)">
+                                <NullableDateInput @bind-Date="rate.EndDate" />
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(rate, "End"))" style="min-height: 15px">
+                                @(!rate.EndDate.HasValue ? "Current" : rate.EndDate.Value.ToShortDateString())
+                            </div>
+                        }
+                    </td>
+                    <td>
+                        @if (rate.isEditMode && ElementEditing == "Rate")
+                        {
+                            <div class="edit-table-td">
+                                <input class="form-control" type="text" @bind-value="rate.Rate" @onkeyup="(e) => DoneEditing(e, rate)" style="width:70%; margin: auto;" />
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(rate, "Rate"))" style="min-height: 15px;">
+                                $@rate.Rate
+                            </div>
+                        }
+                    </td>
+                </tr>
+
+            }
+            <tr>
+                <td class="additional">
+                    @if (additionalRate.isEditMode && ElementEditing == "Start")
+                    {
+                        <div class="edit-table-td">
+                            <NullableDateInput />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(additionalRate, "Start"))" style="min-height: 15px; min-width: 50px;">
+                            @additionalRate.StartDate
+                        </div>
+                    }
+                </td>
+                <td class="additional">
+                    @if (additionalRate.isEditMode && ElementEditing == "End")
+                    {
+                        <div class="edit-table-td" @onkeyup="(e) => DoneEditing(e, additionalRate)">
+                            <NullableDateInput @bind-Date="additionalRate.EndDate" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(additionalRate, "End"))" style="min-height: 15px; min-width: 50px;">
+                            @additionalRate.EndDate
+                        </div>
+                    }
+                </td>
+                <td class="additional">
+                    @if (additionalRate.isEditMode && ElementEditing == "Rate")
+                    {
+                        <div class="edit-table-td">
+                            <input class="form-control" type="text" @bind-value="additionalRate.Rate" @onkeyup="(e) => DoneEditing(e, additionalRate)" style="width:70%; margin: auto;" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(additionalRate, "Rate"))" style="min-height: 15px; min-width: 50px;">
+                            @(additionalRate.Rate is not null && additionalRate.Rate > 0 ? $"{additionalRate.Rate}" : "")
+                        </div>
+                    }
+                </td>
+            </tr>
+        </tbody>
+    </EditTable>
+}
+else
+{
+    <div class="empty-table-cell grid-cell" style="position: relative; height: 85%">
+        <LoadingIndicator />
+    </div>
+}
+
+
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    private string userId { get; set; }
+
+    public string testdate { get; set; } = "2021-08-22";
+
+    public List<HourlyRate> Rates { get; set; }
+
+    public IEditTable RateTableData { get; set; }
+
+    public string ElementEditing { get; set; }
+
+    private HourlyRate additionalRate { get; set; } = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        userId = ( await authenticationStateTask ).User.FindFirst(ClaimTypes.NameIdentifier).Value;
+        await RefreshRateList();
+        await jsRuntime.InvokeVoidAsync("log", Rates);
+    }
+
+    public void YouClickedMe(HourlyRate rate, string el)
+    {
+        if (true)
+        {
+            ElementEditing = el;
+            rate.isEditMode = true;
+            jsRuntime.InvokeVoidAsync("log", el);
+            jsRuntime.InvokeVoidAsync("log", rate);
+        }
+        else
+        {
+            jsRuntime.InvokeVoidAsync("log", rate);
+        }
+    }
+
+    public async void DoneEditing(KeyboardEventArgs e, HourlyRate rate)
+    {
+        if (e.Key == "Enter")
+        {
+            await jsRuntime.InvokeVoidAsync("log", $"It's DoneEditing logging: {JsonConvert.SerializeObject(rate)}");
+            rate.isEditMode = false;
+            await _rateEndpoint.EditRate(rate);
+            RefreshRateList();
+            StateHasChanged();
+        }
+    }
+
+    public async void DoneCreating(HourlyRate rate)
+    {
+        if (( rate.StartDate == DateTime.Parse("0001-01-01T00:00:00") ) && rate.EndDate == DateTime.Parse("0001-01-01T00:00:00") || ( rate.Rate <= 0 ))
+        {
+            rate.isEditMode = false;
+            additionalRate = new();
+        }
+        else if (rate.StartDate != DateTime.Parse("0001-01-01T00:00:00") && ( rate.Rate is not null && rate.Rate > 0 ))
+        {
+            await jsRuntime.InvokeVoidAsync("log", additionalRate);
+            rate.isEditMode = false;
+            rate.UserId = userId;
+            await _rateEndpoint.AddRate(rate);
+            additionalRate = new();
+            await RefreshRateList();
+        }
+        else
+        {
+            await jsRuntime.InvokeVoidAsync("log", "Waiting you should finish");
+            await jsRuntime.InvokeVoidAsync("log", rate);
+        }
+    }
+
+    private async Task RefreshRateList()
+    {
+        Rates = await _rateEndpoint.GetAll(userId);
+        StateHasChanged();
+    }
+}

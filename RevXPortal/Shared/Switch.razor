@@ -1,0 +1,28 @@
+﻿@inject IJSRuntime jsRuntime
+@typeparam TValue
+    <style>
+        .custom-switch * {
+            cursor: pointer;
+        }
+    </style>
+
+    <div class="custom-control custom-switch">
+        <input type="checkbox" checked="@Item.Enabled" class="custom-control-input" id="@random" @onchange="OnChange">
+        <label class="custom-control-label" for="@random"></label>
+    </div>
+
+    @code {
+        public int random { get; set; } = new Random().Next();
+
+        [Parameter]
+        public EventCallback<TValue> ValueChanged { get; set; }
+
+        [Parameter]
+        public IEnable Item { get; set; }
+
+        private async void OnChange(ChangeEventArgs e)
+        {
+            Item.Enabled = (bool)e.Value;
+            await ValueChanged.InvokeAsync((TValue)Item);
+        }
+    }

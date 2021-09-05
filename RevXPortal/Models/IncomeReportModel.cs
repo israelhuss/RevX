@@ -7,7 +7,7 @@
 		public double SchoolSecondary { get; set; }
 		public double AfterSchoolPrimary { get; set; }
 		public double AfterSchoolSecondary { get; set; }
-		public string Title { get => Date; }
+		public string Title { get; set; }
 		public double BarOnePrimary { get => SchoolPrimary; }
 		public double BarOneSecondary { get => SchoolSecondary; }
 		public double BarTwoPrimary { get => AfterSchoolPrimary; }

@@ -1,9 +1,10 @@
 ﻿CREATE PROCEDURE [dbo].[spReport_SchoolAndAfterSchool]
 	@GroupBy char(20) = 'month',
+	@UserId nvarchar(128),
 	@StartDate date,
-	@EndTime date = null
+	@EndDate date = null
 AS
-IF @EndTime is null SET @EndTime = GETDATE();
+IF @EndDate is null SET @EndDate = GETDATE();
 BEGIN
 	SELECT [Date] = (select (case @GroupBy
 			when 'year' then cast(DATEADD(YEAR, DATEDIFF(YEAR, 0, [Date]), 0) as date)
@@ -34,7 +35,7 @@ BEGIN
 		ELSE 0
 	END) as float) / cast(60 as float)
 	as AfterSchoolSecondary	FROM dbo.Session
-	where [Date] between @StartDate and @EndTime AND BillingStatusId <> 1
+	where [Date] between @StartDate and @EndDate AND BillingStatusId <> 1 and UserId = @UserId
 	group by case @GroupBy
 			when 'year' then cast(DATEADD(YEAR, DATEDIFF(YEAR, 0, [Date]), 0) as date)
 			when 'month' then cast(DATEADD(MONTH, DATEDIFF(MONTH, 0, [Date]), 0) as date)

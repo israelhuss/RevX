@@ -3,9 +3,14 @@
 @inject IJSRuntime jsRuntime;
 
 <style>
+    #pie-chart {
+        transform: rotate(90deg);
+    }
+
     .path {
         pointer-events: all;
         transition: all .6s;
+        background-color: #d38dd2;
     }
 
         .path:hover {
@@ -13,32 +18,47 @@
         }
 </style>
 
-<div>@total</div>
-@foreach (var d in Data)
-{
-    <p>@d</p>
-}
-
 
 <svg width="@Size" height="@Size" id="pie-chart">
     @for (var i = 0; i < Data.Count; i++)
     {
         int j = i;
-        <text>
-            <text x="@(GetLabelPoints(i).Split(',')[0])" y="@(GetLabelPoints(i).Split(',')[1])" style="font-size:40px; color:#fff; ">@(Data[i])</text>
-        </text>
-        <path class="path" id="@($"path-{i}")" d="@GetPath(i, false)"
-              style="fill:@Colors[i];
-        fill-opacity: 1" @onmouseover="() => OnPathHover(j)" @onmouseout="() => OnPathLeave(j)" />
+
+        @if (!NoText)
+        {
+            <g>
+                <path class="path" id="@($"path-{i}-{Rand}")" d="@GetPath(i, false)"
+                      style="fill:@Colors[i];
+            fill-opacity: 1" @onmouseover="(e) => OnPathHover(j, e)" @onmouseout="(e) => OnPathLeave(j, e)" />
+                <text class="text" text-anchor="middle" style="transform: translate(@GetLabelPoints(i)) rotate(-90deg); font-size:1.2rem; fill:#fff; pointer-events: none ">@(((Data[i] * 100) / total).ToString("0.00"))%</text>
+            </g>
+        }
+        else
+        {
+            <g>
+                <path class="path" id="@($"path-{i}-{Rand}")" d="@GetPath(i, false)"
+                      style="fill:@Colors[i];
+            fill-opacity: 1" @onmouseover="(e) => OnPathHover(j, e)" @onmouseout="(e) => OnPathLeave(j, e)" />
+            </g>
+        }
     }
 </svg>
 
+<MovingTooltip @ref="TooltipRef"></MovingTooltip>
 
 
 
 @code {
+    public int Rand { get; set; } = new Random().Next();
+    public string X { get; set; } = "0";
+    public string Y { get; set; } = "0";
     [Parameter]
     public List<double> Data { get; set; } = new() { 5, 70, 20, 22 };
+    [Parameter]
+    public List<string> TootlipData { get; set; } = new();
+
+    [Parameter]
+    public bool NoText { get; set; } = false;
 
     [Parameter]
     public double Size { get; set; } = 400;
@@ -46,7 +66,7 @@
     [Parameter]
     public List<string>
     Colors
-    { get; set; } = new() { "#1365fc", "#298a00", "#fe00ff", "#ff5a5a", "#fffa06", "#01f4f1", "#C608D1", "#2900A5", "#FFA9FD", "#E4BF58", "#C94D6D", "#A9A9A9", "#BE61CA" };
+    { get; set; } = new() { "#1365fc", "#298a00", "#722472", "#ff5a5a", "#f5f26c", "#60d1d0", "#d76311", "#2900A5", "#d38dd2", "#E4BF58", "#C94D6D", "#A9A9A9", "#e786f4" };
 
     public double Radius { get; set; }
 
@@ -56,11 +76,21 @@
 
     public double total { get; set; }
 
+    public MovingTooltip TooltipRef { get; set; }
+
     protected override void OnParametersSet()
     {
         Radius = (Size * .9) / 2;
         Padding = (Size * .1) / 2;
         total = Data.Sum();
+
+        if (TootlipData.Count == 0)
+        {
+            foreach (var d in Data)
+            {
+                TootlipData.Add(d.ToString());
+            }
+        }
     }
 
     private string GetPoints(int index)
@@ -90,10 +120,10 @@
         double val = Data[index];
         val = val / 2;
 
-        if (index == Data.Count - 1)
-        {
-            return $"{(Size * .4) / 2},200";
-        };
+        //if (index == Data.Count - 1)
+        //{
+        //    return $"{Padding * 4},{Size / 1.7}";
+        //};
 
         for (var i = 0; i < index; i++)
         {
@@ -103,9 +133,9 @@
         var angle = (val / total) * (2 * Math.PI);
         var sin = Math.Sin(angle);
         var cosine = Math.Cos(angle);
-        var x = Size / 2 - (cosine * (Size * .4 / 2));
-        var y = Size / 2 - (sin * (Size * .4 / 2));
-        return $"{x},{y}";
+        var x = Size / 2 - (cosine * (Padding * 7.5));
+        var y = Size / 2 - (sin * (Padding * 7.5));
+        return $"{x}px,{y}px";
     }
 
     private string GetHoverPoints(int index)
@@ -171,16 +201,19 @@
         return $"M{Size / 2},{Size / 2 } L{getParentCord(index, false)} A{Radius},{Radius} 0 {CheckIfLarge(index)},1 {GetPoints(index)} Z";
     }
 
-    private async Task OnPathHover(int index)
+    private async Task OnPathHover(int index, MouseEventArgs e)
     {
         var newPath = GetPath(index, true);
-        await jsRuntime.InvokeVoidAsync("SetPath", $"path-{index}", newPath);
+        await jsRuntime.InvokeVoidAsync("SetPath", $"path-{index}-{Rand}", newPath);
+        TooltipRef.SetText(TootlipData[index].ToString());
+        TooltipRef.Show();
     }
 
-    private async Task OnPathLeave(int index)
+    private async Task OnPathLeave(int index, MouseEventArgs e)
     {
+        TooltipRef.Hide();
         var newPath = GetPath(index, false);
-        await jsRuntime.InvokeVoidAsync("SetPath", $"path-{index}", newPath);
+        await jsRuntime.InvokeVoidAsync("SetPath", $"path-{index}-{Rand}", newPath);
 
     }
 }

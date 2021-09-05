@@ -1,5 +1,6 @@
 ﻿CREATE PROCEDURE [dbo].[spSession_Edit]
 	@Id int,
+	@UserId nvarchar(128),
 	@StudentId int,
 	@Date date,
 	@StartTime time(0),
@@ -17,5 +18,5 @@ BEGIN
 		ProviderId = @ProviderId, 
 		BillingStatusId = @BillingStatusId, 
 		Notes = @Notes
-	WHERE Id = @Id;
+	WHERE Id = @Id AND UserId = @UserId;
 END

@@ -1,11 +1,12 @@
 ﻿CREATE PROCEDURE [dbo].[spSession_GetById]
-	@Id int
+	@Id int,
+	@UserId nvarchar(128)
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT [Id], [StudentId], [Date], [StartTime], [EndTime], [ProviderId], [BillingStatusId], [Notes]
+	SELECT [Id], [UserId], [StudentId], [Date], [StartTime], [EndTime], [ProviderId], [BillingStatusId], [Notes]
 	FROM dbo.Session
-	WHERE Id = @Id;
+	WHERE Id = @Id AND UserId = @UserId;
 
 END

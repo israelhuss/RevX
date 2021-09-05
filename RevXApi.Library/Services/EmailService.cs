@@ -32,9 +32,6 @@ namespace RevXApi.Library.Services
 				.To(_config["EmailConfig:IsraelEmailAddress"], "Israel Huss")
 				.Subject("Hi from the RevX Team")
 				.UsingTemplateFromFile(_templateLocation, new { Name = "Israel", InvoiceSessions = sessions, TotalHours = 79, InvoicePeriod = "Hello" }, true)
-				//.Body("This is a email confirming that if the body is different.")
-				//.UsingTemplate("Hi @Model.Name, greetings from a template.", new { Name = "Israel" })
-				//.UsingTemplateFromEmbedded("RevXApi.Library.InvoiceTemplate.cshtml", new { Name = "Israel", Sessions = sessions }, Assembly.Load("RevXApi.Library"))
 				.SendAsync();
 		}
 

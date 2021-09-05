@@ -6,9 +6,9 @@ namespace RevXPortal.API
 {
 	public interface ISessionEndpoint
 	{
-		Task<List<ManageSessionModel>> GetAll();
+		Task<List<ManageSessionModel>> GetAll(string userId);
 		Task SaveSession(ManageSessionModel model);
 		Task EditSession(ManageSessionModel model);
-		Task DeleteSession(int id);
+		Task DeleteSession(int id, string userId);
 	}
 }

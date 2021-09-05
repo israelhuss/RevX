@@ -1,9 +1,9 @@
 ﻿@inherits LayoutComponentBase
 @inject NavigationManager NavManager
+@inject IStudentEndpoint _studentEndnoint
+@inject IJSRuntime jsRuntime
 
 <div class="page">
-
-    
     <div class="sidebar">
         <NavMenu />
     </div>
@@ -13,7 +13,7 @@
         <div class="top-row px-4">
             <AuthorizeView>
                 <Authorized>
-                    Hello @context.User.FindFirst(ClaimTypes.Name).Value!
+                    Hello @context.User.Identity.Name
                     <button class="btn btn-info m-3" @onclick="OnLogout">Log Out</button>
                 </Authorized>
                 <NotAuthorized>
@@ -23,7 +23,9 @@
         </div>
 
         <div class="content px-4">
-            @Body
+            <CascadingAuthenticationState>
+                @Body
+            </CascadingAuthenticationState>
         </div>
     </div>
 </div>
@@ -37,5 +39,14 @@
     private void OnLogout()
     {
         NavManager.NavigateTo("/logout");
+    }
+
+    [Inject]
+    public AuthenticationStateProvider authState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthenticationState state = await authState.GetAuthenticationStateAsync();
+        //await jsRuntime.InvokeVoidAsync("log", state.User.Identity.Name);
     }
 }

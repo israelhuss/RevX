@@ -13,9 +13,9 @@ namespace RevXApi.Library.DataAccess
 			_sql = sql;
 		}
 
-		public List<IncomeReportModel> GetMonthlyIncome(DateTime startDate)
+		public List<IncomeReportModel> GetMonthlyIncome(DateTime startDate, DateTime endDate, string userId, string groupBy)
 		{
-			var stuff = _sql.LoadData<IncomeReportModel, dynamic>("dbo.spReport_SchoolAndAfterSchool", new { StartDate = startDate }, "RevXData");
+			var stuff = _sql.LoadData<IncomeReportModel, dynamic>("dbo.spReport_SchoolAndAfterSchool", new { startDate, endDate, userId, groupBy }, "RevXData");
 			return stuff;
 		}
 

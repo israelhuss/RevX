@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RevXApi.Library.DataAccess;
 using RevXApi.Library.Models;
 using System;
@@ -8,6 +9,7 @@ namespace RevXApi.Controllers
 {
 	[Route("api/[controller]")]
 	[ApiController]
+	[Authorize]
 	public class ReportController : ControllerBase
 	{
 		private readonly IReportData _reportData;
@@ -18,9 +20,9 @@ namespace RevXApi.Controllers
 		}
 
 		[HttpGet]
-		public List<IncomeReportModel> GetAllStudents(DateTime startDate)
+		public List<IncomeReportModel> GetIncomeReports([FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] string userId, [FromQuery] string groupBy = "month")
 		{
-			return _reportData.GetMonthlyIncome(startDate);
+			return _reportData.GetMonthlyIncome(startDate, endDate, userId, groupBy);
 		}
 	}
 }

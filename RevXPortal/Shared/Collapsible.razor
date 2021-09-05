@@ -1,0 +1,86 @@
+﻿@inject IJSRuntime jsRuntime
+
+<style>
+    .collapsible-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        margin: 0 auto;
+        border-bottom: solid 1px #d3d3d3
+    }
+
+        .collapsible-container:last-child {
+            border-bottom: none;
+        }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+    }
+
+        .header:hover {
+            background-color: #d3d3d3;
+            cursor: pointer;
+        }
+
+    .header-text {
+        margin: 0;
+        padding: 10px;
+        font-size: 1rem;
+        z-index: 1;
+    }
+
+    .arrow-btn:focus,
+    .arrow-btn:focus-visible {
+        outline: 0;
+        box-shadow: none;
+    }
+
+    .collapsing-div {
+        transition: height .3s;
+    }
+</style>
+
+<div class="collapsible-container">
+    <div class="header" @onclick="ToggleShow">
+        <div class="header-text">@HeaderText</div>
+
+        <button type="button" class="btn arrow-btn">
+            <i class="fas fa-angle-down icon" style="transform: rotate(@(rotate)deg)"></i>
+        </button>
+    </div>
+
+    <div class="collapsing-div" style="height: @(height + "px"); border-top: @(show ? "solid 1px #d3d3d3" : "none"); padding: @(show ? "10px" : "0")">
+        @if (show)
+        {
+            @ChildContent
+        }
+    </div>
+
+</div>
+
+
+
+
+@code {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public string HeaderText { get; set; }
+
+    [Parameter]
+    public int Height { get; set; } = 350;
+
+    public bool show { get; set; } = false;
+    public int rotate { get; set; } = 0;
+    public int height { get; set; }
+
+    public void ToggleShow()
+    {
+        show = !show;
+        if (height == Height) { height = 0; }
+        else { height = Height; }
+        rotate += 180;
+    }
+}

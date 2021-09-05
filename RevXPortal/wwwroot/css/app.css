@@ -83,6 +83,25 @@ a, .btn-link {
     text-align: center;
 }
 
+.overflow-auto::-webkit-scrollbar {
+    width: 5px;
+}
+
+.overflow-auto::-webkit-scrollbar-track {
+    border-top-right-radius: 3.5px;
+    border-bottom-right-radius: 3.5px;
+    background: rgb(241 241 241 / 0.00);
+}
+
+.overflow-auto::-webkit-scrollbar-thumb {
+    border-radius: 3.5px;
+    background: #888;
+}
+
+    .overflow-auto::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+
 @keyframes fade-in-and-grow {
     from {
         opacity: 0;
@@ -127,6 +146,24 @@ a, .btn-link {
     to {
         transform-origin: bottom;
         transform: scaleY(1);
+    }
+}
+
+@keyframes roll-down {
+    0% {
+        height:0%;
+    }
+    25%{
+        height: 25%;
+    }
+    50% {
+        height: 50%;
+    }
+    75% {
+        height: 75%;
+    }
+    100% {
+        height: 100%;
     }
 }
 

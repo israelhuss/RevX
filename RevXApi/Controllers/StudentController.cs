@@ -1,12 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RevXApi.Library.DataAccess;
 using RevXApi.Library.Models;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace RevXApi.Controllers
 {
@@ -23,21 +19,33 @@ namespace RevXApi.Controllers
 		}
 
 		[HttpGet]
-		public List<StudentModel> GetAllStudents()
+		public List<StudentModel> GetAllStudents([FromQuery] string userId)
 		{
-			return _studentData.GetAll();
+			return _studentData.GetAll(userId);
 		}
 
-		[HttpPost]
+		[HttpGet("enabled")]
+		public List<StudentModel> GetEnabled([FromQuery] string userId)
+		{
+			return _studentData.GetEnabled(userId);
+		}
+
+		[HttpPost("add")]
 		public void AddStudent(StudentModel model)
 		{
 			_studentData.AddStudent(model);
 		}
 
-		[HttpGet("{id}")]
-		public StudentModel GetStudentById(int id)
+		[HttpPost("edit")]
+		public void EditStudent(StudentModel model)
 		{
-			return _studentData.GetById(id);
+			_studentData.EditStudent(model);
+		}
+
+		[HttpGet("{id}")]
+		public StudentModel GetStudentById(int id, [FromQuery] string userId)
+		{
+			return _studentData.GetById(id, userId);
 		}
 	}
 }

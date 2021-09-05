@@ -24,10 +24,22 @@ namespace RevXApi.Controllers
 			return _billingStatusData.GetAll();
 		}
 
-		[HttpPost]
+		[HttpGet("enabled")]
+		public List<BillingStatusModel> GetEnabled()
+		{
+			return _billingStatusData.GetEnabled();
+		}
+
+		[HttpPost("add")]
 		public void AddBillingStatus(BillingStatusModel model)
 		{
 			_billingStatusData.AddBillingStatus(model);
+		}
+
+		[HttpPost("edit")]
+		public void EditBillingStatus(BillingStatusModel model)
+		{
+			_billingStatusData.EditBillingStatus(model);
 		}
 
 		[HttpGet("{id}")]

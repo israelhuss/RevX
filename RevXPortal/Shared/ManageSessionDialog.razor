@@ -71,6 +71,10 @@
     </div>
 }
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    private string userId { get; set; }
+
     private bool ShowDialog { get; set; }
 
     [Parameter]
@@ -94,9 +98,10 @@
     {
         try
         {
-            availableStudents = await _student.GetAll();
-            providers = await _provider.GetAll();
-            billingStatus = await _billingStatus.GetAll();
+            userId = ( await authenticationStateTask ).User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            availableStudents = await _student.GetEnabled(userId);
+            providers = await _provider.GetEnabled(userId);
+            billingStatus = await _billingStatus.GetEnabled();
         }
         catch (HttpRequestException e)
         {

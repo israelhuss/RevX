@@ -1,20 +1,32 @@
 ﻿@page "/management"
-@inject IStudentEndpoint _studentEndpoint
 @inject IProviderEndpoint _providerEndpoint
 @inject IBillingStatusEndpoint _billingStatusEndpoint
 @inject ISessionEndpoint _sessionEndpoint
+@inject IJSRuntime jsRuntime
 
-
-    <div class="container mt-3 mb-3">
-        <h2>Management</h2>
+<div class="container mt-3 mb-3">
+    @*<h2>Management</h2>
 
         <div class="row mt-3">
             <ExcelUpload />
-        </div>
-    </div>
+        </div>*@
+
+    <SettingsContainer Header="General">
+        <Collapsible HeaderText="Manage Students">
+            <StudentEditTable></StudentEditTable>
+        </Collapsible>
+        <Collapsible Height="250" HeaderText="Manage Providers">
+            <ProviderEditTable></ProviderEditTable>
+        </Collapsible>
+        <Collapsible Height="200" HeaderText="Manage Hourly Rates">
+            <HourlyRateEditTable></HourlyRateEditTable>
+        </Collapsible>
+    </SettingsContainer>
+
+</div>
 
 
 
-    @code {
-
-    }
+@code {
+    // height is 150px the base plus 50px for each entry
+}

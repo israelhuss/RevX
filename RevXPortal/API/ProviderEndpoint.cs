@@ -15,9 +15,25 @@ namespace RevXPortal.API
 			_client = client;
 		}
 
-		public async Task<List<ProviderModel>> GetAll()
+		public async Task<List<ProviderModel>> GetAll(string userId)
 		{
-			using (HttpResponseMessage response = await _client.GetAsync("/api/Provider"))
+			using (HttpResponseMessage response = await _client.GetAsync($"/api/Provider?userId={userId}"))
+			{
+				if (response.IsSuccessStatusCode)
+				{
+					var result = await response.Content.ReadAsAsync<List<ProviderModel>>();
+					return result;
+				}
+				else
+				{
+					throw new Exception(response.ReasonPhrase);
+				}
+			}
+		}
+
+		public async Task<List<ProviderModel>> GetEnabled(string userId)
+		{
+			using (HttpResponseMessage response = await _client.GetAsync($"/api/Provider/enabled?userId={userId}"))
 			{
 				if (response.IsSuccessStatusCode)
 				{
@@ -33,7 +49,22 @@ namespace RevXPortal.API
 
 		public async Task AddProvider(ProviderModel model)
 		{
-			using (HttpResponseMessage response = await _client.PostAsJsonAsync("/api/Provider", model))
+			using (HttpResponseMessage response = await _client.PostAsJsonAsync("/api/Provider/add", model))
+			{
+				if (response.IsSuccessStatusCode)
+				{
+					//TODO - Log successful post
+				}
+				else
+				{
+					throw new Exception(response.ReasonPhrase);
+				}
+			}
+		}
+
+		public async Task EditProvider(ProviderModel model)
+		{
+			using (HttpResponseMessage response = await _client.PostAsJsonAsync("/api/Provider/edit", model))
 			{
 				if (response.IsSuccessStatusCode)
 				{

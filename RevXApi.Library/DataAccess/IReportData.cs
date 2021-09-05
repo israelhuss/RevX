@@ -6,6 +6,6 @@ namespace RevXApi.Library.DataAccess
 {
 	public interface IReportData
 	{
-		public List<IncomeReportModel> GetMonthlyIncome(DateTime startDate);
+		public List<IncomeReportModel> GetMonthlyIncome(DateTime startDate, DateTime endDate, string userId, string groupBy);
 	}
 }

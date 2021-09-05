@@ -16,9 +16,9 @@ namespace RevXPortal.API
 			_client = client;
 		}
 
-		public async Task<List<ManageSessionModel>> GetAll()
+		public async Task<List<ManageSessionModel>> GetAll(string userId)
 		{
-			using (HttpResponseMessage response = await _client.GetAsync("/api/Session"))
+			using (HttpResponseMessage response = await _client.GetAsync($"/api/Session?userId={userId}"))
 			{
 				if (response.IsSuccessStatusCode)
 				{
@@ -29,6 +29,7 @@ namespace RevXPortal.API
 						ManageSessionModel model = new()
 						{
 							Id = result.Id,
+							UserId = result.UserId,
 							Student = result.Student,
 							Date = result.Date,
 							StartTime = TimeConverters.Convert24HourStringToTimeSpan(result.StartTime),
@@ -90,9 +91,9 @@ namespace RevXPortal.API
 			}
 		}
 
-		public async Task DeleteSession(int id)
+		public async Task DeleteSession(int id, string userId)
 		{
-			using (HttpResponseMessage response = await _client.PostAsJsonAsync($"/api/session/delete/{id}", new { }))
+			using (HttpResponseMessage response = await _client.PostAsJsonAsync($"/api/session/delete/{id}?userId={userId}", new { }))
 			{
 				if (response.IsSuccessStatusCode)
 				{

@@ -10,6 +10,9 @@
 </div>
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    private string userId { get; set; }
 
     public List<StudentModel> StudentList { get; set; }
     public List<ProviderModel> ProviderList { get; set; }
@@ -19,8 +22,9 @@
     {
         try
         {
-            StudentList = await _studentEndpoint.GetAll();
-            ProviderList = await _providerEndpoint.GetAll();
+            userId = ( await authenticationStateTask ).User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            StudentList = await _studentEndpoint.GetAll(userId);
+            ProviderList = await _providerEndpoint.GetAll(userId);
             BillingStatusList = await _billingStatusEndpoint.GetAll();
         }
         catch (Exception e)
@@ -54,17 +58,18 @@
                     //loop all columns in a row
                     for (int j = worksheet.Dimension.Start.Column; j <= worksheet.Dimension.End.Column; j++)
                     {
-                        if (worksheet.Cells[i, j].Value is null)
+                        if (worksheet.Cells[ i, j ].Value is null)
                         {
                             break;
                         }
                         //add the cell data to the List
-                        if (worksheet.Cells[i, j].Value != null)
+                        if (worksheet.Cells[ i, j ].Value != null)
                         {
-                            row.Add(worksheet.Cells[i, j].Value.ToString());
+                            row.Add(worksheet.Cells[ i, j ].Value.ToString());
                         }
                     }
-                    if (row.Count > 0) excelData.Add(row);
+                    if (row.Count > 0)
+                        excelData.Add(row);
 
                 }
             }
@@ -80,10 +85,10 @@
         {
             ManageSessionModel model = new()
             {
-                Date = DateTime.Parse(session[0]),
-                StartTime = TimeConverters.Convert12HourStringToTimeSpan(String.Join(' ', session[1].Split(' ').Skip(1))),
-                EndTime = TimeConverters.Convert12HourStringToTimeSpan(String.Join(' ', session[2].Split(' ').Skip(1))),
-                Student = StudentList.FirstOrDefault(s => s.DisplayName.TrimEnd(' ') == session[4]),
+                Date = DateTime.Parse(session[ 0 ]),
+                StartTime = TimeConverters.Convert12HourStringToTimeSpan(String.Join(' ', session[ 1 ].Split(' ').Skip(1))),
+                EndTime = TimeConverters.Convert12HourStringToTimeSpan(String.Join(' ', session[ 2 ].Split(' ').Skip(1))),
+                Student = StudentList.FirstOrDefault(s => s.DisplayName.TrimEnd(' ') == session[ 4 ]),
                 Provider = ProviderList.FirstOrDefault(p => p.Name == "Legadel"),
                 BillingStatus = BillingStatusList.FirstOrDefault(b => b.BillingStatus == "Paid")
             };

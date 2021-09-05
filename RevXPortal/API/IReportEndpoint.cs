@@ -7,6 +7,6 @@ namespace RevXPortal.API
 {
 	public interface IReportEndpoint
 	{
-		Task<List<IncomeReportModel>> GetMonthlyIncome(DateTime startDate);
+		Task<List<IncomeReportModel>> GetMonthlyIncome(DateTime startDate, DateTime endDate, string userId, string groupBy);
 	}
 }

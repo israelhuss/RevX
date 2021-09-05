@@ -4,7 +4,7 @@ AS
 BEGIN
 	SET NOCOUNT ON
 
-	SELECT [Id], [BillingStatus]
+	SELECT [Id], [BillingStatus], [Enabled]
 	FROM dbo.BillingStatus
 	WHERE Id = @Id
 END

@@ -1,0 +1,44 @@
+﻿<style>
+    .edit-table-container {
+        border: solid 1px #626263;
+        border-radius: 4.5px;
+        text-align: center;
+        margin: 1rem;
+        max-height: 90%;
+    }
+
+    .edit-table-td {
+        cursor: pointer;
+        width: fit-content;
+        margin: 0 auto;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+    .disabled,
+    .disabled div {
+        background-color: #ececec;
+        color: #d5d5d5;
+        cursor: not-allowed;
+    }
+
+    .additional {
+        height: 3rem;
+    }
+</style>
+
+<div class="edit-table-container overflow-auto" style="position:relative">
+    <table class="table table-bordered table-striped" style="margin-top: -1px">
+        @ChildContent
+    </table>
+</div>
+@code {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+}

@@ -10,6 +10,7 @@ namespace RevXPortal.Models
 	{
 
 		public int Id { get; set; }
+		public string UserId { get; set; }
 		[Required]
 		public StudentModel Student { get; set; }
 		[Required]

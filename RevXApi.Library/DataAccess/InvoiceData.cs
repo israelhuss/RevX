@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RevXApi.Library.DataAccess
 {
@@ -29,7 +27,7 @@ namespace RevXApi.Library.DataAccess
 
 				// Get back the Id of this invoice
 				invoice.Id = _sql.LoadDataInTransaction<int, dynamic>("dbo.spInvoice_Lookup", new { invoice.InvoiceDate, invoice.TotalHours }).FirstOrDefault();
-				
+
 				if (invoice.Id > 0)
 				{
 					foreach (var id in invoice.SessionIds)
@@ -46,7 +44,8 @@ namespace RevXApi.Library.DataAccess
 
 					_sql.CommitTransaction();
 				}
-				else throw new Exception();
+				else
+					throw new Exception();
 			}
 			catch
 			{
@@ -64,7 +63,7 @@ namespace RevXApi.Library.DataAccess
 			output.InvoiceSessions = new();
 			foreach (var item in invoice.SessionIds)
 			{
-				var temp = _sessionData.GetById(item);
+				var temp = _sessionData.GetById(item, invoice.UserId);
 				SessionEmailModel model = new()
 				{
 					Student = $"{temp.Student.FirstName} {temp.Student.LastName}",
@@ -99,21 +98,21 @@ namespace RevXApi.Library.DataAccess
 			var split = twentyfour.Split(":");
 			if (split?.Length == 3)
 			{
-				if (int.Parse(split[0]) == 12 )
+				if (int.Parse(split[ 0 ]) == 12)
 				{
-					output = $"12:{split[1]} PM";
+					output = $"12:{split[ 1 ]} PM";
 				}
-				else if (int.Parse(split[0]) == 0)
+				else if (int.Parse(split[ 0 ]) == 0)
 				{
-					output = $"12:{split[1]} AM";
+					output = $"12:{split[ 1 ]} AM";
 				}
-				else if (int.Parse(split[0]) < 12)
+				else if (int.Parse(split[ 0 ]) < 12)
 				{
-					output = $"{int.Parse(split[0])}:{split[1]} AM";
+					output = $"{int.Parse(split[ 0 ])}:{split[ 1 ]} AM";
 				}
-				else if (int.Parse(split[0]) > 12)
+				else if (int.Parse(split[ 0 ]) > 12)
 				{
-					output = $"{int.Parse(split[0]) - 12}:{split[1]} PM";
+					output = $"{int.Parse(split[ 0 ]) - 12}:{split[ 1 ]} PM";
 				}
 			}
 			return output;
