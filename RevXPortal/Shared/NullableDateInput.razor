@@ -59,7 +59,7 @@
 
     private string editing = string.Empty;
 
-    protected override void OnParametersSet()
+    protected override Task OnInitializedAsync()
     {
         jsRuntime.InvokeVoidAsync("log", NumberInputHelper.Validate(2021, "02--", "3"));
         jsRuntime.InvokeVoidAsync("log", Date);
@@ -73,6 +73,8 @@
         {
             Date = null;
         }
+
+        return Task.CompletedTask;
     }
 
     protected ElementReference containerElement;
@@ -265,6 +267,7 @@
             }
             else
             {
+                Year = "----";
                 Year = "000" + e.Key;
                 editing = "year";
             }
@@ -278,7 +281,7 @@
             try
             {
                 Date = DateTime.Parse($"{Month}/{Day}/{Year}");
-                jsRuntime.InvokeVoidAsync("log", $"THe date i created for you: {Date}");
+                jsRuntime.InvokeVoidAsync("log", $"The date i created for you: {Date}");
             }
             catch
             {

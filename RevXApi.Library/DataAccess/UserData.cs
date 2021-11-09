@@ -1,6 +1,7 @@
 ﻿using RevXApi.Library.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RevXApi.Library.DataAccess
 {
@@ -13,9 +14,9 @@ namespace RevXApi.Library.DataAccess
 			_sql = sql;
 		}
 
-		public List<UserModel> GetUserById(string Id)
+		public UserModel GetUserById(string Id)
 		{
-			var output = _sql.LoadData<UserModel, dynamic>("dbo.spUserLookup", new { Id }, "RevXData");
+			var output = _sql.LoadData<UserModel, dynamic>("dbo.spUser_GetById", new { Id }, "RevXData").FirstOrDefault();
 
 			return output;
 		}

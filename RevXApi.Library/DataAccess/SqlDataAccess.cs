@@ -52,17 +52,29 @@ namespace RevXApi.Library.DataAccess
 			}
 		}
 
-		public void SaveData<T>(string storedProcedure, T parameters, string connectionStringName)
+		public int SaveData<T>(string storedProcedure, T parameters, string connectionStringName)
 		{
 			string connectionString = GetConnectionString(connectionStringName);
 
 			using (IDbConnection connection = new SqlConnection(connectionString))
 			{
-				connection.Execute(storedProcedure, parameters,
+				return connection.Execute(storedProcedure, parameters,
 					commandType: CommandType.StoredProcedure);
 			}
 		}
 
+
+		public List<T> SaveDataWithResult<T, U>(string storedProcedure, U parameters, string connectionStringName)
+		{
+			string connectionString = GetConnectionString(connectionStringName);
+
+			using (IDbConnection connection = new SqlConnection(connectionString))
+			{
+				List<T> rows = connection.Query<T>(storedProcedure, parameters,
+					commandType: CommandType.StoredProcedure).ToList();
+				return rows;
+			}
+		}
 
 
 		private IDbConnection _connection;

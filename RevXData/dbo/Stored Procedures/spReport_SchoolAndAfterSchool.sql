@@ -40,5 +40,5 @@ BEGIN
 			when 'year' then cast(DATEADD(YEAR, DATEDIFF(YEAR, 0, [Date]), 0) as date)
 			when 'month' then cast(DATEADD(MONTH, DATEDIFF(MONTH, 0, [Date]), 0) as date)
 			when 'day' then cast(DATEADD(DAY, DATEDIFF(DAY, 0, [Date]), 0) as date)
-				 end
+				 END
 END

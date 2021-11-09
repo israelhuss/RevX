@@ -33,7 +33,7 @@ namespace RevXPortal.API
 
 		public async Task AddRate(HourlyRate model)
 		{
-			using (HttpResponseMessage response = await _client.PostAsJsonAsync("/api/HourlyRates/add", model))
+			using (HttpResponseMessage response = await _client.PostAsJsonAsync("/api/HourlyRates", model))
 			{
 				if (response.IsSuccessStatusCode)
 				{

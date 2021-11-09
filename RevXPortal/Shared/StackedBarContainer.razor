@@ -1,0 +1,31 @@
+﻿<style>
+    :root {
+        --container-width: 75vw;
+    }
+
+    .container {
+        width: var(--container-width);
+        -webkit-print-color-adjust: exact;
+    }
+</style>
+
+
+
+<div class="container">
+    <div class="card">
+        @ChildContent
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public List<string> Titles { get; set; }
+
+    private List<double> Values { get; set; } = new();
+    private double MaxValue { get; set; }
+    private List<string> ValuePoints { get; set; }
+}

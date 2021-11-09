@@ -7,8 +7,8 @@ namespace RevXApi.Library.DataAccess
 	public interface IHourlyRateData
 	{
 		void AddHourlyRate(HourlyRate rate);
-		List<HourlyRate> GetAll(string userId);
-		HourlyRate GetByDate(DateTime date, string userId);
+		List<HourlyRate> GetAll(string userId, string providerId);
+		HourlyRate GetByDate(DateTime date, string userId, string providerId);
 		void EditRate(HourlyRate model);
 	}
 }

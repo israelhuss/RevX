@@ -1,0 +1,21 @@
+﻿@inject IJSRuntime jsRuntime
+
+<canvas @onmouseout="() => DoneWriting()" id="signature-pad" class="js-paint  paint-canvas" width="300" height="90" style="background: #efefef; border-bottom: solid 1px #000;"></canvas>
+
+@code {
+	public string SignatureData { get; set; }
+	[Parameter]
+	public EventCallback<string> SignatureChanged { get; set; }
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		await jsRuntime.InvokeVoidAsync("initializeCanvas");
+	}
+
+	private async void DoneWriting() 
+	{
+		SignatureData = await jsRuntime.InvokeAsync<string>("getSignatureData");
+		await jsRuntime.InvokeVoidAsync("log", SignatureData);
+		await SignatureChanged.InvokeAsync(SignatureData);
+	}
+}

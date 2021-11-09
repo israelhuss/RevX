@@ -8,4 +8,6 @@ AS
 BEGIN
 	INSERT INTO dbo.Student (UserId, FirstName, LastName)
 	VALUES (@UserId, @FirstName, @LastName)
+
+	SELECT SCOPE_IDENTITY()
 END

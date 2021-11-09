@@ -13,7 +13,7 @@
         <div class="top-row px-4">
             <AuthorizeView>
                 <Authorized>
-                    Hello @context.User.Identity.Name
+                    Hello, @context.User.FindFirst(ClaimTypes.GivenName).Value @context.User.FindFirst(ClaimTypes.Surname).Value 
                     <button class="btn btn-info m-3" @onclick="OnLogout">Log Out</button>
                 </Authorized>
                 <NotAuthorized>
@@ -31,6 +31,8 @@
 </div>
 
 @code {
+    public string UserName { get; set; } = "";
+
     private void OnLogin()
     {
         NavManager.NavigateTo($"/login?url={NavManager.Uri.Replace(NavManager.BaseUri, "")}");
@@ -39,14 +41,5 @@
     private void OnLogout()
     {
         NavManager.NavigateTo("/logout");
-    }
-
-    [Inject]
-    public AuthenticationStateProvider authState { get; set; }
-
-    protected override async Task OnInitializedAsync()
-    {
-        AuthenticationState state = await authState.GetAuthenticationStateAsync();
-        //await jsRuntime.InvokeVoidAsync("log", state.User.Identity.Name);
     }
 }

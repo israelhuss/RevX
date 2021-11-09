@@ -100,6 +100,7 @@ else
     private Task<AuthenticationState> authenticationStateTask { get; set; }
     private string userId { get; set; }
 
+    [CascadingParameter]
     public List<StudentModel> students { get; set; }
 
     public IEditTable StudentTableData { get; set; }
@@ -111,7 +112,6 @@ else
     protected override async Task OnParametersSetAsync()
     {
         userId = ( await authenticationStateTask ).User.FindFirst(ClaimTypes.NameIdentifier).Value;
-        await RefreshStudentList();
     }
 
     public void YouClickedMe(StudentModel student, string el)

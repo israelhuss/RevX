@@ -50,7 +50,7 @@
         </button>
     </div>
 
-    <div class="collapsing-div" style="height: @(height + "px"); border-top: @(show ? "solid 1px #d3d3d3" : "none"); padding: @(show ? "10px" : "0")">
+    <div class="collapsing-div" style="height: @(height + "rem"); border-top: @(show ? "solid 1px #d3d3d3" : "none"); padding: @(show ? "10px" : "0")">
         @if (show)
         {
             @ChildContent
@@ -70,11 +70,11 @@
     public string HeaderText { get; set; }
 
     [Parameter]
-    public int Height { get; set; } = 350;
+    public double Height { get; set; } = 350;
 
     public bool show { get; set; } = false;
     public int rotate { get; set; } = 0;
-    public int height { get; set; }
+    public double height { get; set; }
 
     public void ToggleShow()
     {

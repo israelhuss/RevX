@@ -10,5 +10,6 @@ namespace RevXPortal.Models
 		public DateTime? EndDate { get; set; }
 		public double? Rate { get; set; }
 		public bool isEditMode { get; set; }
+		public int? ProviderId { get; set; }
 	}
 }

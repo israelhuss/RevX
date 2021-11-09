@@ -159,6 +159,8 @@
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }
+    
+    [CascadingParameter]
     private string userId { get; set; }
 
     // Dialog references
@@ -176,14 +178,17 @@
 
     protected async override Task OnInitializedAsync()
     {
-        userId = ( await authenticationStateTask ).User.FindFirst(ClaimTypes.NameIdentifier).Value;
-        await jsRuntime.InvokeVoidAsync("log", $"User id is: {userId}");
-        if (userId is null)
+        if (!( await authenticationStateTask ).User.Identity.IsAuthenticated)
         {
             await jsRuntime.InvokeVoidAsync("log", "User id was null redirecting to login");
             NavManager.NavigateTo($"/login?url={NavManager.Uri.Replace(NavManager.BaseUri, "")}");
         }
-        await RefreshSessionsList();
+        else
+        {
+            userId = ( await authenticationStateTask ).User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            await jsRuntime.InvokeVoidAsync("log", $"User id is: {userId}");
+            await RefreshSessionsList(); 
+        }
     }
 
     private async Task RefreshSessionsList()
@@ -241,6 +246,7 @@
         ManageSession.Provider = new ProviderModel() { Id = 1, Name = "Legadel" };
         ManageSession.BillingStatus = new BillingStatusModel() { Id = 1, BillingStatus = "Open" };
         ManageSession.UserId = userId;
+        jsRuntime.InvokeVoidAsync("log", userId);
         formTitle = "Add A Session";
         ManageDialogRef.Show();
     }

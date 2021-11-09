@@ -21,9 +21,9 @@ namespace RevXApi.Controllers
 		}
 
 		[HttpGet]
-		public List<HourlyRate> GetAll([FromQuery] string userId)
+		public List<HourlyRate> GetAll([FromQuery] string userId, [FromQuery] string providerId)
 		{
-			return _rateData.GetAll(userId);
+			return _rateData.GetAll(userId, providerId);
 		}
 
 		[HttpPost]
@@ -33,9 +33,9 @@ namespace RevXApi.Controllers
 		}
 
 		[HttpGet("date")]
-		public HourlyRate GetProviderById([FromQuery] DateTime date, [FromQuery] string userId)
+		public HourlyRate GetProviderById([FromQuery] DateTime date, [FromQuery] string userId, [FromQuery] string providerId)
 		{
-			return _rateData.GetByDate(date, userId);
+			return _rateData.GetByDate(date, userId, providerId);
 		}
 
 		[HttpPost("edit")]

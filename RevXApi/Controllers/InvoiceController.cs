@@ -22,7 +22,7 @@ namespace RevXApi.Controllers
 		}
 
 		[HttpPost]
-		[Route("SendEmail")]
+		[Route("TestEmail")]
 		public async void SendEmail()
 		{
 			await _emailService.SendEmail();

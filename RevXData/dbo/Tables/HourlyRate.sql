@@ -1,9 +1,0 @@
-﻿CREATE TABLE [dbo].[HourlyRate]
-(
-	[Id] INT NOT NULL PRIMARY KEY IDENTITY, 
-	[UserId] NVARCHAR(128) NOT NULL,
-	[StartDate] DATETIME2 NOT NULL, 
-	[EndDate] DATETIME2 NULL, 
-	[Rate] FLOAT NOT NULL,
-	CONSTRAINT [FK_HourlyRate_ToUser] FOREIGN KEY ([UserId]) REFERENCES [User]([Id])
-)

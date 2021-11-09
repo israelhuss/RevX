@@ -1,5 +1,4 @@
 ﻿using RevXPortal.Models;
-using System;
 using System.Timers;
 
 namespace RevXPortal.Services
@@ -8,7 +7,7 @@ namespace RevXPortal.Services
 	{
 		public event Action<string, ToastLevel> OnShow;
 		public event Action OnHide;
-		private Timer Countdown;
+		private System.Timers.Timer Countdown;
 
 		public void ShowToast(string message, ToastLevel level)
 		{
@@ -35,7 +34,7 @@ namespace RevXPortal.Services
 		{
 			if (Countdown == null)
 			{
-				Countdown = new Timer(5000);
+				Countdown = new System.Timers.Timer(5000);
 				Countdown.Elapsed += HideToast;
 				Countdown.AutoReset = false;
 			}

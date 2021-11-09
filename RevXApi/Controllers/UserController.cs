@@ -33,11 +33,11 @@ namespace RevXApi.Controllers
 		}
 
 		[HttpGet]
+		[AllowAnonymous]
 		public UserModel GetById()
 		{
 			string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-			return _userData.GetUserById(userId).First();
+			return _userData.GetUserById(userId);
 		}
 
 		public record UserRegistrationModel(string FirstName, string LastName, string EmailAddress, string Password);
@@ -64,7 +64,7 @@ namespace RevXApi.Controllers
 						ExistingUser = await _userManager.FindByEmailAsync(user.EmailAddress);
 						if (ExistingUser == null)
 						{
-							return BadRequest();
+							return BadRequest(new { message = "We encountered an error while creating your account." });
 						}
 						UserModel u = new()
 						{
@@ -76,9 +76,17 @@ namespace RevXApi.Controllers
 						_userData.CreateUser(u);
 						return Ok();
 					}
+					else
+					{
+						return BadRequest(result.Errors);
+					}
+				}
+				else
+				{
+					return BadRequest(new { message = "This email is already signed up!" });
 				}
 			}
-			return BadRequest();
+			return BadRequest(ModelState.ErrorCount);
 		}
 
 

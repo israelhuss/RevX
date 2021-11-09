@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using RevXApi.Data;
+using RevXApi.Library.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -15,11 +16,13 @@ namespace RevXApi.Controllers
 	{
 		private readonly ApplicationDbContext _context;
 		private readonly UserManager<IdentityUser> _userManager;
+		private readonly IUserData _userData;
 
-		public TokenController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+		public TokenController(ApplicationDbContext context, UserManager<IdentityUser> userManager, IUserData userData)
 		{
 			_context = context;
 			_userManager = userManager;
+			_userData = userData;
 		}
 
 		[Route("/token")]
@@ -50,6 +53,8 @@ namespace RevXApi.Controllers
 			{
 				new Claim(ClaimTypes.Name, username),
 				new Claim(ClaimTypes.NameIdentifier, user.Id),
+				new Claim(ClaimTypes.GivenName, _userData.GetUserById(user.Id).FirstName),
+				new Claim(ClaimTypes.Surname, _userData.GetUserById(user.Id).LastName),
 				new Claim(JwtRegisteredClaimNames.Nbf, new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds().ToString()),
 				new Claim(JwtRegisteredClaimNames.Exp, new DateTimeOffset(DateTime.Now.AddDays(7)).ToUnixTimeSeconds().ToString())
 			};

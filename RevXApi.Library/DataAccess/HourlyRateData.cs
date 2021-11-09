@@ -14,19 +14,19 @@ namespace RevXApi.Library.DataAccess
 			_sql = sql;
 		}
 
-		public List<HourlyRate> GetAll(string userId)
+		public List<HourlyRate> GetAll(string userId, string providerId)
 		{
-			return _sql.LoadData<HourlyRate, dynamic>("dbo.spRates_GetAll", new { userId }, "RevXData");
+			return _sql.LoadData<HourlyRate, dynamic>("dbo.spRates_GetAll", new { userId, providerId }, "RevXData");
 		}
 
 		public void AddHourlyRate(HourlyRate rate)
 		{
-			_sql.SaveData("dbo.spRates_Insert", rate, "RevXData");
+            int res = _sql.SaveData("dbo.spRates_Insert", rate, "RevXData");
 		}
 
-		public HourlyRate GetByDate(DateTime date, string userId)
+		public HourlyRate GetByDate(DateTime date, string userId, string providerId)
 		{
-			return _sql.LoadData<HourlyRate, dynamic>("dbo.spRates_GetByDate", new { Date = date, userId }, "RevXData").FirstOrDefault();
+			return _sql.LoadData<HourlyRate, dynamic>("dbo.spRates_GetByDate", new { Date = date, userId, providerId }, "RevXData").FirstOrDefault();
 		}
 
 		public void EditRate(HourlyRate model)

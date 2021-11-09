@@ -64,15 +64,13 @@
     public double Size { get; set; } = 400;
 
     [Parameter]
-    public List<string>
-    Colors
-    { get; set; } = new() { "#1365fc", "#298a00", "#722472", "#ff5a5a", "#f5f26c", "#60d1d0", "#d76311", "#2900A5", "#d38dd2", "#E4BF58", "#C94D6D", "#A9A9A9", "#e786f4" };
+    public List<string> Colors { get; set; } = new() { "#1365fc", "#298a00", "#722472", "#ff5a5a", "#f5f26c", "#60d1d0", "#d76311", "#2900A5", "#d38dd2", "#E4BF58", "#C94D6D", "#A9A9A9", "#e786f4", "#1365fc", "#298a00", "#722472", "#ff5a5a", "#f5f26c", "#60d1d0", "#d76311", "#2900A5", "#d38dd2", "#E4BF58", "#C94D6D", "#A9A9A9", "#e786f4", "#1365fc", "#298a00", "#722472", "#ff5a5a", "#f5f26c", "#60d1d0", "#d76311", "#2900A5", "#d38dd2", "#E4BF58", "#C94D6D", "#A9A9A9", "#e786f4", "#1365fc", "#298a00", "#722472", "#ff5a5a", "#f5f26c", "#60d1d0", "#d76311", "#2900A5", "#d38dd2", "#E4BF58", "#C94D6D", "#A9A9A9", "#e786f4" };
 
     public double Radius { get; set; }
 
     public double Padding { get; set; } = 0;
 
-    public double Circumference { get; set; } = (2 * Math.PI) * 125;
+    public double Circumference { get; set; } = ( 2 * Math.PI ) * 125;
 
     public double total { get; set; }
 
@@ -80,8 +78,8 @@
 
     protected override void OnParametersSet()
     {
-        Radius = (Size * .9) / 2;
-        Padding = (Size * .1) / 2;
+        Radius = ( Size * .9 ) / 2;
+        Padding = ( Size * .1 ) / 2;
         total = Data.Sum();
 
         if (TootlipData.Count == 0)
@@ -95,7 +93,7 @@
 
     private string GetPoints(int index)
     {
-        double val = Data[index];
+        double val = Data[ index ];
 
         if (index == Data.Count - 1)
         {
@@ -104,20 +102,20 @@
 
         for (var i = 0; i < index; i++)
         {
-            val += Data[i];
+            val += Data[ i ];
         }
 
-        var angle = (val / total) * (2 * Math.PI);
+        var angle = ( val / total ) * ( 2 * Math.PI );
         var sin = Math.Sin(angle);
         var cosine = Math.Cos(angle);
-        var x = Size / 2 - (cosine * Radius);
-        var y = Size / 2 - (sin * Radius);
+        var x = Size / 2 - ( cosine * Radius );
+        var y = Size / 2 - ( sin * Radius );
         return $"{x},{y}";
     }
 
     private string GetLabelPoints(int index)
     {
-        double val = Data[index];
+        double val = Data[ index ];
         val = val / 2;
 
         //if (index == Data.Count - 1)
@@ -127,20 +125,20 @@
 
         for (var i = 0; i < index; i++)
         {
-            val += Data[i];
+            val += Data[ i ];
         }
 
-        var angle = (val / total) * (2 * Math.PI);
+        var angle = ( val / total ) * ( 2 * Math.PI );
         var sin = Math.Sin(angle);
         var cosine = Math.Cos(angle);
-        var x = Size / 2 - (cosine * (Padding * 7.5));
-        var y = Size / 2 - (sin * (Padding * 7.5));
+        var x = Size / 2 - ( cosine * ( Padding * 7.5 ) );
+        var y = Size / 2 - ( sin * ( Padding * 7.5 ) );
         return $"{x}px,{y}px";
     }
 
     private string GetHoverPoints(int index)
     {
-        double val = Data[index];
+        double val = Data[ index ];
 
         if (index == Data.Count - 1)
         {
@@ -149,14 +147,14 @@
 
         for (var i = 0; i < index; i++)
         {
-            val += Data[i];
+            val += Data[ i ];
         }
 
-        var angle = (val / total) * (2 * Math.PI);
+        var angle = ( val / total ) * ( 2 * Math.PI );
         var sin = Math.Sin(angle);
         var cosine = Math.Cos(angle);
-        var x = Size / 2 - (cosine * (Size / 2));
-        var y = Size / 2 - (sin * (Size / 2));
+        var x = Size / 2 - ( cosine * ( Size / 2 ) );
+        var y = Size / 2 - ( sin * ( Size / 2 ) );
         return $"{x},{y}";
     }
 
@@ -182,7 +180,7 @@
 
     private int CheckIfLarge(int index)
     {
-        if (Data[index] / total > .5)
+        if (Data[ index ] / total > .5)
         {
             return 1;
         }
@@ -205,7 +203,7 @@
     {
         var newPath = GetPath(index, true);
         await jsRuntime.InvokeVoidAsync("SetPath", $"path-{index}-{Rand}", newPath);
-        TooltipRef.SetText(TootlipData[index].ToString());
+        TooltipRef.SetText(TootlipData[ index ].ToString());
         TooltipRef.Show();
     }
 

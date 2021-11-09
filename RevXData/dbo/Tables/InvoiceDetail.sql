@@ -1,7 +1,7 @@
 ﻿CREATE TABLE [dbo].[InvoiceDetail]
 (
 	[Id] INT NOT NULL PRIMARY KEY IDENTITY, 
-	[UserId] NVARCHAR(128) NOT NULL,
+	[UserId] NVARCHAR(128) NOT NULL DEFAULT '%REPLACE_ME%',
 	[InvoiceId] INT NOT NULL, 
 	[SessionId] INT NOT NULL, 
 	CONSTRAINT [FK_InvoiceDetail_ToInvoice] FOREIGN KEY (InvoiceId) REFERENCES dbo.Invoice(Id), 

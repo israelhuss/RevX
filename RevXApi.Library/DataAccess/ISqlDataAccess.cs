@@ -12,7 +12,8 @@ namespace RevXApi.Library.DataAccess
 		List<T> LoadData<T>(string storedProcedure, string connectionStringName);
 		List<T> LoadDataInTransaction<T, U>(string storedProcedure, U parameters);
 		void RollBackTransaction();
-		void SaveData<T>(string storedProcedure, T parameters, string connectionStringName);
+		int SaveData<T>(string storedProcedure, T parameters, string connectionStringName);
+		List<T> SaveDataWithResult<T, U>(string storedProcedure, U parameters, string connectionStringName);
 		void SaveDataInTransaction<T>(string storedProcedure, T parameters);
 		void StartTransaction(string connectionStringName);
 	}

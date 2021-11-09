@@ -3,14 +3,15 @@
 	public class IncomeReportModel : IStackedBarData
 	{
 		public string Date { get; set; }
-		public double SchoolPrimary { get; set; }
-		public double SchoolSecondary { get; set; }
-		public double AfterSchoolPrimary { get; set; }
-		public double AfterSchoolSecondary { get; set; }
+		public ReportSegmant SchoolPrimary { get; set; }
+		public ReportSegmant SchoolSecondary { get; set; }
+		public ReportSegmant AfterSchoolPrimary { get; set; }
+		public ReportSegmant AfterSchoolSecondary { get; set; }
 		public string Title { get; set; }
-		public double BarOnePrimary { get => SchoolPrimary; }
-		public double BarOneSecondary { get => SchoolSecondary; }
-		public double BarTwoPrimary { get => AfterSchoolPrimary; }
-		public double BarTwoSecondary { get => AfterSchoolSecondary; }
+		public string TooltipText { get; set; }
+		public double BarOnePrimary { get => SchoolPrimary.Hours; }
+		public double BarOneSecondary { get => SchoolSecondary.Hours; }
+		public double BarTwoPrimary { get => AfterSchoolPrimary.Hours; }
+		public double BarTwoSecondary { get => AfterSchoolSecondary.Hours; }
 	}
 }

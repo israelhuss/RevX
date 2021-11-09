@@ -9,16 +9,6 @@
         --bar-width: calc((100% - 2.5rem) / 2);
     }
 
-    .container {
-        width: var(--container-width);
-        -webkit-print-color-adjust: exact;
-    }
-
-    .card-header {
-        display: flex;
-        justify-content: space-between
-    }
-
     .card-body {
         padding-bottom: 4rem;
         padding-top: 2.5rem;
@@ -80,12 +70,14 @@
         left: 0;
         display: flex;
         width: 100%;
+        justify-content: flex-start;
     }
 
     .chart-footer-cell {
         border-left: solid 2px #808080;
         width: var(--bar-group-width);
         height: 10px;
+        max-width: 200px;
     }
 
     .bar-container {
@@ -96,7 +88,7 @@
         height: 100%;
         display: flex;
         align-items: flex-end;
-        justify-content: space-evenly;
+        justify-content: flex-start;
     }
 
     .bar-group {
@@ -104,6 +96,7 @@
         width: var(--bar-group-width);
         justify-content: center;
         align-items: flex-end;
+        max-width: 200px;
     }
 
     .bar {
@@ -131,167 +124,105 @@
     }
 </style>
 
-
-
-<div class="container">
-    <div class="card">
-
-        <div class="card-header">
-            <div>
-                <h5>School Hours - @BarOneTotals.ToString("C")</h5>
-                <h5 style="margin-bottom: 0;">After School Hours - @BarTwoTotals.ToString("C")</h5>
-            </div>
-            <div style="display: flex;">
-                <div style="padding: .5rem;">
-                    <div style="display: flex; align-items: center; padding-bottom: 7px;">
-                        <div style="width: 12px; height: 12px; background-color: #1365fc; margin-right: 5px;"></div>
-                        <p style="margin: 0; line-height:1;">School Hours / Encore</p>
-                    </div>
-                    <div style="display: flex; align-items: center; padding-bottom: 7px;">
-                        <div style="width: 12px; height: 12px; background-color: #6299ff; margin-right: 5px;"></div>
-                        <p style="margin: 0; line-height:1;">School Hours / Legadel</p>
-                    </div>
-                </div>
-                <div style="padding: .5rem;">
-                    <div style="display: flex; align-items: center; padding-bottom: 7px;">
-                        <div style="width: 12px; height: 12px; background-color: #298a00; margin-right: 5px;"></div>
-                        <p style="margin: 0; line-height:1;">After School Hours / Encore</p>
-                    </div>
-                    <div style="display: flex; align-items: center; padding-bottom: 7px;">
-                        <div style="width: 12px; height: 12px; background-color: #4dac25; margin-right: 5px;"></div>
-                        <p style="margin: 0; line-height:1;">After School Hours / Legadel</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="chart-container">
-                @if (Data is not null)
+<div class="card-body">
+    <div class="chart-container">
+        @if (Data is not null && Data.Any())
+        {
+            <div class="value-box">
+                @for (int i = 0; i <= RowCount; i++)
                 {
-                    <div class="value-box">
-                        @for (int i = 0; i <= RowCount; i++)
-                        {
-                            <div class="value-box-cell">
-                                <p class="value-box-cell-text">@ValuePoints[ i ]</p>
-                            </div>
-                        }
-                    </div>
-                    <div class="chart">
-                        @for (var i = 0; i < RowCount; i++)
-                        {
-                            <div class="chart-row"></div>
-
-                        }
-                    </div>
-                    <div class="bar-container">
-                        @foreach (var item in Data)
-                        {
-                            <div class="bar-group">
-                                <div class="bar bar-1">
-                                    <Tooltip Text="@($"{item.BarOnePrimary} Hours\n{((item.BarOnePrimary) * HourlyRate).ToString("C") }")">
-                                        <div class="stack-1" style="height: @(((item.BarOnePrimary * HourlyRate) * 25) / MaxValue + "rem"); background-color: #1365fc; border-top-left-radius: @(item.BarOneSecondary > 0 ? "0" : "5px"); border-top-right-radius: @(item.BarOneSecondary > 0 ? "0" : "5px"); ">
-                                            <p style="color: white; display: inline;"></p>
-                                        </div>
-                                    </Tooltip>
-                                    <Tooltip Text="@($"{item.BarOneSecondary} Hours\n{((item.BarOneSecondary) * HourlyRate).ToString("C") }")">
-                                        <div class="stack-2" style="height: @(((item.BarOneSecondary * HourlyRate) * 25) / MaxValue + "rem"); background-color: #1365fc; background-image: linear-gradient(rgb(255 255 255 / 0.35), rgb(255 255 255 / 0.35));">
-                                            <p style="color: white; display: inline;"></p>
-                                        </div>
-                                    </Tooltip>
-                                    <div>$@((item.BarOnePrimary * HourlyRate) + (item.BarOneSecondary * HourlyRate))</div>
-                                </div>
-                                <div class="bar bar-2">
-                                    <Tooltip Text="@($"{item.BarTwoPrimary} Hours\n{(item.BarTwoPrimary * HourlyRate).ToString("C") }")">
-                                        <div class=" stack-1" style="height: @(((item.BarTwoPrimary *@HourlyRate) * 25) / MaxValue + "rem"); background-color: #298a00; border-top-left-radius: @(item.BarTwoSecondary > 0 ? "0" : "5px"); border-top-right-radius: @(item.BarTwoSecondary > 0 ? "0" : "5px"); ">
-                                            <p style="color: white; display: inline;"></p>
-                                        </div>
-                                    </Tooltip>
-                                    <Tooltip Text="@($"{item.BarTwoSecondary} Hours\n{((item.BarTwoSecondary) * HourlyRate).ToString("C") }")">
-                                        <div class="stack-2" style="height: @(((item.BarTwoSecondary * HourlyRate)  * 25) / MaxValue + "rem"); background-color: #298a00; background-image: linear-gradient(rgb(255 255 255 / 0.35), rgb(255 255 255 / 0.35));">
-                                            <p style="color: white; display: inline;"></p>
-                                        </div>
-                                    </Tooltip>
-                                    <div>$@((item.BarTwoPrimary * HourlyRate) + (item.BarTwoSecondary * HourlyRate))</div>
-
-                                </div>
-                            </div>
-                        }
-                    </div>
-                    <div class="chart-footer">
-                        @foreach (var item in Data)
-                        {
-                            <div class="chart-footer-cell">
-                                <p style="transform: rotate(30deg) translate(20%, -30%); padding-top: 1rem; padding-left: 1rem; width: max-content; margin: 0 auto;">@item.Title</p>
-                            </div>
-                        }
+                    <div class="value-box-cell">
+                        <p class="value-box-cell-text">@ValuePoints[ i ]</p>
                     </div>
                 }
-                else
+            </div>
+            <div class="chart">
+                @for (var i = 0; i < RowCount; i++)
                 {
-                    <LoadingIndicator />
+                    <div class="chart-row"></div>
                 }
             </div>
-        </div>
+            <div class="bar-container">
+                @foreach (var item in Data)
+                {
+                    <div class="bar-group">
+                        <div class="bar bar-1">
+                            <Tooltip Text="@item.TooltipText">
+                                <div class="stack-1" style="height: @((item.BarOnePrimary * 25) / MaxValue + "rem"); background-color: #1365fc; border-top-left-radius: @(item.BarOneSecondary > 0 ? "0" : "5px"); border-top-right-radius: @(item.BarOneSecondary > 0 ? "0" : "5px"); ">
+                                    <p style="color: white; display: inline;"></p>
+                                </div>
+                            </Tooltip>
+                            <Tooltip Text="@item.TooltipText">
+                                <div class="stack-2" style="height: @((item.BarOneSecondary * 25) / MaxValue + "rem"); background-color: #1365fc; background-image: linear-gradient(rgb(255 255 255 / 0.35), rgb(255 255 255 / 0.35));">
+                                    <p style="color: white; display: inline;"></p>
+                                </div>
+                            </Tooltip>
+                            <div>$@(item.BarOnePrimary + item.BarOneSecondary)</div>
+                        </div>
+                        <div class="bar bar-2">
+                            <Tooltip Text="@item.TooltipText">
+                                <div class=" stack-1" style="height: @((item.BarTwoPrimary * 25) / MaxValue + "rem"); background-color: #298a00; border-top-left-radius: @(item.BarTwoSecondary > 0 ? "0" : "5px"); border-top-right-radius: @(item.BarTwoSecondary > 0 ? "0" : "5px"); ">
+                                    <p style="color: white; display: inline;"></p>
+                                </div>
+                            </Tooltip>
+                            <Tooltip Text="@item.TooltipText">
+                                <div class="stack-2" style="height: @((item.BarTwoSecondary  * 25) / MaxValue + "rem"); background-color: #298a00; background-image: linear-gradient(rgb(255 255 255 / 0.35), rgb(255 255 255 / 0.35));">
+                                    <p style="color: white; display: inline;"></p>
+                                </div>
+                            </Tooltip>
+                            <div>$@(item.BarTwoPrimary + item.BarTwoSecondary)</div>
+
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="chart-footer">
+                @foreach (var item in Data)
+                {
+                    <div class="chart-footer-cell">
+                        <p style="transform: rotate(30deg) translate(20%, -30%); padding-top: 1rem; padding-left: 1rem; width: max-content; margin: 0 auto;">@item.Title</p>
+                    </div>
+                }
+            </div>
+        }
+        else if (Data is not null && !Data.Any())
+        {
+
+        }
+        else
+        {
+            <LoadingIndicator />
+        }
     </div>
 </div>
-
-
 @code {
-
     [Parameter]
     public int RowCount { get; set; }
-
-    private int DataLength { get; set; }
-
-    public double BarOneTotals { get; set; }
-
-    public double BarTwoTotals { get; set; }
-
-    public double HourlyRate { get; set; } = 32;
-
     [Parameter]
     public IEnumerable<IStackedBarData> Data { get; set; }
 
-    [Parameter]
-    public List<string> Titles { get; set; }
+    public List<string> ValuePoints { get; set; }
+    public double MaxValue { get; set; }
+    public List<int> Values { get; set; }
+    private int DataLength { get; set; }
 
-    private List<double> Values { get; set; } = new();
-    private double MaxValue { get; set; }
-    private List<string> ValuePoints { get; set; }
-
-
-    protected override void OnParametersSet()
-    {
-        if (Data is not null)
-        {
-            DataLength = Data.Count();
-            BarOneTotals = 0;
-            BarTwoTotals = 0;
-            foreach (var item in Data)
-            {
-                double barOne = ( ( item.BarOnePrimary ) * HourlyRate ) + ( ( item.BarOneSecondary ) * HourlyRate );
-                double barTwo = ( ( item.BarTwoPrimary ) * HourlyRate ) + ( ( item.BarTwoSecondary ) * HourlyRate );
-                Values.Add(barOne);
-                Values.Add(barTwo);
-                BarOneTotals += barOne;
-                BarTwoTotals += barTwo;
-            }
-            Console.WriteLine(Data);
-            CalculateValues();
-        }
-    }
 
     private void CalculateValues()
     {
-        double min = Values.Min();
         double max = Values.Max();
 
-        var minLength = Math.Floor(Math.Log10(min) + 1);
         var maxLength = Math.Floor(Math.Log10(max) + 1);
 
         if (maxLength <= 3)
         {
-            double test = SlideRule(max, (int)maxLength);
+            double result = max + 100 - max % 100;
+            MaxValue = result;
+            ValuePoints = new List<string>();
+            for (double i = 0; Math.Round(i) <= result; i += ( result / RowCount ))
+            {
+                var val = Math.Round(i).KiloFormat();
+                ValuePoints.Add(val);
+            }
         }
         else if (maxLength >= 4 && maxLength < 7)
         {
@@ -309,6 +240,7 @@
             double test = SlideRule(max, 2);
         }
     }
+
 
     public static double SlideRule(double value, int sigdigits)
     {

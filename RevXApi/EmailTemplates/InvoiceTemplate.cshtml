@@ -39,7 +39,7 @@
         img + div {
             display: none;
         }
-    </style>
+</style>
 </head>
 <body>
 
@@ -60,7 +60,7 @@
                                     <th>Date</th>
                                     <th>Start Time</th>
                                     <th>End Time</th>
-                                    <th>Notes</th>
+                                    <th>Reason</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -81,13 +81,42 @@
             </tr>
             <tr>
                 <td>
-                    <h2 style="text-align: end;">Total Hours: @Model.TotalHours</h2>
+                    <table style="margin-left: auto;">
+                        <tbody>
+                            <tr>
+                                <td style="text-align: left;">Total Hours:</td>
+                                <td style="text-align: right;">@Model.TotalHours</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;">Rate:</td>
+                                <td style="text-align: right;">$@Model.Rate</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left; font-weight: 700; font-size: larger;">Total:</td>
+                                <td style="font-weight: 700; text-align: right; font-size: larger;">@((Model.Rate * Model.TotalHours).ToString("C"))</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <table style="margin-left: auto; margin-top: 30px;">
+                        <tbody>
+                            <tr>
+                                <td style="border-bottom: solid 1px #000; position: relative;">
+                                    <span style="font-weight: 700; font-size: larger;margin-right: 10px;">X</span>
+                                    <img src="cid:Signature" alt="Employee Signature" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </td>
             </tr>
         </tbody>
         <tfoot>
             <tr>
-                <td style="padding: 2rem;">
+                <td style="padding: 2rem; padding-top: 4rem;">
                     <p style=" display: flex; width: max-content; margin-left: auto; margin-right: auto;">
                         <span style="font-weight: bold;">Powered by:</span>
                         <span style="line-height: 1;">

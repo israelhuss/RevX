@@ -23,23 +23,23 @@ namespace RevXApi.Library.DataAccess
 				_sql.StartTransaction("RevXData");
 
 				// Save the Invoice
-				_sql.SaveDataInTransaction("dbo.spInvoice_Insert", new { invoice.Id, invoice.InvoiceDate, invoice.TotalHours });
+				_sql.SaveDataInTransaction("dbo.spInvoice_Insert", new { invoice.Id, invoice.InvoiceDate, invoice.TotalHours, invoice.UserId });
 
 				// Get back the Id of this invoice
-				invoice.Id = _sql.LoadDataInTransaction<int, dynamic>("dbo.spInvoice_Lookup", new { invoice.InvoiceDate, invoice.TotalHours }).FirstOrDefault();
+				invoice.Id = _sql.LoadDataInTransaction<int, dynamic>("dbo.spInvoice_Lookup", new { invoice.InvoiceDate, invoice.TotalHours, invoice.UserId }).FirstOrDefault();
 
 				if (invoice.Id > 0)
 				{
 					foreach (var id in invoice.SessionIds)
 					{
-						var detail = new InvoiceDetailModel() { InvoiceId = invoice.Id, SessionId = id };
+						var detail = new InvoiceDetailModel() { InvoiceId = invoice.Id, SessionId = id, UserId = invoice.UserId };
 
 						// Save the Detail to database
 						_sql.SaveDataInTransaction("dbo.spInvoiceDetail_Insert", detail);
 
 						// Update the sessions billing status to invoiced
 						// TODO - the status id should be looked up, not manually typed!!!!
-						_sql.SaveDataInTransaction("dbo.spSession_EditBillingStatus", new { Id = id, StatusId = 2 });
+						_sql.SaveDataInTransaction("dbo.spSession_EditBillingStatus", new { Id = id, StatusId = 2, UserId = invoice.UserId});
 					}
 
 					_sql.CommitTransaction();

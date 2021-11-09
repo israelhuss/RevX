@@ -1,5 +1,7 @@
 ﻿@inject IInvoiceEndpoint _invoiceEndpoint
 @inject ToastService toastService
+@inject NavigationManager NavManager
+@inject IJSRuntime jsRuntime
 
 
 <style>
@@ -68,6 +70,7 @@
                             </tfoot>
                         </table>
                     </div>
+                    <SignaturePad SignatureChanged="(data) => Signature = data"/>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="Hide">
@@ -85,11 +88,17 @@
     protected bool ShowDialog { get; set; }
     protected bool SavingInProgress { get; set; } = false;
 
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    private string userId { get; set; }
+
     [Parameter]
     public List<ManageSessionModel> InvoicingItems { get; set; }
 
     [Parameter]
     public EventCallback<List<ManageSessionModel>> InvoicingItemsChanged { get; set; }
+
+    public string Signature { get; set; }
 
     public double TotalHours { get; set; } = 0;
 
@@ -107,6 +116,19 @@
         return Task.CompletedTask;
     }
 
+    protected async override Task OnInitializedAsync()
+    {
+        if (!( await authenticationStateTask ).User.Identity.IsAuthenticated)
+        {
+            await jsRuntime.InvokeVoidAsync("log", "User id was null redirecting to login");
+            NavManager.NavigateTo($"/login?url={NavManager.Uri.Replace(NavManager.BaseUri, "")}");
+        }
+        else
+        {
+            userId = ( await authenticationStateTask ).User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            await jsRuntime.InvokeVoidAsync("log", $"User id is: {userId}");
+        }
+    }
 
     public void Show()
     {
@@ -138,7 +160,7 @@
     {
         try
         {
-            InvoiceModel invoiceModel = new() { SessionIds = new List<int>(), TotalHours = TotalHours };
+            InvoiceModel invoiceModel = new() { SessionIds = new List<int>(), TotalHours = TotalHours, UserId = userId, Signature = Signature };
             foreach (var item in finalList)
             {
                 invoiceModel.SessionIds.Add(item.Id);
