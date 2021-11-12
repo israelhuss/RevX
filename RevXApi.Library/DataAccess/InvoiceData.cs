@@ -9,11 +9,13 @@ namespace RevXApi.Library.DataAccess
 	{
 		private readonly ISqlDataAccess _sql;
 		private readonly ISessionData _sessionData;
+		private readonly IUserData _userData;
 
-		public InvoiceData(ISqlDataAccess sql, ISessionData sessionData)
+		public InvoiceData(ISqlDataAccess sql, ISessionData sessionData, IUserData userData)
 		{
 			_sql = sql;
 			_sessionData = sessionData;
+			_userData = userData;
 		}
 
 		public void SaveInvoice(InvoiceModel invoice)
@@ -57,7 +59,12 @@ namespace RevXApi.Library.DataAccess
 		public InvoiceEmailModel PrepareEmailModel(InvoiceModel invoice)
 		{
 			// Fill in the basics
-			InvoiceEmailModel output = new() { InvoiceDate = invoice.InvoiceDate, TotalHours = invoice.TotalHours };
+			InvoiceEmailModel output = new() { InvoiceDate = invoice.InvoiceDate, TotalHours = invoice.TotalHours, Rate = invoice.Rate, Signature = invoice.Signature };
+
+			// Get the Name of employee
+			UserModel employee = _userData.GetUserById(invoice.UserId);
+			string employeeName = $"{employee.FirstName} {employee.LastName}";
+			output.FullName = employeeName;
 
 			// Get the full session models, and change to email model
 			output.InvoiceSessions = new();

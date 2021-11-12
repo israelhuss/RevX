@@ -14,7 +14,7 @@ namespace RevXApi.Library.DataAccess
 			_sql = sql;
 		}
 
-		public List<HourlyRate> GetAll(string userId, string providerId)
+		public List<HourlyRate> GetAll(string userId, int providerId)
 		{
 			return _sql.LoadData<HourlyRate, dynamic>("dbo.spRates_GetAll", new { userId, providerId }, "RevXData");
 		}
@@ -24,7 +24,7 @@ namespace RevXApi.Library.DataAccess
             int res = _sql.SaveData("dbo.spRates_Insert", rate, "RevXData");
 		}
 
-		public HourlyRate GetByDate(DateTime date, string userId, string providerId)
+		public HourlyRate GetByDate(DateTime date, string userId, int providerId)
 		{
 			return _sql.LoadData<HourlyRate, dynamic>("dbo.spRates_GetByDate", new { Date = date, userId, providerId }, "RevXData").FirstOrDefault();
 		}

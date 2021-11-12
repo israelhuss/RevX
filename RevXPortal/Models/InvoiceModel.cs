@@ -10,6 +10,7 @@ namespace RevXPortal.Models
 		public DateTime InvoiceDate { get; set; } = DateTime.Now;
 		public List<int> SessionIds { get; set; }
 		public double TotalHours { get; set; }
+		public double Rate { get; set; }
 		public string Signature { get; set; }
 	}
 }

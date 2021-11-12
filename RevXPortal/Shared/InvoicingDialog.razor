@@ -12,6 +12,10 @@
         margin: 1rem;
         overflow: hidden;
     }
+
+    .disabled {
+        color: lightgray;
+    }
 </style>
 @if (ShowDialog)
 {
@@ -47,11 +51,11 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var item in InvoicingItems.OrderBy(s => s.Date).ThenBy(s => s.StartTime))
+                                @foreach (var item in InvoicingItems.Where(i => disabledList.Find(x => i.Id == x.Id) == null).OrderBy(s => s.Date).ThenBy(s => s.StartTime))
                                 {
                                     <tr>
                                         <td>
-                                            <input class="checkbox" type="checkbox" value="" checked @onchange="( (e) => CheckBoxClicked(e, item))">
+                                            <input class="checkbox" type="checkbox" checked @onchange="( (e) => CheckBoxClicked(e, item))">
                                         </td>
                                         <td>@item.Student.DisplayName</td>
                                         <td>@item.Date.ToShortDateString()</td>
@@ -60,23 +64,52 @@
                                         <td>@item.Notes</td>
                                     </tr>
                                 }
+                                @foreach (var item in disabledList)
+                                {
+                                    <tr>
+                                        <td class="disabled">
+                                            <input class="checkbox" type="checkbox" disabled>
+                                        </td>
+                                        <td class="disabled">@item.Student.DisplayName</td>
+                                        <td class="disabled">@item.Date.ToShortDateString()</td>
+                                        <td class="disabled">@TimeConverters.ConvertTimeSpanTo12HourString(item.StartTime)</td>
+                                        <td class="disabled">@TimeConverters.ConvertTimeSpanTo12HourString(item.EndTime)</td>
+                                        <td class="disabled">@item.Notes</td>
+                                    </tr>
+                                }
                             </tbody>
                             <tfoot>
                                 <tr>
                                     <td colspan="6">
-                                        <h3 style="margin-bottom: 0;">Total Hours: @TotalHours</h3>
+                                        <div style="margin-left: auto; width: max-content;">
+                                            <div style=" display: flex; justify-content: space-between;">
+                                                <h6 style="margin-right: 0.6rem;">Total Hours: </h6>
+                                                <h6>@TotalHours</h6>
+                                            </div>
+                                            <div style=" display: flex; justify-content: space-between;">
+                                                <h6 style="margin-right: 0.6rem;">Rate: </h6>
+                                                <h6>@InvoicingItems[0].Rate.Rate.ToString("C")</h6>
+                                            </div>
+                                            <div style=" display: flex; justify-content: space-between;">
+                                                <h4 style="margin-right: 0.6rem;">Total: </h4>
+                                                <h4>@((InvoicingItems[0].Rate.Rate * TotalHours).ToString("C"))</h4>
+                                            </div>
+                                        </div>
+                                        <div>
+
+                                            <SignaturePad SignatureChanged="(data) => Signature = data"/>
+                                        </div>
                                     </td>
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
-                    <SignaturePad SignatureChanged="(data) => Signature = data"/>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="Hide">
                         Cancel
                     </button>
-                    <button type="button" class="btn btn-primary" @onclick="InvoiceClicked">
+                    <button type="button" class="btn btn-primary @(Signature is null || Signature == String.Empty ? "disabled" : "")" @onclick="InvoiceClicked">
                         Invoice
                     </button>
                 </div>
@@ -103,6 +136,7 @@
     public double TotalHours { get; set; } = 0;
 
     private List<ManageSessionModel> finalList { get; set; }
+    private List<ManageSessionModel> disabledList { get; set; }
 
     private ElementReference TableRef { get; set; }
 
@@ -110,7 +144,21 @@
     {
         if (InvoicingItems is not null)
         {
-            finalList = new(InvoicingItems);
+            double invoiceRate = GetInvoiceRate();
+            finalList = new();
+            disabledList = new();
+            foreach (var i in InvoicingItems)
+            {
+                if (i.Rate.Rate == invoiceRate)
+                {
+                    finalList.Add(i);
+                }
+                else
+                {
+                    disabledList.Add(i);
+
+                }
+            }
             TotalHours = CalculateTotalHours(finalList);
         }
         return Task.CompletedTask;
@@ -144,7 +192,8 @@
 
     private void CheckBoxClicked(ChangeEventArgs e, ManageSessionModel model)
     {
-        if ((bool)e.Value)
+        double invoiceRate = GetInvoiceRate();
+        if ((bool)e.Value && model.Rate.Rate == invoiceRate)
         {
             finalList.Add(model);
             TotalHours = CalculateTotalHours(finalList);
@@ -156,32 +205,61 @@
         }
     }
 
+    private double GetInvoiceRate()
+    {
+        List<double> rates = new();
+        foreach (var session in InvoicingItems)
+        {
+            if (session.Rate == null)
+            {
+                rates.Add(0);
+            }
+            else
+            {
+                rates.Add(session.Rate.Rate);
+            }
+        }
+        if (rates.Count > 0)
+        {
+            return rates[ 0 ];
+        }
+        else
+        {
+            return 0;
+        }
+    } 
+
     private async void InvoiceClicked()
     {
-        try
+        if (Signature is null || Signature == String.Empty)
         {
-            InvoiceModel invoiceModel = new() { SessionIds = new List<int>(), TotalHours = TotalHours, UserId = userId, Signature = Signature };
-            foreach (var item in finalList)
+            await jsRuntime.InvokeVoidAsync("log", "Signature is Empty");
+        } 
+        else
+        {
+            try
             {
-                invoiceModel.SessionIds.Add(item.Id);
+                InvoiceModel invoiceModel = new() { SessionIds = new List<int>(), TotalHours = TotalHours, UserId = userId, Rate = GetInvoiceRate(), Signature = Signature };
+                foreach (var item in finalList)
+                {
+                    invoiceModel.SessionIds.Add(item.Id);
+                }
+                SavingInProgress = true;
+                await Task.Delay(3000);
+                await _invoiceEndpoint.SaveInvoice(invoiceModel);
+
+                ShowDialog = false;
+                SavingInProgress = false;
+                await InvoicingItemsChanged.InvokeAsync();
+                StateHasChanged();
+
+                toastService.ShowToast("The invoice was successfully submitted.", ToastLevel.Success);
             }
-            SavingInProgress = true;
-            await Task.Delay(3000);
-            await _invoiceEndpoint.SaveInvoice(invoiceModel);
-
-            ShowDialog = false;
-            SavingInProgress = false;
-            await InvoicingItemsChanged.InvokeAsync();
-            StateHasChanged();
-
-            toastService.ShowToast("The invoice was successfully submitted.", ToastLevel.Success);
+            catch (Exception)
+            {
+                toastService.ShowToast("There was a error proccessing your invoice.", ToastLevel.Error);
+            }
         }
-        catch (Exception)
-        {
-            toastService.ShowToast("There was a error proccessing your invoice.", ToastLevel.Error);
-        }
-
-
     }
 
     private void ConsoleWriter(List<ManageSessionModel> models)

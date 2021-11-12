@@ -9,6 +9,8 @@ namespace RevXApi.Library.Models
 		public string UserId { get; set; }
 		public DateTime InvoiceDate { get; set; }
 		public double TotalHours { get; set; }
+		public double Rate { get; set; }
 		public List<int> SessionIds { get; set; }
+		public string Signature { get; set; }
 	}
 }

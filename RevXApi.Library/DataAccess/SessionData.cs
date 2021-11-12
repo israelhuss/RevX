@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace RevXApi.Library.DataAccess
 {
@@ -11,13 +12,15 @@ namespace RevXApi.Library.DataAccess
 		private readonly IStudentData _studentData;
 		private readonly IProviderData _providerData;
 		private readonly IBillingStatusData _billingStatusData;
+		private readonly IHourlyRateData _rateData;
 
-		public SessionData(ISqlDataAccess sql, IStudentData studentData, IProviderData providerData, IBillingStatusData billingStatusData)
+		public SessionData(ISqlDataAccess sql, IStudentData studentData, IProviderData providerData, IBillingStatusData billingStatusData, IHourlyRateData rateData)
 		{
 			_sql = sql;
 			_studentData = studentData;
 			_providerData = providerData;
 			_billingStatusData = billingStatusData;
+			_rateData = rateData;
 		}
 
 		public List<SessionModel> GetAllSessions(string userId)
@@ -41,6 +44,11 @@ namespace RevXApi.Library.DataAccess
 				model.Student = _studentData.GetById(session.StudentId, session.UserId);
 				model.Provider = _providerData.GetById(session.ProviderId, session.UserId);
 				model.BillingStatus = _billingStatusData.GetById(session.BillingStatusId);
+				model.Rate = _rateData.GetByDate(session.Date, session.UserId, session.ProviderId);
+				if (model.Rate == null)
+				{
+					model.Rate = new HourlyRate();
+				}
 
 
 				output.Add(model);
@@ -66,6 +74,11 @@ namespace RevXApi.Library.DataAccess
 			output.Student = _studentData.GetById(session.StudentId, session.UserId);
 			output.Provider = _providerData.GetById(session.ProviderId, session.UserId);
 			output.BillingStatus = _billingStatusData.GetById(session.BillingStatusId);
+			output.Rate = _rateData.GetByDate(session.Date, session.UserId, session.ProviderId);
+			if (output.Rate == null)
+{
+				output.Rate = new HourlyRate();
+			}
 
 			return output;
 		}
@@ -93,6 +106,11 @@ namespace RevXApi.Library.DataAccess
 				model.Student = _studentData.GetById(session.StudentId, session.UserId);
 				model.Provider = _providerData.GetById(session.ProviderId, session.UserId);
 				model.BillingStatus = _billingStatusData.GetById(session.BillingStatusId);
+				model.Rate = _rateData.GetByDate(session.Date, session.UserId, session.ProviderId);
+				if (model.Rate == null)
+				{
+					model.Rate = new HourlyRate();
+				}
 
 				output.Add(model);
 			}

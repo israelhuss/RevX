@@ -36,7 +36,8 @@ namespace RevXPortal.API
 							EndTime = TimeConverters.Convert24HourStringToTimeSpan(result.EndTime),
 							Provider = result.Provider,
 							BillingStatus = result.BillingStatus,
-							Notes = result.Notes
+							Notes = result.Notes,
+							Rate = result.Rate,
 						};
 
 						output.Add(model);

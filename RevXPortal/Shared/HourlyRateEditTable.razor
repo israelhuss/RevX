@@ -103,7 +103,7 @@
                     else
                     {
                         <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(additionalRate, "End"))" style="min-height: 15px; min-width: 50px;">
-                            @(!additionalRate.EndDate.HasValue && additionalRate.Rate is not null && additionalRate.Rate > 0 ? "Current" : (additionalRate.EndDate.HasValue ? additionalRate.EndDate.Value.ToShortDateString() : ""))
+                            @(!additionalRate.EndDate.HasValue && additionalRate.Rate != 0 && additionalRate.Rate > 0 ? "Current" : (additionalRate.EndDate.HasValue ? additionalRate.EndDate.Value.ToShortDateString() : ""))
                         </div>
                     }
                 </td>
@@ -119,7 +119,7 @@
                     else
                     {
                         <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(additionalRate, "Rate"))" style="min-height: 15px; min-width: 50px;">
-                            @(additionalRate.Rate is not null && additionalRate.Rate > 0 ? $"{additionalRate.Rate}" : "")
+                            @(additionalRate.Rate != 0 && additionalRate.Rate > 0 ? $"{additionalRate.Rate}" : "")
                         </div>
                     }
                 </td>
@@ -133,7 +133,7 @@
                     else
                     {
                         <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(additionalRate, "Provider"))" style="min-height: 15px;">
-                            @(additionalRate.ProviderId is null ? additionalRate.Rate is null || additionalRate.Rate <= 0 ? "" : "All" : Providers.Where(p => p.Id == additionalRate.ProviderId).FirstOrDefault().Name)
+                            @(additionalRate.ProviderId is null ? additionalRate.Rate == 0 || additionalRate.Rate <= 0 ? "" : "All" : Providers.Where(p => p.Id == additionalRate.ProviderId).FirstOrDefault().Name)
                         </div>
                     }
                 </td>
@@ -214,7 +214,7 @@ else
         if (e == null || e.Key == "Enter")
         {
             await jsRuntime.InvokeVoidAsync("log", userId);
-            if (rate.StartDate is not null && rate.StartDate != DateTime.Parse("0001-01-01T00:00:00") && ( rate.Rate is not null && rate.Rate > 0 ))
+            if (rate.StartDate is not null && rate.StartDate != DateTime.Parse("0001-01-01T00:00:00") && ( rate.Rate != 0 && rate.Rate > 0 ))
             {
                 await jsRuntime.InvokeVoidAsync("log", additionalRate);
                 rate.isEditMode = false;

@@ -1,5 +1,4 @@
-﻿using RevXPortal.Models;
-using System.Timers;
+﻿using System.Timers;
 
 namespace RevXPortal.Services
 {

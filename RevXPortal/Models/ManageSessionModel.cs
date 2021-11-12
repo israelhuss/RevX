@@ -8,7 +8,6 @@ namespace RevXPortal.Models
 	[Duration(12)]
 	public class ManageSessionModel
 	{
-
 		public int Id { get; set; }
 		public string UserId { get; set; }
 		[Required]
@@ -26,5 +25,6 @@ namespace RevXPortal.Models
 		public BillingStatusModel BillingStatus { get; set; }
 
 		public string Notes { get; set; }
+		public HourlyRate Rate { get; set; }
 	}
 }

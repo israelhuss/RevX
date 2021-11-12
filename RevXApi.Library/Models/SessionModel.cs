@@ -13,5 +13,6 @@ namespace RevXApi.Library.Models
 		public ProviderModel Provider { get; set; }
 		public BillingStatusModel BillingStatus { get; set; }
 		public string Notes { get; set; }
+		public HourlyRate Rate { get; set; }
 	}
 }
