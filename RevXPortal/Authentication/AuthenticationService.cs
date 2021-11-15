@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Net.Http;
+﻿using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Threading.Tasks;
-using RevXPortal.Models;
 using Microsoft.AspNetCore.Components.Authorization;
 using Blazored.LocalStorage;
-using Microsoft.Extensions.Configuration;
 
 namespace RevXPortal.Authentication
 {
@@ -38,23 +31,29 @@ namespace RevXPortal.Authentication
 			});
 
 			string tokenEndpoint = _config["apiLocation"] + _config["tokenEndpoint"];
-			var authResult = await _client.PostAsync(tokenEndpoint, data);
-			var authContent = await authResult.Content.ReadAsStringAsync();
+			try
+			{ 
+				var authResult = await _client.PostAsync(tokenEndpoint, data);
+				var authContent = await authResult.Content.ReadAsStringAsync();
+				if (authResult.IsSuccessStatusCode == false)
+				{
+					return null;
+				}
 
-			if (authResult.IsSuccessStatusCode == false)
-			{
-				return null;
+				var result = JsonSerializer.Deserialize<AuthenticatedUserModel>(authContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+				await _localStorage.SetItemAsync(authTokenStorageKey, result.Access_Token);
+
+				( (AuthStateProvider)_authStateProvider ).NotifyUserAuthentication(result.Access_Token);
+
+				_client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", result.Access_Token);
+
+				return result;
 			}
-
-			var result = JsonSerializer.Deserialize<AuthenticatedUserModel>(authContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-			await _localStorage.SetItemAsync(authTokenStorageKey, result.Access_Token);
-
-			((AuthStateProvider)_authStateProvider).NotifyUserAuthentication(result.Access_Token);
-
-			_client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", result.Access_Token);
-
-			return result;
+			catch (HttpRequestException)
+			{
+				throw;
+			}
 		}
 
 		public async Task Logout()

@@ -41,7 +41,6 @@
 
 @code {
     // height is 150px the base plus 50px for each entry
-
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }
     private string userId { get; set; }
@@ -50,7 +49,7 @@
     public List<StudentModel> Students { get; set; }
     public List<HourlyRate> Rates { get; set; }
 
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnInitializedAsync()
     {
         if (!( await authenticationStateTask ).User.Identity.IsAuthenticated)
         {

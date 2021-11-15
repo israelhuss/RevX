@@ -1,5 +1,7 @@
-﻿@page "/sessions"
+﻿@page "/"
+@page "/sessions"
 @inject ISessionEndpoint _sessionEndpoint
+@inject IProviderEndpoint _providerEndpoint
 @inject NavigationManager NavManager
 @inject ToastService toastService
 @inject IJSRuntime jsRuntime
@@ -74,7 +76,7 @@
 <AuthorizeView>
     <Authorized>
         <div class="d-flex justify-content-between mt-4">
-            <h3>Sessions</h3>
+            <h3></h3>
             <button class="btn btn-primary" @onclick="AddSession">Add Session</button>
         </div>
 
@@ -82,7 +84,7 @@
             <table class="table table-bordered table-striped" style="margin-top: -1px">
                 <thead style="position: sticky; top: 0;">
                     <tr>
-                        @if (sessions is not null && sessions.Count > 0)
+                        @if (OpenSessions is not null && OpenSessions.Count > 0)
                         {
                             <th colspan="2">
                                 <button class="btn" @onclick="InvoiceClicked">
@@ -100,10 +102,10 @@
                     </tr>
                 </thead>
 
-                @if (sessions is not null && sessions.Count > 0)
+                @if (OpenSessions is not null && OpenSessions.Count > 0)
                 {
                     <tbody>
-                        @foreach (var session in sessions)
+                        @foreach (var session in OpenSessions)
                         {
                             <tr>
                                 <td style="padding-right: .25rem; padding-left: .25rem;">
@@ -126,7 +128,7 @@
             </table>
 
             @* Main Row while loading the sessions *@
-            @if (sessions is null)
+            @if (OpenSessions is null)
             {
                 <div class="empty-table-cell grid-cell" style="position: relative; height: 85%">
                     <LoadingIndicator />
@@ -134,17 +136,17 @@
             }
 
             @* Main Row if sessions is empty *@
-            @if (sessions is not null && sessions.Count == 0)
+            @if (OpenSessions is not null && OpenSessions.Count == 0)
             {
                 <div class="empty-table-cell grid-cell" style="margin-top: 10rem">
-                    <h4>You don't have any open sessions now.<br />Please <button class="btn" style="font-size: inherit; padding: 0; vertical-align: baseline;" @onclick="AddSession">click here</button> to enter a session</h4>
+                    <h4>You don't have any open sessions now.<br />Please <button class="btn" style="color: inherit; font-size: inherit; padding: 0; vertical-align: baseline;" @onclick="AddSession">click here</button> to enter a session</h4>
                 </div>
             }
         </div>
 
         <ManageSessionDialog @ref="ManageDialogRef" FormSession="ManageSession" SaveForm="SaveForm" Title="@formTitle" />
         <ConfirmationDialog @ref="DeleteConfirmation" IdToDelete="ManageSession.Id" ConfirmationChanged="OnConfirmClicked" />
-        <InvoicingDialog @ref="InvoicingRef" InvoicingItems="sessions" InvoicingItemsChanged="RefreshSessionsList" />
+        <InvoicingDialog @ref="InvoicingRef" InvoicingItems="OpenSessions" InvoicingItemsChanged="RefreshSessionsList" />
 
     </Authorized>
     <NotAuthorized>
@@ -159,7 +161,7 @@
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }
-    
+
     [CascadingParameter]
     private string userId { get; set; }
 
@@ -174,7 +176,8 @@
 
     private string formState { get; set; } = string.Empty;
 
-    private List<ManageSessionModel> sessions { get; set; }
+    private List<ManageSessionModel> OpenSessions { get; set; }
+    private List<ProviderModel> Providers { get; set; }
 
     protected async override Task OnInitializedAsync()
     {
@@ -189,6 +192,7 @@
             await jsRuntime.InvokeVoidAsync("log", $"User id is: {userId}");
             await RefreshSessionsList(); 
         }
+        Providers = await _providerEndpoint.GetAll(userId);
     }
 
     private async Task RefreshSessionsList()
@@ -198,7 +202,7 @@
             //TODO - getting only open sessions manually - change to dynamic...
             var allSessions = await _sessionEndpoint.GetAll(userId);
 
-            sessions = ( from s in allSessions
+            OpenSessions = ( from s in allSessions
                          where s.BillingStatus.BillingStatus == "Open"
                          select s ).ToList();
 
@@ -241,9 +245,9 @@
     {
         formState = "add";
         ManageSession = new();
-
         // Make sure the database id match ---- BAD PRACTICE!!!
-        ManageSession.Provider = new ProviderModel() { Id = 1, Name = "Legadel" };
+        Regex secondaryProviderMatch = new(@"[l|L]egade?i?l|[m|M]e?nah?e?l");
+        ManageSession.Provider = Providers.Where(p => secondaryProviderMatch.IsMatch(p.Name)).FirstOrDefault();
         ManageSession.BillingStatus = new BillingStatusModel() { Id = 1, BillingStatus = "Open" };
         ManageSession.UserId = userId;
         jsRuntime.InvokeVoidAsync("log", userId);

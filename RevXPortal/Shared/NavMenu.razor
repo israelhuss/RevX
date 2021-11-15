@@ -1,11 +1,4 @@
-﻿<div class="top-row pl-4 navbar navbar-dark" style="padding-top: 0;">
-    <a class="navbar-brand" href=""><img src="https://timcohussstorage.blob.core.windows.net/revxlogo/Logo-text-transparent.png" style="height: 2.5rem; padding-top: .2rem" /></a>
-    <button class="navbar-toggler" @onclick="ToggleNavMenu">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-</div>
-
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+﻿<div>
     <ul class="nav flex-column">
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="sessions">
@@ -26,12 +19,5 @@
 </div>
 
 @code {
-    private bool collapseNavMenu = true;
 
-    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
 }

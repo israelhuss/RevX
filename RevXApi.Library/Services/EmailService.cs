@@ -2,6 +2,7 @@
 using FluentEmail.Core.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualBasic;
+using RazorLight.Extensions;
 using RevXApi.Library.Models;
 using System;
 using System.Collections.Generic;
@@ -60,6 +61,7 @@ namespace RevXApi.Library.Services
 				MemoryStream stream = new(bytes);
 				email = await _fluentEmail
 					.To(emailAddress)
+					
 					.Subject($"{emailModel.FullName} {emailModel.InvoicePeriod} Hours")
 					.Attach(new Attachment() { IsInline = true, ContentId = "Signature", Data = stream, ContentType = "image/png", Filename = "Signature.png" })
 					.UsingTemplateFromFile(_templateLocation, emailModel, true)

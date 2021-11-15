@@ -1,7 +1,24 @@
 ﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
+*,
+*::after,
+*::before {
+    padding: 0;
+    margin: 0;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    box-sizing: border-box;
+    -webkit-text-size-adjust: none;
+    -webkit-font-smoothing: antialiased;
+}
+
 html, body {
     font-family: 'Nunito', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: rgb(253 253 253);
+    color: #474747;
+}
+
+table {
+    color: inherit !important;
 }
 
 a, .btn-link {
@@ -9,14 +26,25 @@ a, .btn-link {
 }
 
 .btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
+    color: #e6e6e6;
+    background-color: #3e6581;
     border-color: #1861ac;
 }
+
+    .btn-primary:hover {
+        background-color: #35556b;
+    }
+    .btn-primary:focus,
+    .btn-primary:active {
+        background-color: #35556b !important;
+        box-shadow: none !important;
+    }
 
 .sidebar {
     background-image: linear-gradient(#002626, #085b70) !important;
 }
+
+
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
 }
@@ -174,9 +202,45 @@ a, .btn-link {
     }
 }
 
+@media only screen and (max-width: 800px) {
+    .revx-sidebar {
+        display: none;
+    }
+
+    .navbar-toggler {
+        display: block !important;
+        text-align: left;
+    }
+
+    .navbar-toggler-btn {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .nav-bar-item {
+        width: calc(100vw / 3) !important;
+    }
+
+    .logo {
+        text-align: center !important;
+    }
+
+    .account {
+        text-align: right !important;
+    }
+}
+
 @media only screen and (max-width: 600px) {
     html,
     body {
         font-size: 62.5%;
+    }
+
+    .navbar-toggler {
+        display: block !important;
     }
 }

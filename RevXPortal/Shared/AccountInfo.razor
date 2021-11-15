@@ -1,0 +1,77 @@
+﻿<style>
+	.account-info {
+		font-size: 1.6rem;
+        color: rgb(190, 190, 190);
+        height: 100%;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+		padding: 0 1rem;
+	}
+	.account-info:hover {
+		cursor: pointer;
+		background-color: rgb(255 255 255 / 12%);
+	}
+
+	.chevron {
+		font-size: .8rem;
+		margin-left: 0.75rem;
+	}
+
+	.hidden {
+		display: none;
+		position: absolute;
+		top: 3.5rem;
+		right: 0;
+		z-index: 10000000;
+		background: #3e6581;
+		width:12rem;
+		color: rgb(190, 190, 190);
+		font-size: 1.2rem;
+		text-align: left;
+		border-bottom: 1px solid rgb(70, 71, 87);
+		border-left: 1px solid rgb(70, 71, 87);
+		border-image: initial;
+		border-top: none;
+		border-right: none;
+		box-shadow: rgb(48 51 59 / 40%) 0px 2px 6px 0px, rgb(48 51 59 / 30%) 0px 0px
+	}
+
+	.hidden.show {
+		display: block;
+	}
+
+	.drop-item {
+		display: flex;
+		border-top: 1px solid rgb(70, 71, 87);
+		padding-left: 20px;
+		padding-right: 20px;
+		height: 60px;
+		line-height: 60px;
+		cursor: pointer;
+		color: rgb(190, 190, 190);
+	}
+
+	.drop-item:hover {
+		background-color: rgb(255 255 255 / 12%);
+	}
+</style>
+<div class="account-info" @onmouseover="@(() => showDropdown = true)" @onmouseout="@(() => showDropdown = false)">
+	@Name
+	<i class="fas fa-chevron-down chevron" style="transform: rotate(@(showDropdown ? 180 : 0)deg)"></i>
+</div>
+<div class="hidden @(showDropdown ? "show" : "")" @onmouseover="@(() => showDropdown = true)"  @onmouseout="@(() => showDropdown = false)">
+	<ul style="list-style: none; margin: 0; padding: 0;">
+		@ChildContent
+	</ul>
+</div>
+
+@code {
+	[Parameter]
+	public string Name { get; set; }
+	public bool showDropdown { get; set; } = false;
+	[Parameter]
+	public RenderFragment ChildContent { get; set; }
+
+
+}

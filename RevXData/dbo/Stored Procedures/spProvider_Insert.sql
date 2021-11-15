@@ -7,4 +7,6 @@ AS
 BEGIN
 	INSERT INTO dbo.[Provider] (UserId, [Name])
 	VALUES (@UserId, @Name)
+
+	SELECT SCOPE_IDENTITY()
 END
