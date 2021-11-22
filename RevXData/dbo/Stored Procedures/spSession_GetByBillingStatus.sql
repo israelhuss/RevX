@@ -4,7 +4,7 @@
 AS
 BEGIN
 	SET NOCOUNT ON;
-	SELECT [Id], [UserId], [StudentId], [Date], [StartTime], [EndTime], [ProviderId], [BillingStatusId], [Notes]
+	SELECT [Id], [UserId], [StudentId], [Date], [StartTime], [EndTime], [ProviderId], [BillingStatusId], [InvoiceId], [Notes]
 	FROM dbo.Session
 	WHERE BillingStatusId = @BillingStatusId AND UserId = @UserId;
 END

@@ -1,0 +1,36 @@
+﻿
+<div class="calendar-day @(@DayInMonth.Key ? "active" : "not-active") @(TopRow ? "top-row": "") @(RightCol ? "right-col" : "")">
+	<div class="calendar-day-number">
+		@DayInMonth.Value.Day
+	</div>
+	<div class="calendar-day-events">
+		@foreach (var ev in Events)
+		{
+			<div class="calendar-day-event">
+				<span style="font-size: .9rem;">@GetShortHourString(ev.StartTime)</span>
+				<span style="font-size: .6rem;">@ev.Student.DisplayName</span>
+			</div>
+		}
+	</div>
+</div>
+@code {
+	[Parameter]
+	public KeyValuePair<bool, DateOnly> DayInMonth { get; set; }
+	[Parameter]
+	public List<ManageSessionModel> Events { get; set; }
+	[Parameter]
+	public bool TopRow { get; set; }
+	[Parameter]
+	public bool RightCol { get; set; }
+
+	private string GetShortHourString(TimeSpan time)
+	{
+		var hours = time.Hours;
+		var t = hours >= 12 ? "p" : "a";
+		if (hours > 12)
+		{
+			hours = hours - 12;
+		}
+		return $"{hours}{t}";
+	}
+}

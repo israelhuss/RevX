@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using RevXApi.Library.DataAccess;
 using RevXApi.Library.Models;
 using RevXApi.Library.Services;
+using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace RevXApi.Controllers
 {
@@ -19,6 +21,13 @@ namespace RevXApi.Controllers
 			_emailService = emailService;
 			_invoiceData = invoiceData;
 			_config = config;
+		}
+
+		[HttpGet]
+		public List<InvoiceModel> GetAll(string userId)
+		{
+			userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			return _invoiceData.GetAll(userId);
 		}
 
 		[HttpPost]

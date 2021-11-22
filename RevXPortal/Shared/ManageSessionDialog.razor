@@ -100,7 +100,7 @@
         {
             userId = ( await authenticationStateTask ).User.FindFirst(ClaimTypes.NameIdentifier).Value;
             availableStudents = await _student.GetEnabled(userId);
-            providers = await _provider.GetEnabled(userId);
+            providers = await _provider.GetEnabled();
             billingStatus = await _billingStatus.GetEnabled();
         }
         catch (HttpRequestException e)

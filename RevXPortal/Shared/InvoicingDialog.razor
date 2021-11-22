@@ -239,7 +239,7 @@
         {
             try
             {
-                InvoiceModel invoiceModel = new() { SessionIds = new List<int>(), TotalHours = TotalHours, UserId = userId, Rate = GetInvoiceRate(), Signature = Signature };
+                InvoiceModel invoiceModel = new() { SessionIds = new List<int>(), TotalHours = TotalHours, StartDate = finalList.First().Date, EndDate = finalList.Last().Date, UserId = userId, Rate = GetInvoiceRate(), Total = (TotalHours * GetInvoiceRate()), Signature = Signature };
                 foreach (var item in finalList)
                 {
                     invoiceModel.SessionIds.Add(item.Id);
@@ -257,6 +257,8 @@
             }
             catch (Exception)
             {
+                ShowDialog = false;
+                SavingInProgress = false;
                 toastService.ShowToast("There was a error proccessing your invoice.", ToastLevel.Error);
             }
         }

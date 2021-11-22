@@ -2,7 +2,13 @@
 (
 	[Id] INT NOT NULL PRIMARY KEY IDENTITY, 
 	[UserId] NVARCHAR(128) NOT NULL DEFAULT '%REPLACE_ME%',
+	[ProviderId] INT NOT NULL DEFAULT 0,
+	[StartDate] Date NOT NULL DEFAULT '1900-01-01',
+	[EndDate] Date NOT NULL DEFAULT '1900-01-01',
 	[InvoiceDate] DATETIME2 NOT NULL, 
-	[TotalHours] DECIMAL(4, 2) NOT NULL ,
-	CONSTRAINT [FK_Invoice_ToUser] FOREIGN KEY ([UserId]) REFERENCES [User]([Id])
+	[TotalHours] FLOAT NOT NULL ,
+	[Rate] Money NOT NULL DEFAULT 0,
+	[Total] MONEY NOT NULL DEFAULT 0,
+	CONSTRAINT [FK_Invoice_ToUser] FOREIGN KEY ([UserId]) REFERENCES [User]([Id]),
+	CONSTRAINT [FK_Invoice_ToProvider] FOREIGN KEY ([ProviderId]) REFERENCES [Provider]([Id])
 )

@@ -61,6 +61,7 @@ namespace RevXApi
 			services.AddTransient<IReportData, ReportData>();
 			services.AddTransient<IHourlyRateData, HourlyRateData>();
 			services.AddTransient<IUserData, UserData>();
+			services.AddTransient<IPlayground, Playground>();
 
 			// FluentEmail Configuration
 			services.AddTransient<IEmailService, EmailService>();

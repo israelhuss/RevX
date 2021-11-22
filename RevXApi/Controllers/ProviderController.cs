@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using RevXApi.Library.DataAccess;
 using RevXApi.Library.Models;
 using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace RevXApi.Controllers
 {
@@ -21,12 +22,14 @@ namespace RevXApi.Controllers
 		[HttpGet]
 		public List<ProviderModel> GetAllProviders([FromQuery] string userId)
 		{
+			userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			return _providerData.GetAll(userId);
 		}
 
 		[HttpGet("enabled")]
 		public List<ProviderModel> GetEnabled([FromQuery] string userId)
 		{
+			userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			return _providerData.GetEnabled(userId);
 		}
 
@@ -45,6 +48,7 @@ namespace RevXApi.Controllers
 		[HttpGet("{id}")]
 		public ProviderModel GetProviderById(int id, [FromQuery] string userId)
 		{
+			userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			return _providerData.GetById(id, userId);
 		}
 	}

@@ -17,17 +17,15 @@ namespace RevXPortal.API
 
 		public async Task<List<StudentModel>> GetAll(string userId)
 		{
-			using (HttpResponseMessage response = await _client.GetAsync($"/api/Student?userId={userId}"))
+			using HttpResponseMessage response = await _client.GetAsync($"/api/Student?userId={userId}");
+			if (response.IsSuccessStatusCode)
 			{
-				if (response.IsSuccessStatusCode)
-				{
-					var result = await response.Content.ReadAsAsync<List<StudentModel>>();
-					return result;
-				}
-				else
-				{
-					throw new Exception(response.ReasonPhrase);
-				}
+				var result = await response.Content.ReadAsAsync<List<StudentModel>>();
+				return result;
+			}
+			else
+			{
+				throw new Exception(response.ReasonPhrase);
 			}
 		}
 

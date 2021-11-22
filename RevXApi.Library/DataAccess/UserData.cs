@@ -1,7 +1,9 @@
-﻿using RevXApi.Library.Models;
+﻿using Microsoft.Extensions.Configuration.UserSecrets;
+using RevXApi.Library.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 
 namespace RevXApi.Library.DataAccess
 {
@@ -17,7 +19,6 @@ namespace RevXApi.Library.DataAccess
 		public UserModel GetUserById(string Id)
 		{
 			var output = _sql.LoadData<UserModel, dynamic>("dbo.spUser_GetById", new { Id }, "RevXData").FirstOrDefault();
-
 			return output;
 		}
 
@@ -30,7 +31,7 @@ namespace RevXApi.Library.DataAccess
 			}
 			catch (Exception ex)
 			{
-				System.Console.WriteLine(ex);
+				Console.WriteLine(ex);
 			}
 		}
 	}

@@ -1,0 +1,54 @@
+﻿<style>
+    .tab {
+        padding: .75rem;
+        flex: 1;
+        text-align: center;
+        font-size: 1.6rem;
+        cursor: pointer;
+    }
+
+    .btn-group {
+        width: 100%;
+    }
+
+    .tab-active {
+        border-bottom: solid 2px #00ae0d;
+        color: #00ae0d;
+    }
+</style>
+
+<CascadingValue Value="this">
+    <div class="btn-group" role="group">
+      @foreach (TabPage tabPage in Pages)
+      {
+        <div class="@GetButtonClass(tabPage)" @onclick=@( () => ActivatePage(tabPage) )>
+          @tabPage.Text
+        </div>
+      }
+    </div>
+    @ChildContent
+</CascadingValue>
+@code {
+  // Next line is needed so we are able to add <TabPage> components inside
+  [Parameter]
+  public RenderFragment ChildContent { get; set; }
+
+  public TabPage ActivePage { get; set; }
+    List<TabPage> Pages = new List<TabPage>();
+    internal void AddPage(TabPage tabPage)
+    {
+      Pages.Add(tabPage);
+      if (Pages.Count == 1)
+        ActivePage = tabPage;
+      StateHasChanged();
+    }
+
+    string GetButtonClass(TabPage page)
+    {
+      return page == ActivePage ? "tab tab-active" : "tab";
+    }
+    void ActivatePage(TabPage page)
+    {
+      ActivePage = page;
+    }
+}

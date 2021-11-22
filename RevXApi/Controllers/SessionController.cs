@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using RevXApi.Library.DataAccess;
 using RevXApi.Library.Models;
 using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace RevXApi.Controllers
 {
@@ -21,6 +22,7 @@ namespace RevXApi.Controllers
 		[HttpGet]
 		public List<SessionModel> GetAllSessions([FromQuery] string userId)
 		{
+			userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			return _sessionData.GetAllSessions(userId);
 		}
 
@@ -48,6 +50,7 @@ namespace RevXApi.Controllers
 		[Route("Delete/{id}")]
 		public void DeleteSession(int id, [FromQuery] string userId)
 		{
+			userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			_sessionData.DeleteSession(id, userId);
 		}
 	}

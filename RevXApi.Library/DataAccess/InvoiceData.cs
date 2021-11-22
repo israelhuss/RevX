@@ -1,6 +1,7 @@
 ﻿using RevXApi.Library.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 
 namespace RevXApi.Library.DataAccess
@@ -10,12 +11,20 @@ namespace RevXApi.Library.DataAccess
 		private readonly ISqlDataAccess _sql;
 		private readonly ISessionData _sessionData;
 		private readonly IUserData _userData;
+		private readonly IHourlyRateData _rateData;
 
-		public InvoiceData(ISqlDataAccess sql, ISessionData sessionData, IUserData userData)
+		public InvoiceData(ISqlDataAccess sql, ISessionData sessionData, IUserData userData, IHourlyRateData rateData)
 		{
 			_sql = sql;
 			_sessionData = sessionData;
 			_userData = userData;
+			_rateData = rateData;
+		}
+
+
+		public List<InvoiceModel> GetAll(string userId)
+		{
+			return _sql.LoadData<InvoiceModel, dynamic>("dbo.spInvoice_GetAll", new { userId }, "RevXData");
 		}
 
 		public void SaveInvoice(InvoiceModel invoice)
@@ -25,29 +34,20 @@ namespace RevXApi.Library.DataAccess
 				_sql.StartTransaction("RevXData");
 
 				// Save the Invoice
-				_sql.SaveDataInTransaction("dbo.spInvoice_Insert", new { invoice.Id, invoice.InvoiceDate, invoice.TotalHours, invoice.UserId });
+				invoice.Id = _sql.SaveDataInTransactionWithResult<int, InvoiceDBModel>("dbo.spInvoice_Insert", new() { InvoiceDate = invoice.InvoiceDate, StartDate = invoice.StartDate, EndDate = invoice.EndDate, TotalHours = invoice.TotalHours, Rate = invoice.Rate, Total = invoice.Total, UserId = invoice.UserId, ProviderId = invoice.ProviderId }).FirstOrDefault();
 
-				// Get back the Id of this invoice
-				invoice.Id = _sql.LoadDataInTransaction<int, dynamic>("dbo.spInvoice_Lookup", new { invoice.InvoiceDate, invoice.TotalHours, invoice.UserId }).FirstOrDefault();
-
+				// 0 is Default for the int type
 				if (invoice.Id > 0)
 				{
 					foreach (var id in invoice.SessionIds)
 					{
-						var detail = new InvoiceDetailModel() { InvoiceId = invoice.Id, SessionId = id, UserId = invoice.UserId };
-
-						// Save the Detail to database
-						_sql.SaveDataInTransaction("dbo.spInvoiceDetail_Insert", detail);
-
-						// Update the sessions billing status to invoiced
-						// TODO - the status id should be looked up, not manually typed!!!!
-						_sql.SaveDataInTransaction("dbo.spSession_EditBillingStatus", new { Id = id, StatusId = 2, UserId = invoice.UserId});
+						int affected = _sql.ExecuteCommandInTransaction<int>($"UPDATE Session SET BillingStatusId = {2}, InvoiceId = {invoice.Id} WHERE Id = {id} AND UserId = '{invoice.UserId}'");
 					}
 
 					_sql.CommitTransaction();
 				}
 				else
-					throw new Exception();
+					throw new Exception("New invoice id was 0.");
 			}
 			catch
 			{
@@ -97,6 +97,40 @@ namespace RevXApi.Library.DataAccess
 
 			return output;
 
+		}
+
+		public List<InvoiceModel> GenerateInvoicesFromSessions(List<SessionDbModel> sessions)
+		{
+			Dictionary<string, List<SessionDbModel>> keyValuePairs = new();
+			foreach (var session in sessions)
+			{
+				int month = session.Date.Month;
+				int year = session.Date.Year;
+				if (keyValuePairs.ContainsKey($"{month}-{year}-{session.ProviderId}"))
+				{
+					keyValuePairs.GetValueOrDefault($"{month}-{year}-{session.ProviderId}").Add(session);
+				}
+				else
+				{
+					keyValuePairs.Add($"{month}-{year}-{session.ProviderId}", new List<SessionDbModel> {session});
+				}
+			}
+			List<InvoiceModel> output = new();
+			foreach (var month in keyValuePairs.Values)
+			{
+				month.Sort((s, x) => s.Date < x.Date ? -1 : 1);
+				var invoice = new InvoiceModel() { UserId = "d1e058a1-4da5-4a74-9ba2-1de0bba5460f" };
+				invoice.SessionIds = month.Select(x => x.Id).ToList();
+				invoice.InvoiceDate = DateTime.Now;
+				invoice.StartDate = month.First().Date;
+				invoice.EndDate = month.Last().Date;
+				invoice.Rate = _rateData.GetByDate(invoice.StartDate, invoice.UserId, month.First().ProviderId).Rate;
+				invoice.ProviderId = month.First().ProviderId;
+				invoice.TotalHours = month.Select(s => (s.EndTime - s.StartTime).TotalHours).Sum();
+				invoice.Total = invoice.Rate * invoice.TotalHours;
+				output.Add(invoice);
+			}
+			return output;
 		}
 
 		private string Convert24HourTo12Hour(string twentyfour)

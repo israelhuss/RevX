@@ -17,11 +17,26 @@ namespace RevXPortal.API
 			_client = client;
 		}
 
+		public async Task<List<InvoiceModel>> GetAll()
+		{
+			using (HttpResponseMessage response = await _client.GetAsync($"/api/Invoice"))
+			{
+				if (response.IsSuccessStatusCode)
+				{
+					var result = await response.Content.ReadAsAsync<List<InvoiceModel>>();
+					return result;
+				}
+				else
+				{
+					throw new Exception(response.ReasonPhrase);
+				}
+			}
+		}
+
 		public async Task SaveInvoice(InvoiceModel invoice)
 		{
 			using (HttpResponseMessage response = await _client.PostAsJsonAsync("/api/invoice", invoice))
 			{
-
 				Console.WriteLine(response.StatusCode);
 				if (response.IsSuccessStatusCode)
 				{

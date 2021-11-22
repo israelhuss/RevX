@@ -131,7 +131,7 @@
 
     private async Task RefreshProviderList()
     {
-        providers = await _providerEndpoint.GetAll(userId);
+        providers = await _providerEndpoint.GetAll();
         StateHasChanged();
     }
 }

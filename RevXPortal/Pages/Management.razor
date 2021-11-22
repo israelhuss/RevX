@@ -63,7 +63,7 @@
             await jsRuntime.InvokeVoidAsync("log", JsonConvert.SerializeObject(user));
         }
 
-        Providers = await _providerEndpoint.GetAll(userId);
+        Providers = await _providerEndpoint.GetAll();
         Students = await _studentEndpoint.GetAll(userId);
         Rates = await _rateEndpoint.GetAll(userId);
     }

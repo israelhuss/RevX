@@ -1,0 +1,76 @@
+﻿@page "/invoices"
+@inject IInvoiceEndpoint _invoiceEndpiont
+@inject IProviderEndpoint _providerEndpiont
+@inject ISessionEndpoint _sessionEndpiont
+@inject IUserEndpoint _userEndpoint
+@inject IJSRuntime jsRuntime
+
+
+<style>
+	.invoice-container {
+		padding: 1rem;
+	}
+</style>
+<CascadingValue Value="Sessions">
+	<CascadingValue Value="Providers">
+		@if (InvoicesByMonth is null)
+		{
+			<LoadingIndicator />
+		}
+		else if (InvoicesByMonth.Count == 0)
+		{
+			<h3>No Invoices Found</h3>
+		}
+		else if (InvoicesByMonth is not null)
+		{
+			<div style="margin-top: 20px; padding: 2rem;">
+				@foreach (var month in InvoicesByMonth)
+				{
+					<div class="invoice-container">
+						<h4>@month.Key</h4>
+						<InvoiceCard Invoices="month.Value"></InvoiceCard>
+					</div>
+				}
+			</div>
+		}
+	</CascadingValue>
+</CascadingValue>
+
+
+@code {
+
+	public List<InvoiceModel> AllInvoices { get; set; }
+	public List<ProviderModel> Providers { get; set; }
+	public List<ManageSessionModel> Sessions { get; set; }
+	public Dictionary<string, List<InvoiceModel>> InvoicesByMonth { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		AllInvoices = await _invoiceEndpiont.GetAll();
+		AllInvoices.Sort((a, b) => a.StartDate < b.StartDate ? 1 : -1);
+		InvoicesByMonth = GroupInvoicesByMonth(AllInvoices);
+		Providers = await _providerEndpiont.GetAll();
+		Sessions = await _sessionEndpiont.GetAll();
+		await jsRuntime.InvokeVoidAsync("log", JsonConvert.SerializeObject(InvoicesByMonth));
+	}
+
+	private Dictionary<string, List<InvoiceModel>> GroupInvoicesByMonth(List<InvoiceModel> invoices)
+	{
+		Dictionary<string, List<InvoiceModel>> keyValuePairs = new();
+		foreach (var invoice in invoices)
+		{
+			string month = invoice.StartDate.ToString("MMMM");
+			int year = invoice.StartDate.Year;
+			if (keyValuePairs.ContainsKey($"{month} {year}"))
+			{
+				keyValuePairs.GetValueOrDefault($"{month} {year}").Add(invoice);
+			}
+			else
+			{
+				keyValuePairs.Add($"{month} {year}", new List<InvoiceModel> {invoice});
+			}
+		}
+		return keyValuePairs;
+
+	}
+}

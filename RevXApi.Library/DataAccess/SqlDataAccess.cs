@@ -52,6 +52,19 @@ namespace RevXApi.Library.DataAccess
 			}
 		}
 
+		public List<T> Query<T>(string sql, string connectionStringName)
+		{
+			string connectionString = GetConnectionString(connectionStringName);
+
+			using (IDbConnection connection = new SqlConnection(connectionString))
+			{
+				List<T> rows = connection.Query<T>(sql,
+					commandType: CommandType.Text).ToList();
+
+				return rows;
+			}
+		}
+
 		public int SaveData<T>(string storedProcedure, T parameters, string connectionStringName)
 		{
 			string connectionString = GetConnectionString(connectionStringName);
@@ -101,6 +114,19 @@ namespace RevXApi.Library.DataAccess
 		{
 			_connection.Execute(storedProcedure, parameters,
 				commandType: CommandType.StoredProcedure, transaction: _transaction);
+		}
+
+		public int ExecuteCommandInTransaction<T>(string sql)
+		{
+			var affected = _connection.Execute(sql, commandType: CommandType.Text, transaction: _transaction);
+			return affected;
+		}
+
+		public List<T> SaveDataInTransactionWithResult<T, U>(string storedProcedure, U parameters)
+		{
+			List<T> rows = _connection.Query<T>(storedProcedure, parameters,
+				commandType: CommandType.StoredProcedure, transaction: _transaction).ToList();
+			return rows;
 		}
 
 		private bool IsClosed = false;

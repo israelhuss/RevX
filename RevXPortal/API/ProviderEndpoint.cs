@@ -15,9 +15,9 @@ namespace RevXPortal.API
 			_client = client;
 		}
 
-		public async Task<List<ProviderModel>> GetAll(string userId)
+		public async Task<List<ProviderModel>> GetAll()
 		{
-			using (HttpResponseMessage response = await _client.GetAsync($"/api/Provider?userId={userId}"))
+			using (HttpResponseMessage response = await _client.GetAsync($"/api/Provider"))
 			{
 				if (response.IsSuccessStatusCode)
 				{
@@ -31,9 +31,9 @@ namespace RevXPortal.API
 			}
 		}
 
-		public async Task<List<ProviderModel>> GetEnabled(string userId)
+		public async Task<List<ProviderModel>> GetEnabled()
 		{
-			using (HttpResponseMessage response = await _client.GetAsync($"/api/Provider/enabled?userId={userId}"))
+			using (HttpResponseMessage response = await _client.GetAsync($"/api/Provider/enabled"))
 			{
 				if (response.IsSuccessStatusCode)
 				{

@@ -7,7 +7,6 @@
     <Authors>Israel Huss</Authors>
     <Company>RevX</Company>
     <PackageIcon>RevX-Logo-transparent.ico</PackageIcon>
-    <Win32Resource></Win32Resource>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 

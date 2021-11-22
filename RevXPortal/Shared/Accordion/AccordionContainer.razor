@@ -1,0 +1,54 @@
+﻿<CascadingValue Value="this" >
+	@ChildContent
+</CascadingValue>
+
+@code {
+	[Parameter]
+	public RenderFragment ChildContent { get; set; }
+	[Parameter]
+	public bool AllowMultiple { get; set; }
+
+	public List<AccordionItem> Items { get; set; } = new();
+	private List<AccordionItem> ActiveItems { get; set; } = new();
+	internal void AddItem(AccordionItem item)
+	{
+		Items.Add(item);
+	}
+
+	internal void ActivateItem(AccordionItem item)
+	{
+		if (!AllowMultiple)
+		{
+			ActiveItems = new();
+			ActiveItems.Add(item);
+		}
+		else
+		{
+			ActiveItems.Add(item);
+		}
+		StateHasChanged();
+	}
+
+	internal void DeactivateItem(AccordionItem item)
+	{
+		ActiveItems.Remove(item);
+		StateHasChanged();
+	}
+
+	internal void HeaderClicked(AccordionItem item)
+	{
+		if (ActiveItems.Contains(item))
+		{
+			DeactivateItem(item);
+		}
+		else
+		{
+			ActivateItem(item);
+		}
+	} 
+
+	internal bool CheckIfActive(AccordionItem item)
+	{
+		return ActiveItems.Contains(item);
+	}
+}

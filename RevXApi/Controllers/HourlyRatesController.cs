@@ -4,6 +4,7 @@ using RevXApi.Library.DataAccess;
 using RevXApi.Library.Models;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace RevXApi.Controllers
 {
@@ -23,6 +24,7 @@ namespace RevXApi.Controllers
 		[HttpGet]
 		public List<HourlyRate> GetAll([FromQuery] string userId, [FromQuery] int providerId)
 		{
+			userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			return _rateData.GetAll(userId, providerId);
 		}
 
@@ -35,6 +37,7 @@ namespace RevXApi.Controllers
 		[HttpGet("date")]
 		public HourlyRate GetProviderById([FromQuery] DateTime date, [FromQuery] string userId, [FromQuery] int providerId)
 		{
+			userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			return _rateData.GetByDate(date, userId, providerId);
 		}
 

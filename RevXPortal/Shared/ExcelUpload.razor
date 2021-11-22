@@ -24,7 +24,7 @@
         {
             userId = ( await authenticationStateTask ).User.FindFirst(ClaimTypes.NameIdentifier).Value;
             StudentList = await _studentEndpoint.GetAll(userId);
-            ProviderList = await _providerEndpoint.GetAll(userId);
+            ProviderList = await _providerEndpoint.GetAll();
             BillingStatusList = await _billingStatusEndpoint.GetAll();
         }
         catch (Exception e)

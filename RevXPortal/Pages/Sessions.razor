@@ -192,7 +192,7 @@
             await jsRuntime.InvokeVoidAsync("log", $"User id is: {userId}");
             await RefreshSessionsList(); 
         }
-        Providers = await _providerEndpoint.GetAll(userId);
+        Providers = await _providerEndpoint.GetAll();
     }
 
     private async Task RefreshSessionsList()
@@ -200,7 +200,7 @@
         try
         {
             //TODO - getting only open sessions manually - change to dynamic...
-            var allSessions = await _sessionEndpoint.GetAll(userId);
+            var allSessions = await _sessionEndpoint.GetAll();
 
             OpenSessions = ( from s in allSessions
                          where s.BillingStatus.BillingStatus == "Open"
@@ -275,7 +275,7 @@
         {
             try
             {
-                await _sessionEndpoint.DeleteSession(DeleteConfirmation.IdToDelete, userId);
+                await _sessionEndpoint.DeleteSession(DeleteConfirmation.IdToDelete);
                 toastService.ShowToast("Session was successfully deleted.", ToastLevel.Success);
                 await RefreshSessionsList();
 

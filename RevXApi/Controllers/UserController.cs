@@ -33,7 +33,6 @@ namespace RevXApi.Controllers
 		}
 
 		[HttpGet]
-		[AllowAnonymous]
 		public UserModel GetById()
 		{
 			string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

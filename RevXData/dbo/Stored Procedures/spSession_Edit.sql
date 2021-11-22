@@ -7,6 +7,7 @@
 	@EndTime time(0),
 	@ProviderId int,
 	@BillingStatusId int,
+	@InvioceId int = null,
 	@Notes nvarchar(250)
 AS
 BEGIN
@@ -17,6 +18,7 @@ BEGIN
 		EndTime = @EndTime, 
 		ProviderId = @ProviderId, 
 		BillingStatusId = @BillingStatusId, 
+		InvoiceId = @InvioceId,
 		Notes = @Notes
 	WHERE Id = @Id AND UserId = @UserId;
 END
