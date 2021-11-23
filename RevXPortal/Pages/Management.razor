@@ -60,7 +60,7 @@
         {
             UserModel user = await _userEndpoint.GetCurrentUser();
             userId = user.Id;
-            await jsRuntime.InvokeVoidAsync("log", JsonConvert.SerializeObject(user));
+            await jsRuntime.InvokeVoidAsync("log", JsonSerializer.Serialize(user));
         }
 
         Providers = await _providerEndpoint.GetAll();

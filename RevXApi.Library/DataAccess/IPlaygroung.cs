@@ -2,6 +2,6 @@
 {
 	public interface IPlayground
 	{
-		void Play();
+		void Play(string userId);
 	}
 }

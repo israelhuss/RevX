@@ -99,7 +99,7 @@ namespace RevXApi.Library.DataAccess
 
 		}
 
-		public List<InvoiceModel> GenerateInvoicesFromSessions(List<SessionDbModel> sessions)
+		public List<InvoiceModel> GenerateInvoicesFromSessions(List<SessionDbModel> sessions, string userId)
 		{
 			Dictionary<string, List<SessionDbModel>> keyValuePairs = new();
 			foreach (var session in sessions)
@@ -119,7 +119,7 @@ namespace RevXApi.Library.DataAccess
 			foreach (var month in keyValuePairs.Values)
 			{
 				month.Sort((s, x) => s.Date < x.Date ? -1 : 1);
-				var invoice = new InvoiceModel() { UserId = "d1e058a1-4da5-4a74-9ba2-1de0bba5460f" };
+				var invoice = new InvoiceModel() { UserId = userId };
 				invoice.SessionIds = month.Select(x => x.Id).ToList();
 				invoice.InvoiceDate = DateTime.Now;
 				invoice.StartDate = month.First().Date;

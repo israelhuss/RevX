@@ -18,10 +18,10 @@ namespace RevXApi.Library.DataAccess
 			_invoiceData = invoiceData;
 		}
 
-		public void Play()
+		public void Play(string userId)
 		{
-			var allDetails = _sql.Query<SessionDbModel>($"Select * From Session Where InvoiceId is null AND UserId = 'd1e058a1-4da5-4a74-9ba2-1de0bba5460f'", "RevXData");
-			var invoices = _invoiceData.GenerateInvoicesFromSessions(allDetails);
+			var allDetails = _sql.Query<SessionDbModel>($"Select * From Session Where InvoiceId is null AND UserId = '{userId}'", "RevXData");
+			var invoices = _invoiceData.GenerateInvoicesFromSessions(allDetails, userId);
 			foreach (var invoice in invoices)
 			{
 				try

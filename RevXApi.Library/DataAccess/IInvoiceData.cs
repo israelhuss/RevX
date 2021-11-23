@@ -7,7 +7,7 @@ namespace RevXApi.Library.DataAccess
 	{
 		void SaveInvoice(InvoiceModel invoice);
 		InvoiceEmailModel PrepareEmailModel(InvoiceModel invoice);
-		List<InvoiceModel> GenerateInvoicesFromSessions(List<SessionDbModel> sessions);
+		List<InvoiceModel> GenerateInvoicesFromSessions(List<SessionDbModel> sessions, string userId);
 		List<InvoiceModel> GetAll(string userId);
 	}
 }

@@ -51,7 +51,7 @@
 		InvoicesByMonth = GroupInvoicesByMonth(AllInvoices);
 		Providers = await _providerEndpiont.GetAll();
 		Sessions = await _sessionEndpiont.GetAll();
-		await jsRuntime.InvokeVoidAsync("log", JsonConvert.SerializeObject(InvoicesByMonth));
+		await jsRuntime.InvokeVoidAsync("log", JsonSerializer.Serialize(InvoicesByMonth));
 	}
 
 	private Dictionary<string, List<InvoiceModel>> GroupInvoicesByMonth(List<InvoiceModel> invoices)
