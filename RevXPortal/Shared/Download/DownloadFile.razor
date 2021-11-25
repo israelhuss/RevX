@@ -1,0 +1,18 @@
+﻿@inject IJSRuntime jsRuntime
+@inject IInvoiceEndpoint _invoiceEndpoint
+@inject NavigationManager NavManager
+
+<div @onclick="Download">Download</div>
+@*<a href="https://localhost:44300/api/invoice/document?id=@Id">Download</a>*@
+
+@code {
+	[Parameter]
+	public ElementReference Element { get; set; }
+	[Parameter]
+	public int Id { get; set; }
+
+	public async void Download()
+	{
+		_invoiceEndpoint.GetDocument(Id, "DONTUSE");
+	}
+}

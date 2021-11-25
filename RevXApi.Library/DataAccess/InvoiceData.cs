@@ -1,8 +1,12 @@
-﻿using RevXApi.Library.Models;
+﻿using RazorEngine;
+using RazorEngine.Templating;
+using RevXApi.Library.Models;
+using SelectPdf;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace RevXApi.Library.DataAccess
 {
@@ -27,7 +31,7 @@ namespace RevXApi.Library.DataAccess
 			return _sql.LoadData<InvoiceModel, dynamic>("dbo.spInvoice_GetAll", new { userId }, "RevXData");
 		}
 
-		public void SaveInvoice(InvoiceModel invoice)
+		public int SaveInvoice(InvoiceModel invoice)
 		{
 			try
 			{
@@ -45,6 +49,7 @@ namespace RevXApi.Library.DataAccess
 					}
 
 					_sql.CommitTransaction();
+					return invoice.Id;
 				}
 				else
 					throw new Exception("New invoice id was 0.");
@@ -59,7 +64,7 @@ namespace RevXApi.Library.DataAccess
 		public InvoiceEmailModel PrepareEmailModel(InvoiceModel invoice)
 		{
 			// Fill in the basics
-			InvoiceEmailModel output = new() { InvoiceDate = invoice.InvoiceDate, TotalHours = invoice.TotalHours, Rate = invoice.Rate, Signature = invoice.Signature };
+			InvoiceEmailModel output = new() { InvoiceDate = invoice.InvoiceDate, TotalHours = invoice.TotalHours, Rate = invoice.Rate, Signature = invoice.Signature, UserId = invoice.UserId };
 
 			// Get the Name of employee
 			UserModel employee = _userData.GetUserById(invoice.UserId);
@@ -75,25 +80,15 @@ namespace RevXApi.Library.DataAccess
 				{
 					Student = $"{temp.Student.FirstName} {temp.Student.LastName}",
 					Date = temp.Date,
-					StartTime = Convert24HourTo12Hour(temp.StartTime),
-					EndTime = Convert24HourTo12Hour(temp.EndTime),
+					StartTime = TimeSpan.Parse(temp.StartTime),
+					EndTime = TimeSpan.Parse(temp.EndTime),
 					Notes = temp.Notes
 				};
 				output.InvoiceSessions.Add(model);
 			}
 
 			// Calculate the invoicing period
-			List<string> tempMonth = new();
-			List<string> tempYear = new();
-			foreach (var item in output.InvoiceSessions)
-			{
-				tempMonth.Add(item.Date.ToString("MMMM"));
-				tempYear.Add(item.Date.Year.ToString());
-			}
-			var monthString = String.Join(" - ", tempMonth.Distinct());
-			var yearString = String.Join(" - ", tempYear.Distinct());
-
-			output.InvoicePeriod = $"{monthString} {yearString}";
+			output.InvoicePeriod = CalculateInvoicePeriod(output);
 
 			return output;
 
@@ -131,6 +126,72 @@ namespace RevXApi.Library.DataAccess
 				output.Add(invoice);
 			}
 			return output;
+		}
+
+		public byte[] GetDocument(int id, string userId)
+		{
+			InvoiceEmailModel model = _sql.LoadData<InvoiceEmailModel, dynamic>("spInvoice_Lookup", new { InvoiceId = id, UserId = userId }, "RevXData").FirstOrDefault();
+			model.InvoiceSessions = _sql.Query<SessionEmailModel>($"SELECT se.Id, CONCAT(st.FirstName, ' ', st.LastName) as Student, se.[Date], se.StartTime, se.EndTime, se.Notes FROM Session se JOIN Student st ON se.StudentId = st.Id WHERE se.InvoiceId = {id} AND se.UserId = '{userId}'", "RevXData");
+			model.InvoicePeriod = CalculateInvoicePeriod(model);
+			UserModel user = _userData.GetUserById(userId);
+			model.FullName = user.FirstName + " " + user.LastName;
+			string template = File.ReadAllText("EmailTemplates/InvoiceDocument.cshtml");
+			string result = Engine.Razor.RunCompile(template, DateTime.Now.ToString(), null, model);
+			// instantiate the html to pdf converter
+			HtmlToPdf converter = new();
+			converter.Options.MarginBottom = 30;
+			converter.Options.MarginTop = 30;
+			// convert the url to pdf
+			PdfDocument doc = converter.ConvertHtmlString(result);
+
+			// save pdf document
+			var res = doc.Save();
+
+			// close pdf document
+			return res;
+		}
+
+
+		public byte[] GetDocument(int id, string userId, string signature)
+		{
+			InvoiceEmailModel model = _sql.LoadData<InvoiceEmailModel, dynamic>("spInvoice_Lookup", new { InvoiceId = id, UserId = userId }, "RevXData").FirstOrDefault();
+			model.InvoiceSessions = _sql.Query<SessionEmailModel>($"SELECT se.Id, CONCAT(st.FirstName, ' ', st.LastName) as Student, se.[Date], se.StartTime, se.EndTime, se.Notes FROM Session se JOIN Student st ON se.StudentId = st.Id WHERE se.InvoiceId = {id} AND se.UserId = '{userId}'", "RevXData");
+			model.InvoicePeriod = CalculateInvoicePeriod(model);
+			model.Signature = signature;
+			UserModel user = _userData.GetUserById(userId);
+			model.FullName = user.FirstName + " " + user.LastName;
+			string template = File.ReadAllText("EmailTemplates/InvoiceDocumentSignature.cshtml");
+			string result = Engine.Razor.RunCompile(template, DateTime.Now.ToString(), null, model);
+			// instantiate the html to pdf converter
+			HtmlToPdf converter = new();
+			converter.Options.MarginBottom = 30;
+			converter.Options.MarginTop = 30;
+			// convert the url to pdf
+			PdfDocument doc = converter.ConvertHtmlString(result);
+
+			// save pdf document
+			var res = doc.Save();
+
+			// close pdf document
+			return res;
+		}
+
+		private string CalculateInvoicePeriod(InvoiceEmailModel model)
+		{
+			// Calculate the invoicing period
+			List<string> tempMonth = new();
+			List<string> tempYear = new();
+			foreach (var item in model.InvoiceSessions)
+			{
+				tempMonth.Add(item.Date.ToString("MMMM"));
+				tempYear.Add(item.Date.Year.ToString());
+			}
+			var monthString = String.Join(" - ", tempMonth.Distinct());
+			var yearString = String.Join(" - ", tempYear.Distinct());
+
+			string period = $"{monthString} {yearString}";
+
+			return period;
 		}
 
 		private string Convert24HourTo12Hour(string twentyfour)

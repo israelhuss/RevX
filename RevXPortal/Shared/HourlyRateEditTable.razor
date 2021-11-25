@@ -201,7 +201,7 @@ else
     {
         if (e is null || e.Key == "Enter")
         {
-            await jsRuntime.InvokeVoidAsync("log", $"It's DoneEditing logging: {JsonConvert.SerializeObject(rate)}");
+            await jsRuntime.InvokeVoidAsync("log", $"It's DoneEditing logging: {JsonSerializer.Serialize(rate)}");
             rate.isEditMode = false;
             await _rateEndpoint.EditRate(rate);
             await RefreshRateList();

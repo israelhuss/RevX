@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace RevXPortal.Converters
 {
@@ -21,6 +22,8 @@ namespace RevXPortal.Converters
 
 		public static string ConvertTimeSpanTo12HourString(TimeSpan time)
 		{
+			var newTime = TimeOnly.FromTimeSpan(time);
+			return newTime.ToString("h:mm tt", CultureInfo.InvariantCulture);
 			string output = String.Empty;
 
 			int hours = time.Hours;

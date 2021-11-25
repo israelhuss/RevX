@@ -3,6 +3,7 @@ using FluentEmail.Core.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualBasic;
 using RazorLight.Extensions;
+using RevXApi.Library.DataAccess;
 using RevXApi.Library.Models;
 using System;
 using System.Collections.Generic;
@@ -18,12 +19,14 @@ namespace RevXApi.Library.Services
 	{
 		private readonly IFluentEmail _fluentEmail;
 		private readonly IConfiguration _config;
+		private readonly IInvoiceData _invoiceData;
 		private readonly string _templateLocation;
 
-		public EmailService(IFluentEmail fluentEmail, IConfiguration config)
+		public EmailService(IFluentEmail fluentEmail, IConfiguration config, IInvoiceData invoiceData)
 		{
 			_fluentEmail = fluentEmail;
 			_config = config;
+			_invoiceData = invoiceData;
 			_templateLocation = _config["EmailConfig:TemplateLocation"];
 		}
 		public async Task SendEmail()
@@ -38,15 +41,17 @@ namespace RevXApi.Library.Services
 
 			//byte[] byteArray = Encoding.UTF8.GetBytes(signature);
 			//byte[] byteArray = Encoding.ASCII.GetBytes(signature);
-
+			byte[] documentBytes = _invoiceData.GetDocument(4034, "d1e058a1-4da5-4a74-9ba2-1de0bba5460f");
 			byte[] bytes = Convert.FromBase64String(signature);
 
 			MemoryStream stream = new(bytes);
+			MemoryStream document = new(documentBytes);
 
 			var email = await _fluentEmail
 				.To(_config["EmailConfig:IsraelEmailAddress"], "Israel Huss")
 				.Subject("Hi from the RevX Team")
 				.Attach(new Attachment() { IsInline = true, ContentId = "Signature", Data = stream, ContentType = "image/png", Filename = "Signature.png" })
+				.Attach(new Attachment() { ContentId = "Document", ContentType = "application/pdf", Data = document, Filename = "hello.pdf"})
 				.UsingTemplateFromFile(_templateLocation, new { Name = "Israel", InvoiceSessions = sessions, TotalHours = 79, InvoicePeriod = "Hello", Rate = 32, Signature = signature }, true)
 				.SendAsync();
 		}
@@ -56,21 +61,26 @@ namespace RevXApi.Library.Services
 			SendResponse email;
 			if (emailModel.Signature != null)
 			{
+				byte[] documentBytes = _invoiceData.GetDocument(emailModel.Id, emailModel.UserId, "data:image/png;base64," + emailModel.Signature.Replace("data:image/png;base64,", ""));
+				MemoryStream document = new(documentBytes);
 				string signature = emailModel.Signature.Replace("data:image/png;base64,", "");
 				byte[] bytes = Convert.FromBase64String(signature);
 				MemoryStream stream = new(bytes);
 				email = await _fluentEmail
 					.To(emailAddress)
-					
 					.Subject($"{emailModel.FullName} {emailModel.InvoicePeriod} Hours")
 					.Attach(new Attachment() { IsInline = true, ContentId = "Signature", Data = stream, ContentType = "image/png", Filename = "Signature.png" })
+					.Attach(new Attachment() { ContentId = "Document", ContentType = "application/pdf", Data = document, Filename = $"{emailModel.FullName} {emailModel.InvoicePeriod}.pdf" })
 					.UsingTemplateFromFile(_templateLocation, emailModel, true)
 					.SendAsync();
 			} else
 			{
+				byte[] documentBytes = _invoiceData.GetDocument(emailModel.Id, emailModel.UserId);
+				MemoryStream document = new(documentBytes);
 				email = await _fluentEmail
 						.To(emailAddress)
 						.Subject($"{emailModel.FullName} {emailModel.InvoicePeriod} Hours")
+						.Attach(new Attachment() { ContentId = "Document", ContentType = "application/pdf", Data = document, Filename = $"{emailModel.FullName} {emailModel.InvoicePeriod}.pdf" })
 						.UsingTemplateFromFile(_templateLocation, emailModel, true)
 						.SendAsync();
 			}

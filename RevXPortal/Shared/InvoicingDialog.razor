@@ -96,7 +96,6 @@
                                             </div>
                                         </div>
                                         <div>
-
                                             <SignaturePad SignatureChanged="(data) => Signature = data"/>
                                         </div>
                                     </td>
@@ -239,7 +238,7 @@
         {
             try
             {
-                InvoiceModel invoiceModel = new() { SessionIds = new List<int>(), TotalHours = TotalHours, StartDate = finalList.First().Date, EndDate = finalList.Last().Date, UserId = userId, Rate = GetInvoiceRate(), Total = (TotalHours * GetInvoiceRate()), Signature = Signature };
+                InvoiceModel invoiceModel = new() { SessionIds = new List<int>(), TotalHours = TotalHours, StartDate = finalList.First().Date, EndDate = finalList.Last().Date, UserId = userId, Rate = GetInvoiceRate(), Total = (TotalHours * GetInvoiceRate()), Signature = Signature, ProviderId = finalList.First().Provider.Id };
                 foreach (var item in finalList)
                 {
                     invoiceModel.SessionIds.Add(item.Id);

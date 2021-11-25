@@ -69,8 +69,8 @@
                                     <tr>
                                         <td>@item.Student</td>
                                         <td>@item.Date.ToShortDateString()</td>
-                                        <td>@TimeOnly.FromTimeSpan(item.StartTime).ToString("h:mm tt")</td>
-                                        <td>@TimeOnly.FromTimeSpan(item.EndTime).ToString("h:mm tt")</td>
+                                        <td>@item.StartTime</td>
+                                        <td>@item.EndTime</td>
                                         <td>@item.Notes</td>
                                     </tr>
                                 }

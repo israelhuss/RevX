@@ -1,4 +1,6 @@
-﻿
+﻿@inject IInvoiceEndpoint _invoiceEndpoint
+@inject IJSRuntime jsRuntime
+
 <style>
 	.invoice-card {
 		background: rgb(255, 255, 255);
@@ -44,6 +46,10 @@
 		width: 3rem;
 		margin-right: 5px;
 	}
+
+	.download-btn {
+		cursor: pointer;
+	}
 </style>
 
 
@@ -70,7 +76,7 @@
 				InvoiceModel invoice = Invoices?.Where(i => i.ProviderId == provider.Id).FirstOrDefault();
 				Regex secondaryProviderMatch = new(@"[l|L]egade?i?l|[m|M]e?nah?e?l");
 				<TabPage Text="@provider.Name">
-					<div class="invoice-card-body">
+					<div class="invoice-card-body"  @ref="InvoiceCardRef">
 						<AccordionContainer AllowMultiple="true">
 						@if (invoice is null)
 						{
@@ -87,6 +93,8 @@
 						}
 						else
 						{
+								@invoice.Id
+
 							if(false) 
 							{
 								
@@ -141,6 +149,17 @@
 									</div>
 									<div>@invoice?.Total.ToString("C")</div>
 								</div>
+								<div class="invoice-card-body-row" style="justify-content: center; color: #00ae0d;">
+									<div><i style="padding: 0 10px; font-size: 1.4rem;" class="fas fa-download"></i></div>
+									@if (!DownloadingInProgress)
+									{
+										<div class="download-btn" @onclick="@(() => DownloadInvoice(invoice.Id, invoice.StartDate.ToString("MMMM yyyy")))">Download Invoice</div>
+									}
+									else
+									{
+										<div>Downloading...</div>
+									}
+									</div>
 							} 
 						}
 					</AccordionContainer>
@@ -158,6 +177,9 @@
 	[CascadingParameter]
 	public List<ManageSessionModel> Sessions { get; set; }
 	public bool CalendarView { get; set; }
+	public bool DownloadingInProgress { get; set; }
+	ElementReference InvoiceCardRef { get; set; }
+
 
 	[Parameter]
 	public List<InvoiceModel> Invoices { get; set; }
@@ -176,5 +198,14 @@
 	{
 		sessions = sessions.Where(s => s.Date.Month == Invoices.First().StartDate.Month && s.Date.Year == Invoices.First().StartDate.Year && s.Provider.Id == providerId).ToList();
 		return sessions;
+	}
+
+	private async void DownloadInvoice(int id, string filename)
+	{
+		DownloadingInProgress = true;
+		await _invoiceEndpoint.GetDocument(id, filename);
+		await jsRuntime.InvokeVoidAsync("log", "done");
+		DownloadingInProgress = false;
+		StateHasChanged();
 	}
 }

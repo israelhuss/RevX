@@ -1,15 +1,21 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
+using RazorEngine;
+using RazorEngine.Templating;
 using RevXApi.Library.DataAccess;
 using RevXApi.Library.Models;
 using RevXApi.Library.Services;
 using System.Collections.Generic;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using System;
 
 namespace RevXApi.Controllers
 {
 	[Route("api/[controller]")]
 	[ApiController]
+	[Authorize]
 	public class InvoiceController : ControllerBase
 	{
 		private readonly IEmailService _emailService;
@@ -32,6 +38,7 @@ namespace RevXApi.Controllers
 
 		[HttpPost]
 		[Route("TestEmail")]
+		[AllowAnonymous]
 		public async void SendEmail()
 		{
 			await _emailService.SendEmail();
@@ -40,8 +47,9 @@ namespace RevXApi.Controllers
 		[HttpPost]
 		public IActionResult SaveInvoice(InvoiceModel invoice)
 		{
+			invoice.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			InvoiceEmailModel emailModel = _invoiceData.PrepareEmailModel(invoice);
-			_invoiceData.SaveInvoice(invoice);
+			emailModel.Id = _invoiceData.SaveInvoice(invoice);
 			var status = _emailService.SendInvoiceEmail(_config["EmailConfig:SecretaryEmail"], emailModel);
 			if (status.Exception is null)
 			{
@@ -56,6 +64,22 @@ namespace RevXApi.Controllers
 			{
 				return StatusCode(500);
 			}
+		}
+
+		[HttpGet]
+		[Route ("document")]
+		public FileContentResult GetDocument(int id)
+		{
+			var res = _invoiceData.GetDocument(id, User.FindFirstValue(ClaimTypes.NameIdentifier));
+			return File(res, "application/pdf", "test.pdf");
+		}
+
+		[HttpGet]
+		[Route("bytes")]
+		public IActionResult GetDocumentBytes(int id)
+		{
+			var res = _invoiceData.GetDocument(id, User.FindFirstValue(ClaimTypes.NameIdentifier));
+			return Ok(res);
 		}
 	}
 }

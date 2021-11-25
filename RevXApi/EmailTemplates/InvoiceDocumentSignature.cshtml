@@ -10,7 +10,7 @@
             box-sizing: border-box;
         }
         .outer-table {
-            width: 60%;
+            max-width: 90%;
             margin: 0 auto;
             text-align: center;
         }
@@ -47,7 +47,8 @@
         <tbody>
             <tr>
                 <td>
-                    <h1>@Model.InvoicePeriod</h1>
+                    <h1 style="margin-bottom: 5px; margin-top: 0;">@Model.FullName</h1>
+                    <h3 style="margin-top: 7px;">@Model.InvoicePeriod</h3>
                 </td>
             </tr>
             <tr>
@@ -106,7 +107,7 @@
                             <tr>
                                 <td style="border-bottom: solid 1px #000; position: relative;">
                                     <span style="font-weight: 700; font-size: larger;margin-right: 10px;">X</span>
-                                    <img src="cid:Signature" alt="Employee Signature" />
+                                    <img src="@Model.Signature" alt="Employee Signature" />
                                 </td>
                             </tr>
                         </tbody>
@@ -117,12 +118,20 @@
         <tfoot>
             <tr>
                 <td style="padding: 2rem; padding-top: 4rem;">
-                    <p style=" display: flex; width: max-content; margin-left: auto; margin-right: auto;">
-                        <span style="font-weight: bold;">Powered by:</span>
-                        <span style="line-height: 1;">
-                            <img src="https://timcohussstorage.blob.core.windows.net/revxlogo/Logo-text.jpg" alt="RevX" style="height: 1.1rem; margin-left: .5rem;" />
-                        </span>
-                    </p>
+                    <table  style="margin: 0 auto;">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <p>
+                                        <span style="font-weight: bold;">Powered by:</span>
+                                        <span style="line-height: 1;">
+                                            <img src="https://timcohussstorage.blob.core.windows.net/revxlogo/Logo-text.jpg" alt="RevX" style="height: 1.1rem; margin-left: .5rem;" />
+                                        </span>
+                                    </p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </td>
             </tr>
         </tfoot>

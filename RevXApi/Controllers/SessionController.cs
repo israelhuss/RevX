@@ -34,9 +34,17 @@ namespace RevXApi.Controllers
 		}
 
 		[HttpPost]
-		public void SaveSession(SessionModel model)
+		public IActionResult SaveSession(SessionModel model)
 		{
-			_sessionData.SaveSession(model);
+			int affected = _sessionData.SaveSession(model);
+			if (affected > 0)
+			{
+				return Created("/Session", model);
+			}
+			else
+			{
+				return StatusCode(406, "There was already a session for this time");
+			}
 		}
 
 		[HttpPost]

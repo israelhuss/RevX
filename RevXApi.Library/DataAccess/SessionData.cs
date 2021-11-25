@@ -118,7 +118,7 @@ namespace RevXApi.Library.DataAccess
 			return output;
 		}
 
-		public void SaveSession(SessionModel model)
+		public int SaveSession(SessionModel model)
 		{
 			var dbModel = new SessionDbModel()
 			{
@@ -132,7 +132,7 @@ namespace RevXApi.Library.DataAccess
 				Notes = model.Notes
 			};
 
-			_sql.SaveData("dbo.spSession_Insert", dbModel, "RevXData");
+			return _sql.SaveData("dbo.spSession_Insert", dbModel, "RevXData");
 		}
 
 		public void EditSession(SessionModel model)

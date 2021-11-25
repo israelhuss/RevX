@@ -1,4 +1,7 @@
-﻿using RevXPortal.Models;
+﻿using Microsoft.JSInterop;
+using Microsoft.VisualBasic;
+using Org.BouncyCastle.Asn1.Ocsp;
+using RevXPortal.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +14,12 @@ namespace RevXPortal.API
 	public class InvoiceEndpoint : IInvoiceEndpoint
 	{
 		private readonly HttpClient _client;
+		private readonly IJSRuntime jSRuntime;
 
-		public InvoiceEndpoint(HttpClient client)
+		public InvoiceEndpoint(HttpClient client, IJSRuntime jSRuntime)
 		{
 			_client = client;
+			this.jSRuntime = jSRuntime;
 		}
 
 		public async Task<List<InvoiceModel>> GetAll()
@@ -46,6 +51,20 @@ namespace RevXPortal.API
 				{
 					Console.WriteLine(response.StatusCode);
 					throw new Exception(response.ReasonPhrase);
+				}
+			}
+		}
+
+		public async Task GetDocument(int id, string filename)
+		{
+			using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/invoice/document?id={id}"))
+			{
+				using (Stream contentStream = await ( await _client.SendAsync(request) ).Content.ReadAsStreamAsync())
+				{
+					using MemoryStream stream = new();
+					await contentStream.CopyToAsync(stream);
+					byte[] bytes = stream.ToArray();
+					await jSRuntime.InvokeVoidAsync("BlazorDownloadFile", $"{filename}.pdf", "application/pdf", bytes);
 				}
 			}
 		}

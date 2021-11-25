@@ -22,7 +22,7 @@
 				<tr>
 					<td>@session.Student.DisplayName</td>
 					<td>@(DateOnly.FromDateTime(session.Date))</td>
-					<td>@((session.EndTime - session.StartTime).ToString("hh\\:mm"))</td>
+					<td>@((session.EndTime - session.StartTime).ToString("hh\\:mm").TrimStart(new Char[] { '0' }))</td>
 				</tr>
 			}
 		</tbody>

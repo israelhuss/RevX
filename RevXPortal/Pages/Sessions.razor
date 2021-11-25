@@ -203,8 +203,8 @@
             var allSessions = await _sessionEndpoint.GetAll();
 
             OpenSessions = ( from s in allSessions
-                         where s.BillingStatus.BillingStatus == "Open"
-                         select s ).ToList();
+                             where s.BillingStatus.BillingStatus == "Open"
+                             select s ).ToList();
 
             StateHasChanged();
         }
@@ -227,15 +227,23 @@
 
         if (formState == "add")
         {
-            await _sessionEndpoint.SaveSession(ManageSession);
+            try
+            {
+                await _sessionEndpoint.SaveSession(ManageSession);
+                toastService.ShowToast("Changes saved successfully.", ToastLevel.Success);
+            }
+            catch (Exception ex)
+            {
+                toastService.ShowToast("Looks like there is already a session for this slot.", ToastLevel.Error);
+            }
             await RefreshSessionsList();
         }
         else if (formState == "edit")
         {
             await _sessionEndpoint.EditSession(ManageSession);
+            toastService.ShowToast("Changes saved successfully.", ToastLevel.Success);
             await RefreshSessionsList();
         }
-        toastService.ShowToast("Changes saved successfully.", ToastLevel.Success);
         StateHasChanged();
 
         ManageSession = new();

@@ -8,7 +8,7 @@ namespace RevXApi.Library.DataAccess
 		List<SessionModel> GetAllSessions(string userId);
 		SessionModel GetById(int id, string userId);
 		List<SessionModel> GetByBillingStatus(BillingStatusModel billingStatus);
-		void SaveSession(SessionModel model);
+		int SaveSession(SessionModel model);
 		void EditSession(SessionModel model);
 		void DeleteSession(int id, string userId);
 	}
