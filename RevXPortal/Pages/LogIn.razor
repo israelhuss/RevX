@@ -1,5 +1,4 @@
-﻿@page "/login"
-@inject IAuthenticationService AuthService
+﻿@inject IAuthenticationService AuthService
 @inject NavigationManager NavManager
 
 <h3>Log In</h3>
@@ -52,7 +51,9 @@
 
         if (result is not null)
         {
-            NavManager.NavigateTo("/");
+            var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+            QueryHelpers.ParseQuery(uri.Query).TryGetValue("url", out StringValues query);
+            NavManager.NavigateTo($"{query}");
         }
         else
         {

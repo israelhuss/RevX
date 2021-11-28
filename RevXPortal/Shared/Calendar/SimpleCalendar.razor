@@ -1,0 +1,122 @@
+﻿<style>
+	.calendar-container {
+		display: grid;
+		grid-template-columns: repeat(7, 1fr);
+		/*border-left: solid 1px #a2a2a2;*/
+		border: solid 1px #a2a2a2;
+		margin: 1rem;
+		border-radius: 5px;
+		overflow: hidden !important;
+	}
+
+	.calendar-day {
+		text-align: left;
+		border-right: solid 1px #a2a2a2;
+		border-top: solid 1px #a2a2a2;
+		min-height: 4rem;
+	}
+
+	.calendar-day.top-row {
+		border-top: none;
+	}
+	.calendar-day.right-col {
+		border-right: none;
+	}
+
+	.not-active {
+		color: #cdcdcd;
+	}
+
+	.calendar-day-number {
+		padding: 2px;
+	}
+
+	.not-active > .calendar-day-events {
+		display: none;
+	}
+
+	.calendar-day-event {
+		background-color: #006fb7;
+		color: #e4e4e4;
+		border-radius: 2px;
+		margin: 2px;
+		padding: 2px;
+	}
+</style>
+
+
+<div class="calendar-container"> 
+	@{int i = 1;}
+	@foreach (var day in AllDates)
+	{
+		<CalendarDay DayInMonth="day" Events="@GetEventsForDay(day.Value)" TopRow="i < 8" RightCol="i % 7 == 0"></CalendarDay>
+		i++;
+	}
+</div>
+
+@code {
+	[Parameter]
+	public DateOnly FirstDayOfMonth { get; set; }
+	[Parameter]
+	public List<ManageSessionModel> Events { get; set; }
+
+	public int LastDay { get; set; }
+	List<KeyValuePair<bool, DateOnly>> AllDates { get; set; }
+
+
+	protected override void OnInitialized()
+	{
+		LastDay = DateTime.DaysInMonth(FirstDayOfMonth.Year, FirstDayOfMonth.Month);
+		AllDates = GetAllDatesForCalendar();
+		base.OnInitialized();
+	}
+
+	private List<KeyValuePair<bool, DateOnly>> GetAllDatesForCalendar()
+	{
+		List<KeyValuePair<bool, DateOnly>> output = new();
+		DateOnly LastDate = new DateOnly(FirstDayOfMonth.Year, FirstDayOfMonth.Month, LastDay);
+
+		int fromLastMonth = (int)FirstDayOfMonth.DayOfWeek;
+		int fromNextMonth = 6 - (int)LastDate.DayOfWeek;
+		if (fromLastMonth > 0)
+		{
+			int lastMonth = FirstDayOfMonth.Month == 1 ? 12 : FirstDayOfMonth.Month - 1;
+			int lastMonthYear = FirstDayOfMonth.Month == 1 ? FirstDayOfMonth.Year - 1 : FirstDayOfMonth.Year;
+			int lastMonthDays = DateTime.DaysInMonth(lastMonthYear, lastMonth) - (fromLastMonth - 1);
+			for (var i = 0; i < fromLastMonth; i++ )
+			{
+				output.Add(new KeyValuePair<bool, DateOnly>(false, new DateOnly(FirstDayOfMonth.Year, FirstDayOfMonth.Month - 1, lastMonthDays)));
+				lastMonthDays++;
+			}
+		}
+
+		for (var i = 0; i < LastDay; i++)
+		{
+			output.Add(new KeyValuePair<bool, DateOnly>(true, new DateOnly(FirstDayOfMonth.Year, FirstDayOfMonth.Month, i + 1)));
+		}
+
+		if (fromNextMonth > 0)
+		{
+			int nextMonth = FirstDayOfMonth.Month == 12 ? 1 : FirstDayOfMonth.Month + 1;
+			int nextMonthYear = FirstDayOfMonth.Month == 12 ? FirstDayOfMonth.Year + 1 : FirstDayOfMonth.Year;
+			for  (var i = 0; i < fromNextMonth; i++)
+			{
+				output.Add(new KeyValuePair<bool, DateOnly>(false, new DateOnly(nextMonthYear, nextMonth, i + 1)));
+			}
+		}
+		return output;
+	}
+
+	private List<ManageSessionModel> GetEventsForDay(DateOnly date)
+	{
+		if (Events is not null)
+		{
+			var output = Events.Where(e => DateOnly.FromDateTime(e.Date) == date).ToList();
+			return output;
+		}
+		else
+		{
+			return new List<ManageSessionModel>();
+		}
+	}
+}

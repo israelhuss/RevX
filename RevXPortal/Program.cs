@@ -1,42 +1,73 @@
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using RevXPortal.API;
+using Microsoft.AspNetCore.Components.Web;
 using RevXPortal.Authentication;
 using RevXPortal.Services;
-using RevXPortal.Shared;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
-namespace RevXPortal
-{
-	public class Program
-	{
-		public static async Task Main(string[] args)
-		{
-			var builder = WebAssemblyHostBuilder.CreateDefault(args);
-			builder.RootComponents.Add<App>("#app");
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+builder.RootComponents.Add<App>("#app");
+builder.RootComponents.Add<HeadOutlet>("head::after");
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddAuthorizationCore();
+builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
+builder.Services.AddScoped<IToastService, ToastService>();
 
-			builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-			builder.Services.AddBlazoredLocalStorage();
-			builder.Services.AddAuthorizationCore();
-			builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
-			builder.Services.AddScoped<ToastService>();
+builder.Logging.SetMinimumLevel(LogLevel.Warning);
 
-			builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:44300/") });
+var baseAddress = builder.Configuration.GetValue<string>("apiLocation");
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseAddress) });
 
-			//Endpoints
-			builder.Services.AddTransient<IStudentEndpoint, StudentEndpoint>();
-			builder.Services.AddTransient<ISessionEndpoint, SessionEndpoint>();
-			builder.Services.AddTransient<IInvoiceEndpoint, InvoiceEndpoint>();
 
-			await builder.Build().RunAsync();
-		}
-	}
-}
+//Endpoints
+builder.Services.AddTransient<IStudentEndpoint, StudentEndpoint>();
+builder.Services.AddTransient<ISessionEndpoint, SessionEndpoint>();
+builder.Services.AddTransient<IInvoiceEndpoint, InvoiceEndpoint>();
+builder.Services.AddTransient<IProviderEndpoint, ProviderEndpoint>();
+builder.Services.AddTransient<IBillingStatusEndpoint, BillingStatusEndpoint>();
+builder.Services.AddTransient<IReportEndpoint, ReportEndpoint>();
+builder.Services.AddTransient<IHourlyRateEndpoint, HourlyRateEndpoint>();
+builder.Services.AddTransient<IUserEndpoint, UserEndpoint>();
+
+await builder.Build().RunAsync();
+
+
+//namespace RevXPortal
+//{
+//	public class Program
+//	{
+//		public static async Task Main(string[] args)
+//		{
+//			var builder = WebAssemblyHostBuilder.CreateDefault(args);
+//			builder.RootComponents.Add<App>("#app");
+//			builder.RootComponents.Add<HeadOutlet>("head::after");
+
+//			builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+//			builder.Services.AddBlazoredLocalStorage();
+//			builder.Services.AddAuthorizationCore();
+//			builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
+//			builder.Services.AddScoped<ToastService>();
+
+//			builder.Logging.SetMinimumLevel(LogLevel.Warning);
+
+//			var baseAddress = builder.Configuration.GetValue<string>("apiLocation");
+//			builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseAddress) });
+
+//			//Endpoints
+//			builder.Services.AddTransient<IStudentEndpoint, StudentEndpoint>();
+//			builder.Services.AddTransient<ISessionEndpoint, SessionEndpoint>();
+//			builder.Services.AddTransient<IInvoiceEndpoint, InvoiceEndpoint>();
+//			builder.Services.AddTransient<IProviderEndpoint, ProviderEndpoint>();
+//			builder.Services.AddTransient<IBillingStatusEndpoint, BillingStatusEndpoint>();
+//			builder.Services.AddTransient<IReportEndpoint, ReportEndpoint>();
+//			builder.Services.AddTransient<IHourlyRateEndpoint, HourlyRateEndpoint>();
+//			builder.Services.AddTransient<IUserEndpoint, UserEndpoint>();
+
+//			await builder.Build().RunAsync();
+//		}
+//	}
+//}
+
+

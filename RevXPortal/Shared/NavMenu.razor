@@ -1,27 +1,28 @@
-﻿<div class="top-row pl-4 navbar navbar-dark" style="padding-top: 0;">
-    <a class="navbar-brand" href=""><img src="https://timcohussstorage.blob.core.windows.net/revxlogo/Logo-text-transparent.png" style="height: 2.5rem; padding-top: .2rem"/></a>
-    <button class="navbar-toggler" @onclick="ToggleNavMenu">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-</div>
-
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+﻿<div>
     <ul class="nav flex-column">
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="sessions">
-                <span class="oi oi-calendar" aria-hidden="true"></span> Sessions
+                <i class="fas fa-calendar-alt" style="font-size: 1.4rem; margin-right: 15px"></i> Sessions
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="invoices">
+                <i class="fas fa-file-invoice-dollar" style="font-size: 1.4rem; margin-right: 15px"></i> Invoices
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="reports">
+                <i class="fas fa-chart-pie" style="font-size: 1.4rem; margin-right: 15px"></i> Reports
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="management">
+                <i class="fas fa-sliders-h" style="font-size: 1.4rem; margin-right: 15px"></i> Management
             </NavLink>
         </li>
     </ul>
 </div>
 
 @code {
-    private bool collapseNavMenu = true;
 
-    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
 }

@@ -1,7 +1,24 @@
 ﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
+*,
+*::after,
+*::before {
+    padding: 0;
+    margin: 0;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    box-sizing: border-box;
+    -webkit-text-size-adjust: none;
+    -webkit-font-smoothing: antialiased;
+}
+
 html, body {
     font-family: 'Nunito', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: rgb(253 253 253);
+    color: #474747;
+}
+
+table {
+    color: inherit !important;
 }
 
 a, .btn-link {
@@ -9,14 +26,25 @@ a, .btn-link {
 }
 
 .btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
+    color: #e6e6e6;
+    background-color: #3e6581;
     border-color: #1861ac;
 }
+
+    .btn-primary:hover {
+        background-color: #35556b;
+    }
+    .btn-primary:focus,
+    .btn-primary:active {
+        background-color: #35556b !important;
+        box-shadow: none !important;
+    }
 
 .sidebar {
     background-image: linear-gradient(#002626, #085b70) !important;
 }
+
+
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
 }
@@ -30,24 +58,38 @@ a, .btn-link {
 }
 
 #blazor-error-ui {
-    background: lightyellow;
-    bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
     display: none;
-    left: 0;
-    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
-    position: fixed;
-    width: 100%;
-    z-index: 1000;
 }
 
-    #blazor-error-ui .dismiss {
-        cursor: pointer;
-        position: absolute;
-        right: 0.75rem;
-        top: 0.5rem;
-    }
+.error-icon {
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 4rem;
+    font-weight: 800;
+    background-color: #e0004d;
+    color: #efefef;
+    width: 6rem;
+    height: 6rem;
+    line-height: 6.4rem;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    text-align: center;
+}
 
+.modal {
+    background-color: #000000b5;
+}
+
+.modal-body {
+    padding-top: 4rem;
+    text-align: center;
+}
+
+.error-content {
+    font-size: 1.5rem;
+    padding: 0 2.5rem;
+}
 
 .spinner-parent {
     position: absolute;
@@ -82,6 +124,25 @@ a, .btn-link {
     transform: translate(-50%, -50%);
     text-align: center;
 }
+
+.overflow-auto::-webkit-scrollbar {
+    width: 5px;
+}
+
+.overflow-auto::-webkit-scrollbar-track {
+    border-top-right-radius: 3.5px;
+    border-bottom-right-radius: 3.5px;
+    background: rgb(241 241 241 / 0.00);
+}
+
+.overflow-auto::-webkit-scrollbar-thumb {
+    border-radius: 3.5px;
+    background: #888;
+}
+
+    .overflow-auto::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
 
 @keyframes fade-in-and-grow {
     from {
@@ -119,6 +180,40 @@ a, .btn-link {
     }
 }
 
+@keyframes roll-up {
+    from {
+        transform-origin: bottom;
+        transform: scaleY(0);
+    }
+    to {
+        transform-origin: bottom;
+        transform: scaleY(1);
+    }
+}
+
+@keyframes roll-down {
+    0% {
+        max-height: 0rem;
+    }
+    100% {
+        max-height: 2000rem;
+    }
+}
+
+@keyframes scale-from-top {
+    0% {
+        transform: scale(0);
+    }
+
+    50% {
+        transform: scale(.5);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
 @media only screen and (max-width: 1000px) {
     html,
     body {
@@ -126,9 +221,45 @@ a, .btn-link {
     }
 }
 
+@media only screen and (max-width: 800px) {
+    .revx-sidebar {
+        display: none;
+    }
+
+    .navbar-toggler {
+        display: block !important;
+        text-align: left;
+    }
+
+    .navbar-toggler-btn {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .nav-bar-item {
+        width: calc(100vw / 3) !important;
+    }
+
+    .logo {
+        text-align: center !important;
+    }
+
+    .account {
+        text-align: right !important;
+    }
+}
+
 @media only screen and (max-width: 600px) {
     html,
     body {
         font-size: 62.5%;
+    }
+
+    .navbar-toggler {
+        display: block !important;
     }
 }

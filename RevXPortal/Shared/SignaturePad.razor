@@ -1,0 +1,24 @@
+﻿@inject IJSRuntime jsRuntime
+
+<div style="display: flex; position: relative">
+	<div style="background: rgb(239 239 239); border-bottom: solid 1px #000; position: absolute; bottom: 0; left: 0; line-height: 1; font-family: system-ui;">X</div>
+	<canvas @onmouseout="() => DoneWriting()" id="signature-pad" class="js-paint  paint-canvas" width="300" height="90" style="background: #efefef; border-bottom: solid 1px #000;"></canvas>
+</div>
+
+@code {
+	public string SignatureData { get; set; }
+	[Parameter]
+	public EventCallback<string> SignatureChanged { get; set; }
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		await jsRuntime.InvokeVoidAsync("initializeCanvas");
+	}
+
+	private async void DoneWriting() 
+	{
+		SignatureData = await jsRuntime.InvokeAsync<string>("getSignatureData");
+		await jsRuntime.InvokeVoidAsync("log", SignatureData);
+		await SignatureChanged.InvokeAsync(SignatureData);
+	}
+}

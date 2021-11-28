@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace RevXPortal.Models
+﻿namespace RevXPortal.Models
 {
 	public enum ToastLevel
 	{
@@ -11,5 +6,11 @@ namespace RevXPortal.Models
 		Success,
 		Warning,
 		Error
+	}
+
+	public enum ReportValueTypes
+	{
+		Money,
+		Time
 	}
 }

@@ -1,9 +1,6 @@
 ﻿using RevXApi.Library.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RevXApi.Library.DataAccess
 {
@@ -16,19 +13,28 @@ namespace RevXApi.Library.DataAccess
 			_sql = sql;
 		}
 
-		public List<ProviderModel> GetAll()
+		public List<ProviderModel> GetAll(string userId)
 		{
-			return _sql.LoadData<ProviderModel>("dbo.spProvider_GetAll", "RevXData");
+			return _sql.LoadData<ProviderModel, dynamic>("dbo.spProvider_GetAll", new { userId }, "RevXData");
+		}
+		public List<ProviderModel> GetEnabled(string userId)
+		{
+			return _sql.LoadData<ProviderModel, dynamic>("dbo.spProvider_GetEnabled", new { userId }, "RevXData");
 		}
 
-		public ProviderModel GetById(int id)
+		public ProviderModel GetById(int id, string userId)
 		{
-			return _sql.LoadData<ProviderModel, dynamic>("dbo.spProvider_GetById", new { Id = id }, "RevXData").FirstOrDefault();
+			return _sql.LoadData<ProviderModel, dynamic>("dbo.spProvider_GetById", new { Id = id, userId }, "RevXData").FirstOrDefault();
 		}
 
 		public void AddProvider(ProviderModel model)
 		{
 			_sql.SaveData("dbo.spProvider_Insert", model, "RevXData");
+		}
+
+		public void EditProvider(ProviderModel model)
+		{
+			_sql.SaveData("dbo.spProvider_Update", model, "RevXData");
 		}
 	}
 }

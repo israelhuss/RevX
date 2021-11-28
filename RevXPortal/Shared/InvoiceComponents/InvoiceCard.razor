@@ -1,0 +1,211 @@
+﻿@inject IInvoiceEndpoint _invoiceEndpoint
+@inject IJSRuntime jsRuntime
+
+<style>
+	.invoice-card {
+		background: rgb(255, 255, 255);
+		border-top: 2px solid rgb(209, 215, 222);
+		/*box-shadow: rgb(58 60 77 / 10%) 0px 1px 1px 0px, rgb(58 60 77 / 8%) 0px 2px 8px 0px;*/
+		box-shadow: rgb(58 60 77 / 10%) 0px 1px 12px 3px, rgb(58 60 77 / 8%) 0px 8px 8px 4px;
+		border-radius: 0px 0px 1px 1px;
+		padding-bottom: 0.1px;
+		margin-bottom: 20px;
+		width: 100%;
+	}
+
+	.invoice-card-header {
+		position: relative;
+		border-bottom: 1px solid rgb(228, 228, 231);
+		padding: 35px 0px 20px;
+		text-align: center;
+		transition: padding 0.6s cubic-bezier(0.23, 1, 0.32, 1) 0s;
+	}
+
+	.invoice-card-body {
+		min-height: 14rem;
+		text-align: center;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.invoice-card-body-row {
+		margin-top: -1px;
+		border-top: solid 1px rgb(228, 228, 231);
+		display: flex;
+		padding: 1rem 4rem 1rem 3rem;
+		justify-content: space-between;
+		font-size: 1.6rem;
+		position: relative;
+	}
+
+	.invoice-row-icon {
+		color: #00d210;
+	}
+
+	.icon-container {
+		width: 3rem;
+		margin-right: 5px;
+	}
+
+	.download-btn {
+		cursor: pointer;
+	}
+</style>
+
+
+<div class="invoice-card">
+	@if (Invoices is null)
+	{
+		<LoadingIndicator/>
+	}
+	else if (Invoices.Count == 0)
+	{
+		<h3>No Invoices Found</h3>
+	}
+	else
+	{
+		<div class="invoice-card-header">
+			@{double total = Invoices.Sum(i => i.Total);}
+			<h1 style="font-weight: 300; font-size: 3rem;">@total.ToString("C")</h1>
+			<h5>Gross Pay for @Month 01, @Year - @Month @LastDay, @Year</h5>
+		</div>
+
+		<TabContainer>
+			@foreach (var provider in Providers)
+			{
+				InvoiceModel invoice = Invoices?.Where(i => i.ProviderId == provider.Id).FirstOrDefault();
+				Regex secondaryProviderMatch = new(@"[l|L]egade?i?l|[m|M]e?nah?e?l");
+				<TabPage Text="@provider.Name">
+					<div class="invoice-card-body"  @ref="InvoiceCardRef">
+						<AccordionContainer AllowMultiple="true">
+						@if (invoice is null)
+						{
+							if(false) 
+							{
+								
+							}
+							else
+							{
+								<div style="height: 20rem; display: flex;" class="invoice-card-body-row">
+									<h4 style="margin: auto;">There is no invoice for @provider.Name in this month.</h4>
+								</div>
+							}
+						}
+						else
+						{
+								@invoice.Id
+
+							if(false) 
+							{
+								
+							}
+							else
+							{
+								<AccordionItem>
+									<Header>
+										<div class="invoice-card-body-row">
+											<div style="display: flex;">
+												<div class="icon-container">
+													<i class="far fa-clock invoice-row-icon"></i>
+												</div>
+												<div>Total Hours</div>
+											</div>
+											<div>@invoice?.TotalHours</div>
+										</div>
+									</Header>
+									<Content>
+										<div class="d-flex" style="justify-content: center; align-items: center; padding: 1rem 0;">
+											<div class="custom-control custom-switch">
+												<input type="checkbox" checked="@CalendarView" class="custom-control-input" id="@invoice.Id-calendar-view-switch" @onchange="((e) => CalendarView = (bool)e.Value)">
+												<label class="custom-control-label" for="@invoice.Id-calendar-view-switch"></label>
+											</div>
+											<div>Calendar View</div>
+										</div>
+										@if (!CalendarView)
+										{
+											<SessionTable Sessions="FilterSessionsByMonthAndProvider(Sessions, provider.Id)" />
+										}
+											@if (CalendarView)
+										{
+											<SimpleCalendar FirstDayOfMonth="new DateOnly(invoice.StartDate.Year, invoice.StartDate.Month, 1)" Events="FilterSessionsByMonthAndProvider(Sessions, provider.Id)" />
+										}
+									</Content>
+								</AccordionItem>
+								<div class="invoice-card-body-row">
+									<div style="display: flex;">
+										<div class="icon-container">
+											<i class="fas fa-dollar-sign invoice-row-icon"></i>
+										</div>
+										<div>Hourly Rate</div>
+									</div>
+									<div>@invoice?.Rate.ToString("C")</div>
+								</div>
+								<div class="invoice-card-body-row">
+									<div style="display: flex;">
+										<div class="icon-container">
+											<i class="fas fa-money-check-alt invoice-row-icon"></i>
+										</div>
+										<div>Gross Total</div>
+									</div>
+									<div>@invoice?.Total.ToString("C")</div>
+								</div>
+								<div class="invoice-card-body-row" style="justify-content: center; color: #00ae0d;">
+									<div><i style="padding: 0 10px; font-size: 1.4rem;" class="fas fa-download"></i></div>
+									@if (!DownloadingInProgress)
+									{
+										<div class="download-btn" @onclick="@(() => DownloadInvoice(invoice.Id, invoice.StartDate.ToString("MMMM yyyy")))">Download Invoice</div>
+									}
+									else
+									{
+										<div>Downloading...</div>
+									}
+									</div>
+							} 
+						}
+					</AccordionContainer>
+					</div>
+				</TabPage>
+			}
+		</TabContainer>
+	}
+</div>
+
+
+@code {
+	[CascadingParameter]
+	public List<ProviderModel> Providers { get; set; }
+	[CascadingParameter]
+	public List<ManageSessionModel> Sessions { get; set; }
+	public bool CalendarView { get; set; }
+	public bool DownloadingInProgress { get; set; }
+	ElementReference InvoiceCardRef { get; set; }
+
+
+	[Parameter]
+	public List<InvoiceModel> Invoices { get; set; }
+	public string Month { get; set; }
+	public string Year { get; set; }
+	public string LastDay { get; set; }
+
+	protected override void OnParametersSet()
+	{
+		Month = Invoices.First().StartDate.ToString("MMM");
+		Year = Invoices.First().StartDate.ToString("yyyy");
+		LastDay = DateTime.DaysInMonth(Invoices.First().StartDate.Year, Invoices.First().StartDate.Month).ToString();
+	}
+
+	private List<ManageSessionModel> FilterSessionsByMonthAndProvider(List<ManageSessionModel> sessions, int providerId)
+	{
+		sessions = sessions.Where(s => s.Date.Month == Invoices.First().StartDate.Month && s.Date.Year == Invoices.First().StartDate.Year && s.Provider.Id == providerId).ToList();
+		return sessions;
+	}
+
+	private async void DownloadInvoice(int id, string filename)
+	{
+		DownloadingInProgress = true;
+		await _invoiceEndpoint.GetDocument(id, filename);
+		await jsRuntime.InvokeVoidAsync("log", "done");
+		DownloadingInProgress = false;
+		StateHasChanged();
+	}
+}

@@ -1,0 +1,131 @@
+﻿@inject IJSRuntime jsRuntime
+@inject IBillingStatusEndpoint _billingStatusEndpoint
+
+
+<EditTable>
+    <thead>
+        <tr>
+            <th></th>
+            @foreach (var col in new List<string>() { "BillingStaus" })
+            {
+                <th>@col</th>
+            }
+        </tr>
+    </thead>
+    @if (billingStatuses is not null)
+    {
+        <tbody>
+            @foreach (var status in billingStatuses)
+            {
+                <tr>
+                    <td>
+                        <Switch TValue="BillingStatusModel" Item="status" ValueChanged="OnSwitchChange"></Switch>
+                    </td>
+                    <td class="@(status.Enabled ? "" : "disabled")">
+                        @if (status.isEditMode)
+                        {
+                            <div class="edit-table-td">
+
+                                <input class="form-control" type="text" @bind-value="status.BillingStatus" @onfocusout="() => DoneEditing(status)" style="width:70%; margin: auto;" />
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(status))" style="min-height: 15px">
+                                @status.BillingStatus
+                            </div>
+                        }
+                    </td>
+                </tr>
+
+            }
+            <tr>
+                <td class="additional"></td>
+                <td class="additional">
+                    @if (additionalStatus.isEditMode)
+                    {
+                        <div class="edit-table-td">
+                            <input class="form-control" type="text" @bind-value="additionalStatus.BillingStatus" @onfocusout="() => DoneCreating(additionalStatus)" style="width:70%; margin: auto;" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(additionalStatus))" style="min-height: 15px">
+                            @additionalStatus.BillingStatus
+                        </div>
+                    }
+                </td>
+            </tr>
+        </tbody>
+    }
+    else
+    {
+        <div class="empty-table-cell grid-cell" style="position: relative; height: 85%">
+            <LoadingIndicator />
+        </div>
+    }
+</EditTable>
+@code {
+    public List<BillingStatusModel> billingStatuses { get; set; }
+
+    private BillingStatusModel additionalStatus { get; set; } = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await RefreshBillingStatusList();
+    }
+
+    public void YouClickedMe(BillingStatusModel status)
+    {
+        if (status.Enabled || status.BillingStatus is null)
+        {
+            status.isEditMode = true;
+            jsRuntime.InvokeVoidAsync("log", status);
+        }
+        else
+        {
+            jsRuntime.InvokeVoidAsync("log", status);
+        }
+    }
+
+    public void OnSwitchChange(BillingStatusModel e)
+    {
+        jsRuntime.InvokeVoidAsync("log", e);
+        _billingStatusEndpoint.EditBillingStatus(e);
+    }
+
+    public async void DoneEditing(BillingStatusModel status)
+    {
+        status.isEditMode = false;
+        await _billingStatusEndpoint.EditBillingStatus(status);
+        await RefreshBillingStatusList();
+    }
+
+    public async void DoneCreating(BillingStatusModel status)
+    {
+        if (( status.BillingStatus is null || status.BillingStatus == "" ))
+        {
+            status.isEditMode = false;
+            additionalStatus = new();
+        }
+        else if (status.BillingStatus is not null)
+        {
+            await jsRuntime.InvokeVoidAsync("log", additionalStatus);
+            status.isEditMode = false;
+            await _billingStatusEndpoint.AddBillingStatus(status);
+            additionalStatus = new();
+            await RefreshBillingStatusList();
+        }
+        else
+        {
+            await jsRuntime.InvokeVoidAsync("log", "Waiting you should finish");
+            await jsRuntime.InvokeVoidAsync("log", status);
+        }
+    }
+
+    private async Task RefreshBillingStatusList()
+    {
+        billingStatuses = await _billingStatusEndpoint.GetAll();
+        StateHasChanged();
+    }
+}

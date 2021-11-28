@@ -1,8 +1,9 @@
 ﻿CREATE PROCEDURE [dbo].[spProvider_GetById]
-	@Id int
+	@Id int,
+	@UserId nvarchar(128)
 AS
 BEGIN
-	SELECT [Id], [Name] 
+	SELECT [Id], [UserId], [Name], [Enabled]
 	FROM dbo.Provider
-	WHERE Id = @Id;
+	WHERE Id = @Id AND UserId = @UserId;
 END

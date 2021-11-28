@@ -1,0 +1,55 @@
+﻿@page "/management"
+@inject IProviderEndpoint _providerEndpoint
+@inject IStudentEndpoint _studentEndpoint
+@inject IHourlyRateEndpoint _rateEndpoint
+@inject IBillingStatusEndpoint _billingStatusEndpoint
+@inject ISessionEndpoint _sessionEndpoint
+@inject IJSRuntime jsRuntime
+@inject NavigationManager NavManager
+@inject IUserEndpoint _userEndpoint
+
+
+<div class="container mt-3 mb-3">
+    @*<h2>Management</h2>
+
+        <div class="row mt-3">
+            <ExcelUpload />
+        </div>*@
+
+    <CascadingValue Value="Providers">
+        <CascadingValue Value="Students">
+            <CascadingValue Value="Rates">
+                <SettingsContainer Header="General">
+                    <Collapsible Height="@(Students is not null ? 8.3 + (Students.Count * 3.4) : 20)" HeaderText="Manage Students">
+                        <StudentEditTable></StudentEditTable>
+                    </Collapsible>
+                    <Collapsible Height="@(Providers is not null ? 8.3 + (Providers.Count * 3.4) : 20)" HeaderText="Manage Providers">
+                        <ProviderEditTable></ProviderEditTable>
+                    </Collapsible>
+                    <Collapsible Height="@(Rates is not null ? 8.3 + (Rates.Count * 3.4) : 20)" HeaderText="Manage Hourly Rates">
+                        <HourlyRateEditTable></HourlyRateEditTable>
+                    </Collapsible>
+                </SettingsContainer>
+            </CascadingValue> 
+        </CascadingValue>
+    </CascadingValue>
+
+
+</div>
+
+
+
+@code {
+    // height is 150px the base plus 50px for each entry
+
+    public List<ProviderModel> Providers { get; set; }
+    public List<StudentModel> Students { get; set; }
+    public List<HourlyRate> Rates { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Providers = await _providerEndpoint.GetAll();
+        Students = await _studentEndpoint.GetAll();
+        Rates = await _rateEndpoint.GetAll();
+    }
+}

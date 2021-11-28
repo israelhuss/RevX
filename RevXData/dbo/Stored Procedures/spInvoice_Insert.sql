@@ -1,11 +1,17 @@
 ﻿CREATE PROCEDURE [dbo].[spInvoice_Insert]
-	@Id int output,
+	@Id int = 0 output,
+	@UserId nvarchar(128),
+	@ProviderId int,
+	@StartDate Date,
+	@EndDate Date,
 	@InvoiceDate datetime2,
-	@TotalHours decimal(4,2)
+	@TotalHours float,
+	@Rate MONEY,
+	@Total Money
 AS
 BEGIN
-	INSERT INTO dbo.Invoice (InvoiceDate, TotalHours)
-	VALUES (@InvoiceDate, @TotalHours);
+	INSERT INTO dbo.Invoice (UserId, StartDate, EndDate, InvoiceDate, ProviderId, TotalHours, Rate, Total)
+	VALUES (@UserId, @StartDate, @EndDate, @InvoiceDate, @ProviderId, @TotalHours, @Rate, @Total);
 
-	SELECT @Id = SCOPE_IDENTITY();
+	SELECT SCOPE_IDENTITY();
 END

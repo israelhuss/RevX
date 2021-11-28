@@ -6,7 +6,9 @@ namespace RevXApi.Library.DataAccess
 	public interface IProviderData
 	{
 		void AddProvider(ProviderModel model);
-		List<ProviderModel> GetAll();
-		ProviderModel GetById(int id);
+		List<ProviderModel> GetEnabled(string userId);
+		void EditProvider(ProviderModel model);
+		List<ProviderModel> GetAll(string userId);
+		ProviderModel GetById(int id, string userId);
 	}
 }

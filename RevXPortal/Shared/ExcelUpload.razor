@@ -1,0 +1,101 @@
+﻿@inject IStudentEndpoint _studentEndpoint
+@inject IProviderEndpoint _providerEndpoint
+@inject IBillingStatusEndpoint _billingStatusEndpoint
+@inject ISessionEndpoint _sessionEndpoint
+@inject NavigationManager NavManager
+
+<div class="container">
+    <h3>Upload Excel File</h3>
+    <InputFile OnChange="@LoadFiles" accept=".xlsx" />
+</div>
+
+@code {
+    public List<StudentModel> StudentList { get; set; }
+    public List<ProviderModel> ProviderList { get; set; }
+    public List<BillingStatusModel> BillingStatusList { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            StudentList = await _studentEndpoint.GetAll();
+            ProviderList = await _providerEndpoint.GetAll();
+            BillingStatusList = await _billingStatusEndpoint.GetAll();
+        }
+        catch (Exception e)
+        {
+            if (e.Message == "Unauthorized")
+            {
+                NavManager.NavigateTo($"/login?url={NavManager.Uri.Replace(NavManager.BaseUri, "")}");
+            }
+        }
+    }
+
+    // 0 = Date, 1 = StartTime, 2 = EndTime, 4 = Student
+
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        List<List<string>> excelData = new();
+
+        var memoryStream = new MemoryStream();
+        await e.File.OpenReadStream().CopyToAsync(memoryStream);
+        using (MemoryStream stream = memoryStream)
+        using (ExcelPackage excelPackage = new ExcelPackage(stream))
+        {
+            //loop all worksheets
+            foreach (ExcelWorksheet worksheet in excelPackage.Workbook.Worksheets)
+            {
+                //loop all rows
+                for (int i = worksheet.Dimension.Start.Row + 1; i <= worksheet.Dimension.End.Row; i++)
+                {
+                    List<string> row = new();
+
+                    //loop all columns in a row
+                    for (int j = worksheet.Dimension.Start.Column; j <= worksheet.Dimension.End.Column; j++)
+                    {
+                        if (worksheet.Cells[ i, j ].Value is null)
+                        {
+                            break;
+                        }
+                        //add the cell data to the List
+                        if (worksheet.Cells[ i, j ].Value != null)
+                        {
+                            row.Add(worksheet.Cells[ i, j ].Value.ToString());
+                        }
+                    }
+                    if (row.Count > 0)
+                        excelData.Add(row);
+
+                }
+            }
+        }
+        MapToSessionModels(excelData);
+    }
+
+
+    private List<ManageSessionModel> MapToSessionModels(List<List<string>> list)
+    {
+        List<ManageSessionModel> output = new();
+        foreach (var session in list)
+        {
+            ManageSessionModel model = new()
+            {
+                Date = DateTime.Parse(session[ 0 ]),
+                StartTime = TimeConverters.Convert12HourStringToTimeSpan(String.Join(' ', session[ 1 ].Split(' ').Skip(1))),
+                EndTime = TimeConverters.Convert12HourStringToTimeSpan(String.Join(' ', session[ 2 ].Split(' ').Skip(1))),
+                Student = StudentList.FirstOrDefault(s => s.DisplayName.TrimEnd(' ') == session[ 4 ]),
+                Provider = ProviderList.FirstOrDefault(p => p.Name == "Legadel"),
+                BillingStatus = BillingStatusList.FirstOrDefault(b => b.BillingStatus == "Paid")
+            };
+            output.Add(model);
+        }
+
+        foreach (var model in output)
+        {
+            _sessionEndpoint.SaveSession(model);
+        }
+
+        return output;
+    }
+
+}

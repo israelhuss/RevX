@@ -1,0 +1,231 @@
+﻿@inject IJSRuntime jsRuntime
+@inject IHourlyRateEndpoint _rateEndpoint
+
+
+@if (Rates is not null)
+{
+    <EditTable>
+        <thead>
+            <tr>
+                @foreach (var col in new List<string>() { "Start Date", "End Date", "Rate", "Provider" })
+                {
+                    <th>@col</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var rate in Rates)
+            {
+                <tr>
+                    <td>
+                        @if (rate.isEditMode && ElementEditing == "Start")
+                        {
+                            <div class="edit-table-td">
+                                <NullableDateInput Date="rate.StartDate" DateChanged="(e) => { rate.StartDate = e.Value; DoneEditing(rate);}" />
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(rate, "Start"))" style="min-height: 15px">
+                                @rate.StartDate.Value.ToShortDateString()
+                            </div>
+                        }
+                    </td>
+                    <td>
+                        @if (rate.isEditMode && ElementEditing == "End")
+                        {
+                            <div class="edit-table-td">
+                                <NullableDateInput Date="rate.EndDate" DateChanged="(e) => { rate.EndDate = e.Value; DoneEditing(rate);}" />
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(rate, "End"))" style="min-height: 15px">
+                                @(!rate.EndDate.HasValue ? "Current" : rate.EndDate.Value.ToShortDateString())
+                            </div>
+                        }
+                    </td>
+                    <td>
+                        @if (rate.isEditMode && ElementEditing == "Rate")
+                        {
+                            <div class="edit-table-td">
+                                <input class="form-control" type="text" @bind-value="rate.Rate" @onfocusout="(e) => DoneEditing(rate)" @onkeyup="(e) => DoneEditing(rate, e)" style="width:70%; margin: auto;" />
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(rate, "Rate"))" style="min-height: 15px;">
+                                $@rate.Rate
+                            </div>
+                        }
+                    </td>
+                    <td>
+                        @if (rate.isEditMode && ElementEditing == "Provider")
+                        {
+                            <div class="edit-table-td" tabindex="103">
+                                <CustomSelect Items="ProvidersForDropdown" ValueChanged="(e) => {if (e.Id > 0) { rate.ProviderId = e.Id; } else { rate.ProviderId = null; }; DoneEditing(rate);}" TValue="ProviderModel"></CustomSelect>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(rate, "Provider"))" style="min-height: 15px;">
+                                @(rate.ProviderId is null ? "All" : Providers.Where(p => p.Id == rate.ProviderId).FirstOrDefault().Name)
+                            </div>
+                        }
+                    </td>
+                </tr>
+
+            }
+            <tr>
+                <td class="additional">
+                    @if (additionalRate.isEditMode && ElementEditing == "Start")
+                    {
+                        @*@onkeyup="(e) => DoneCreating(additionalRate, e)"*@
+                        <div class="edit-table-td" @onfocusout="() => DoneCreating(additionalRate)"  tabindex="101">
+                            <NullableDateInput @bind-Date="additionalRate.StartDate" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(additionalRate, "Start"))" style="min-height: 15px; min-width: 50px;">
+                            @(!additionalRate.StartDate.HasValue ? "" : additionalRate.StartDate.Value.ToShortDateString())
+                        </div>
+                    }
+                </td>
+                <td class="additional">
+                    @if (additionalRate.isEditMode && ElementEditing == "End")
+                    {
+                        @*@onkeyup="(e) => DoneCreating(additionalRate, e)"*@
+                        <div class="edit-table-td" @onfocusout="() => DoneCreating(additionalRate)" tabindex="102" >
+                            <NullableDateInput @bind-Date="additionalRate.EndDate" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(additionalRate, "End"))" style="min-height: 15px; min-width: 50px;">
+                            @(!additionalRate.EndDate.HasValue && additionalRate.Rate != 0 && additionalRate.Rate > 0 ? "Current" : (additionalRate.EndDate.HasValue ? additionalRate.EndDate.Value.ToShortDateString() : ""))
+                        </div>
+                    }
+                </td>
+                <td class="additional">
+                    @if (additionalRate.isEditMode && ElementEditing == "Rate")
+                    {
+
+                        <div class="edit-table-td" tabindex="103">
+                            @*@onkeyup="(e) => DoneCreating(additionalRate, e)"*@
+                            <input class="form-control" type="text" @bind-value="additionalRate.Rate" @onfocusout="() => DoneCreating(additionalRate)"  style="width:70%; margin: auto;" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(additionalRate, "Rate"))" style="min-height: 15px; min-width: 50px;">
+                            @(additionalRate.Rate != 0 && additionalRate.Rate > 0 ? $"{additionalRate.Rate}" : "")
+                        </div>
+                    }
+                </td>
+                <td class="additional">
+                    @if (additionalRate.isEditMode && ElementEditing == "Provider")
+                    {
+                        <div class="edit-table-td" tabindex="103">
+                            <CustomSelect Items="ProvidersForDropdown" ValueChanged="(e) => additionalRate.ProviderId = e.Id" TValue="ProviderModel"></CustomSelect>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(additionalRate, "Provider"))" style="min-height: 15px;">
+                            @(additionalRate.ProviderId is null ? additionalRate.Rate == 0 || additionalRate.Rate <= 0 ? "" : "All" : Providers.Where(p => p.Id == additionalRate.ProviderId).FirstOrDefault().Name)
+                        </div>
+                    }
+                </td>
+            </tr>
+        </tbody>
+    </EditTable>
+}
+else
+{
+    <div class="empty-table-cell grid-cell" style="position: relative; height: 85%">
+        <LoadingIndicator />
+    </div>
+}
+
+
+
+@code {
+    public string testdate { get; set; } = "2021-08-22";
+
+    [CascadingParameter]
+    public List<HourlyRate> Rates { get; set; }
+    [CascadingParameter]
+    public List<ProviderModel> Providers { get; set; }
+
+    public List<ProviderModel> ProvidersForDropdown { get; set; }
+
+    public IEditTable RateTableData { get; set; }
+
+    public string ElementEditing { get; set; }
+
+    private HourlyRate additionalRate { get; set; } = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await jsRuntime.InvokeVoidAsync("log", Rates);
+        if (Providers is not null)
+        {
+            ProvidersForDropdown = new(Providers);
+            ProvidersForDropdown.Add(new ProviderModel() { Id = -1, Name = "All" });
+        }
+    }
+
+    public void YouClickedMe(HourlyRate rate, string el)
+    {
+        if (true)
+        {
+            ElementEditing = el;
+            rate.isEditMode = true;
+            jsRuntime.InvokeVoidAsync("log", el);
+            jsRuntime.InvokeVoidAsync("log", rate);
+        }
+        else
+        {
+            jsRuntime.InvokeVoidAsync("log", rate);
+        }
+    }
+
+    public async void DoneEditing(HourlyRate rate, KeyboardEventArgs e = null)
+    {
+        if (e is null || e.Key == "Enter")
+        {
+            await jsRuntime.InvokeVoidAsync("log", $"It's DoneEditing logging: {JsonSerializer.Serialize(rate)}");
+            rate.isEditMode = false;
+            await _rateEndpoint.EditRate(rate);
+            await RefreshRateList();
+            StateHasChanged();
+        }
+    }
+
+    public async void DoneCreating(HourlyRate rate, KeyboardEventArgs e = null)
+    {
+        if (e == null || e.Key == "Enter")
+        {
+            if (rate.StartDate is not null && rate.StartDate != DateTime.Parse("0001-01-01T00:00:00") && ( rate.Rate != 0 && rate.Rate > 0 ))
+            {
+                await jsRuntime.InvokeVoidAsync("log", additionalRate);
+                rate.isEditMode = false;
+                await _rateEndpoint.AddRate(rate);
+                additionalRate = new();
+                await RefreshRateList();
+            }
+            else
+            {
+                await jsRuntime.InvokeVoidAsync("log", "Waiting you should finish");
+                await jsRuntime.InvokeVoidAsync("log", rate);
+            }
+        }
+    }
+
+    private async Task RefreshRateList()
+    {
+        Rates = await _rateEndpoint.GetAll();
+        StateHasChanged();
+    }
+}

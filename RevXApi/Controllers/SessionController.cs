@@ -1,12 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RevXApi.Library.DataAccess;
 using RevXApi.Library.Models;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace RevXApi.Controllers
 {
@@ -25,7 +22,7 @@ namespace RevXApi.Controllers
 		[HttpGet]
 		public List<SessionModel> GetAllSessions()
 		{
-			return _sessionData.GetAllSessions();
+			return _sessionData.GetAllSessions(User.FindFirstValue(ClaimTypes.NameIdentifier));
 		}
 
 		// FIX this method - get is not supposed to have body
@@ -36,15 +33,25 @@ namespace RevXApi.Controllers
 		}
 
 		[HttpPost]
-		public void SaveSession(SessionModel model)
+		public IActionResult SaveSession(SessionModel model)
 		{
-			_sessionData.SaveSession(model);
+			model.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			int affected = _sessionData.SaveSession(model);
+			if (affected > 0)
+			{
+				return Created("/Session", model);
+			}
+			else
+			{
+				return StatusCode(406, "There was already a session for this time");
+			}
 		}
 
 		[HttpPost]
 		[Route("Edit")]
 		public void EditSession(SessionModel model)
 		{
+			model.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			_sessionData.EditSession(model);
 		}
 
@@ -52,7 +59,7 @@ namespace RevXApi.Controllers
 		[Route("Delete/{id}")]
 		public void DeleteSession(int id)
 		{
-			_sessionData.DeleteSession(id);
+			_sessionData.DeleteSession(id, User.FindFirstValue(ClaimTypes.NameIdentifier));
 		}
 	}
 }

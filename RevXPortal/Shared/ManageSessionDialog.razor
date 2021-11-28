@@ -1,10 +1,11 @@
 ﻿@inject IStudentEndpoint _student
-@inject ToastService toastService
+@inject IProviderEndpoint _provider
+@inject IBillingStatusEndpoint _billingStatus
+@inject IToastService toastService
 
 @if (ShowDialog)
 {
     <div class="modal show d-block" tabindex="-1" role="dialog">
-
         <div class="modal-dialog modal-dialog-centered fade-in-and-grow" role="document">
             <EditForm Model="@FormSession" OnValidSubmit="@SaveForm">
                 <div class="modal-content">
@@ -24,7 +25,7 @@
                             </div>
                             <div class="form-group col-md-6">
                                 <label for="Date">Date</label>
-                                <InputDate type="date" min="2021-01-01" class="form-control" @bind-Value="@FormSession.Date" />
+                                <InputDate TValue="DateTime" min="2021-01-01" class="form-control" @bind-Value="@FormSession.Date" />
                             </div>
                         </div>
                         <div class="form-row">
@@ -42,11 +43,11 @@
                         <div class="form-row">
                             <div class="form-group col-md-6">
                                 <label for="Provider">Provider</label>
-                                <CustomSelect TValue="ProviderModel" @bind-Value="@FormSession.Provider" Items="providers"/>
+                                <CustomSelect TValue="ProviderModel" @bind-Value="@FormSession.Provider" Items="providers" />
                             </div>
                             <div class="form-group col-md-6">
                                 <label for="BillingStatus">Billing Status</label>
-                                <CustomSelect  TValue="BillingStatusModel" @bind-Value="@FormSession.BillingStatus" Items="billingStatus"/>
+                                <CustomSelect TValue="BillingStatusModel" @bind-Value="@FormSession.BillingStatus" Items="billingStatus" />
                             </div>
                         </div>
                         <div class="form-row">
@@ -90,32 +91,23 @@
 
     protected override async Task OnInitializedAsync()
     {
-
         try
         {
-            availableStudents = await _student.GetAll();
+            availableStudents = await _student.GetEnabled();
+            providers = await _provider.GetEnabled();
+            billingStatus = await _billingStatus.GetEnabled();
         }
         catch (HttpRequestException e)
         {
             Console.WriteLine(e.Message);
         }
         catch (Exception e)
-		{
-            toastService.ShowToast($"Unhandled exeption. {e.Message}", ToastLevel.Error);
-		}
-
-        providers = new()
         {
-            new ProviderModel() { Id = 1, Name = "Encore" },
-            new ProviderModel() { Id = 2, Name = "Legadel" }
-        };
-
-        billingStatus = new()
-        {
-            new() { Id = 1, BillingStatus = "Open"},
-            new() { Id = 2, BillingStatus = "Invoiced"},
-            new() { Id = 3, BillingStatus = "Paid"}
-        };
+            if (e.Message != "Unauthorized")
+            {
+                toastService.ShowToast($"Unhandled exeption. {e.Message}", ToastLevel.Error);
+            }
+        }
     }
 
     public void Show()

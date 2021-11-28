@@ -1,52 +1,70 @@
-﻿using RevXPortal.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿using RevXPortal.Services;
 
 namespace RevXPortal.API
 {
 	public class SessionEndpoint : ISessionEndpoint
 	{
 		private readonly HttpClient _client;
+		private readonly IToastService _toastService;
 
-		public SessionEndpoint(HttpClient client)
+		public SessionEndpoint(HttpClient client, IToastService toastService)
 		{
 			_client = client;
+			_toastService = toastService;
 		}
 
 		public async Task<List<ManageSessionModel>> GetAll()
 		{
-			using (HttpResponseMessage response = await _client.GetAsync("/api/Session"))
+			try
 			{
-				if (response.IsSuccessStatusCode)
+				using (HttpResponseMessage response = await _client.GetAsync($"/api/Session"))
 				{
-					var resultsAsDbModel = await response.Content.ReadAsAsync<List<SessionApiModel>>();
-					var output = new List<ManageSessionModel>();
-					foreach (var result in resultsAsDbModel)
+					if (response.IsSuccessStatusCode)
 					{
-						ManageSessionModel model = new()
+						var resultsAsDbModel = await response.Content.ReadAsAsync<List<SessionApiModel>>();
+						var output = new List<ManageSessionModel>();
+						foreach (var result in resultsAsDbModel)
 						{
-							Id = result.Id,
-							Student = result.Student,
-							Date = result.Date,
-							StartTime = ConvertToTimeSpan(result.StartTime),
-							EndTime = ConvertToTimeSpan(result.EndTime),
-							Provider = result.Provider,
-							BillingStatus = result.BillingStatus,
-							Notes = result.Notes
-						};
+							ManageSessionModel model = new()
+							{
+								Id = result.Id,
+								UserId = result.UserId,
+								Student = result.Student,
+								Date = result.Date,
+								StartTime = TimeConverters.Convert24HourStringToTimeSpan(result.StartTime),
+								EndTime = TimeConverters.Convert24HourStringToTimeSpan(result.EndTime),
+								Provider = result.Provider,
+								BillingStatus = result.BillingStatus,
+								Notes = result.Notes,
+								Rate = result.Rate,
+							};
 
-						output.Add(model);
+							output.Add(model);
+						}
+						return output;
 					}
-					return output;
+					else
+					{
+						throw new Exception(response.ReasonPhrase);
+					}
+				}
+			}
+			catch (HttpRequestException ex)
+			{
+				if (ex.Message == "TypeError: Failed to fetch")
+				{
+					_toastService.ShowToast("Looks like the API is offline.", ToastLevel.Error);
 				}
 				else
 				{
-					throw new Exception(response.ReasonPhrase);
+					throw;
 				}
 			}
+			catch (Exception ex)
+			{
+				_toastService.ShowToast("An unexpected error ocurred.", ToastLevel.Error);
+			}
+			return new List<ManageSessionModel>();
 		}
 
 		public async Task SaveSession(ManageSessionModel model)
@@ -103,15 +121,6 @@ namespace RevXPortal.API
 					throw new Exception(response.ReasonPhrase);
 				}
 			}
-		}
-
-		private TimeSpan ConvertToTimeSpan(string timeString)
-		{
-			var split = timeString.Split(':');
-			int.TryParse(split[0], out int hours);
-			int.TryParse(split[1], out int minutes);
-			var output = new TimeSpan(hours, minutes, 00);
-			return output;
 		}
 	}
 }

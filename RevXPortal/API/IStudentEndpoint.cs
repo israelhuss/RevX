@@ -8,5 +8,7 @@ namespace RevXPortal.API
 	{
 		Task AddStudent(StudentModel model);
 		Task<List<StudentModel>> GetAll();
+		Task<List<StudentModel>> GetEnabled();
+		Task EditStudent(StudentModel model);
 	}
 }

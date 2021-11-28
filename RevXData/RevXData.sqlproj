@@ -88,11 +88,30 @@
     <Build Include="dbo\Stored Procedures\spInvoiceDetail_Insert.sql" />
     <Build Include="dbo\Stored Procedures\spSession_EditBillingStatus.sql" />
     <Build Include="dbo\Stored Procedures\spSession_GetById.sql" />
+    <Build Include="dbo\Tables\Rate.sql" />
+    <Build Include="dbo\Stored Procedures\spReport_SchoolAndAfterSchool.sql" />
+    <Build Include="dbo\Stored Procedures\spStudent_Update.sql" />
+    <Build Include="dbo\Stored Procedures\spStudent_GetEnabled.sql" />
+    <Build Include="dbo\Stored Procedures\spProvider_Update.sql" />
+    <Build Include="dbo\Stored Procedures\spProvider_GetEnabled.sql" />
+    <Build Include="dbo\Stored Procedures\spBillingStatus_Update.sql" />
+    <Build Include="dbo\Stored Procedures\spBillingStatus_GetEnabled.sql" />
+    <Build Include="dbo\Stored Procedures\spRates_getAll.sql" />
+    <Build Include="dbo\Stored Procedures\spRates_Insert.sql" />
+    <Build Include="dbo\Stored Procedures\spRates_GetByDate.sql" />
+    <Build Include="dbo\Stored Procedures\spRates_Update.sql" />
+    <Build Include="dbo\Tables\User.sql" />
+    <Build Include="dbo\Stored Procedures\spUser_GetById.sql" />
+    <Build Include="dbo\Stored Procedures\spUser_Insert.sql" />
+    <Build Include="dbo\Tables\RateByProvider.sql" />
+    <Build Include="dbo\Stored Procedures\spRates_GetUnique.sql" />
+    <Build Include="dbo\Stored Procedures\spInvoice_GetAll.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="RevXData.refactorlog" />
   </ItemGroup>
   <ItemGroup>
     <None Include="PublishLocations\RevXData.publish.xml" />
+    <None Include="RevXData-Prod.publish.xml" />
   </ItemGroup>
 </Project>

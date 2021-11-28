@@ -1,0 +1,126 @@
+﻿@inject IJSRuntime jsRuntime
+@inject IProviderEndpoint _providerEndpoint
+
+
+<EditTable>
+    <thead>
+        <tr>
+            <th></th>
+            @foreach (var col in new List<string>() { "Name" })
+            {
+                <th>@col</th>
+            }
+        </tr>
+    </thead>
+    @if (providers is not null)
+    {
+        <tbody>
+            @foreach (var provider in providers)
+            {
+                <tr>
+                    <td>
+                        <Switch TValue="ProviderModel" Item="provider" ValueChanged="OnSwitchChange"></Switch>
+                    </td>
+                    <td class="@(provider.Enabled ? "" : "disabled")">
+                        @if (provider.isEditMode)
+                        {
+                            <div class="edit-table-td">
+                                <input class="form-control" type="text" @bind-value="provider.Name" @onfocusout="() => DoneEditing(provider)" style="width:70%; margin: auto;" />
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(provider))" style="min-height: 15px">
+                                @provider.Name
+                            </div>
+                        }
+                    </td>
+                </tr>
+
+            }
+            <tr>
+                <td class="additional"></td>
+                <td class="additional">
+                    @if (additionalProvider.isEditMode)
+                    {
+                        <div class="edit-table-td">
+
+                            <input class="form-control" type="text" @bind-value="additionalProvider.Name" @onfocusout="() => DoneCreating(additionalProvider)" style="width:70%; margin: auto;" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="edit-table-td" @ondblclick="@(() => YouClickedMe(additionalProvider))" style="min-height: 15px">
+                            @additionalProvider.Name
+                        </div>
+                    }
+                </td>
+            </tr>
+        </tbody>
+    }
+    else
+    {
+        <div class="empty-table-cell grid-cell" style="position: relative; height: 85%">
+            <LoadingIndicator />
+        </div>
+    }
+</EditTable>
+@code {
+    [CascadingParameter]
+    public List<ProviderModel> providers { get; set; }
+
+    private ProviderModel additionalProvider { get; set; } = new();
+    public void YouClickedMe(ProviderModel provider)
+    {
+        if (provider.Enabled || provider.Name is null)
+        {
+            provider.isEditMode = true;
+            jsRuntime.InvokeVoidAsync("log", provider);
+        }
+        else
+        {
+            jsRuntime.InvokeVoidAsync("log", provider);
+        }
+    }
+
+    public void OnSwitchChange(ProviderModel e)
+    {
+        jsRuntime.InvokeVoidAsync("log", e);
+        _providerEndpoint.EditProvider(e);
+    }
+
+    public async void DoneEditing(ProviderModel provider)
+    {
+        provider.isEditMode = false;
+        await _providerEndpoint.EditProvider(provider);
+        await RefreshProviderList();
+    }
+
+    public async void DoneCreating(ProviderModel provider)
+    {
+        if (( provider.Name is null || provider.Name == "" ))
+        {
+            provider.isEditMode = false;
+            additionalProvider = new();
+        }
+        else if (provider.Name is not null)
+        {
+            await jsRuntime.InvokeVoidAsync("log", additionalProvider);
+            provider.isEditMode = false;
+            await _providerEndpoint.AddProvider(provider);
+            additionalProvider = new();
+            await RefreshProviderList();
+        }
+        else
+        {
+            await jsRuntime.InvokeVoidAsync("log", "Waiting you should finish");
+            await jsRuntime.InvokeVoidAsync("log", provider);
+        }
+    }
+
+    private async Task RefreshProviderList()
+    {
+        providers = await _providerEndpoint.GetAll();
+        StateHasChanged();
+    }
+}

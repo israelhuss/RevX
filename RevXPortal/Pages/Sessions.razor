@@ -1,7 +1,10 @@
-﻿@page "/sessions"
+﻿@page "/"
+@page "/sessions"
 @inject ISessionEndpoint _sessionEndpoint
+@inject IProviderEndpoint _providerEndpoint
 @inject NavigationManager NavManager
-@inject ToastService toastService
+@inject IToastService toastService
+@inject IJSRuntime jsRuntime
 
 <style>
     .table-container {
@@ -17,9 +20,9 @@
         margin-bottom: 0;
     }
 
-    .table td {
-        vertical-align: middle;
-    }
+        .table td {
+            vertical-align: middle;
+        }
 
     th {
         font-size: 1.3rem;
@@ -58,7 +61,7 @@
     }
 
     td > .btn,
-    th > .btn{
+    th > .btn {
         line-height: 1;
         padding: 0rem 0.2rem;
         margin-right: 2.5px;
@@ -66,33 +69,14 @@
     }
 
         td > .btn:focus,
-        th > .btn:focus{
+        th > .btn:focus {
             box-shadow: none;
-        }
-
-        .overflow-auto::-webkit-scrollbar {
-            width: 5px;
-        }
-
-    .overflow-auto::-webkit-scrollbar-track {
-        border-top-right-radius: 3.5px;
-        border-bottom-right-radius: 3.5px;
-        background: rgb(241 241 241 / 0.00);
-    }
-
-    .overflow-auto::-webkit-scrollbar-thumb {
-        border-radius: 3.5px;
-        background: #888;
-    }
-
-        .overflow-auto::-webkit-scrollbar-thumb:hover {
-            background: #555;
         }
 </style>
 <AuthorizeView>
     <Authorized>
         <div class="d-flex justify-content-between mt-4">
-            <h3>Sessions</h3>
+            <h3></h3>
             <button class="btn btn-primary" @onclick="AddSession">Add Session</button>
         </div>
 
@@ -100,11 +84,11 @@
             <table class="table table-bordered table-striped" style="margin-top: -1px">
                 <thead style="position: sticky; top: 0;">
                     <tr>
-                        @if (sessions is not null && sessions.Count > 0)
+                        @if (OpenSessions is not null && OpenSessions.Count > 0)
                         {
                             <th colspan="2">
                                 <button class="btn" @onclick="InvoiceClicked">
-                                    <i class="fas fa-file-invoice-dollar"  style="font-size: 2.1rem"></i>
+                                    <i class="fas fa-file-invoice-dollar" style="font-size: 2.1rem"></i>
                                 </button>
                             </th>
                         }
@@ -118,22 +102,22 @@
                     </tr>
                 </thead>
 
-                @if (sessions is not null && sessions.Count > 0)
+                @if (OpenSessions is not null && OpenSessions.Count > 0)
                 {
                     <tbody>
-                        @foreach (var session in sessions)
+                        @foreach (var session in OpenSessions)
                         {
                             <tr>
                                 <td style="padding-right: .25rem; padding-left: .25rem;">
                                     <button type="button" class="btn btn-outline" @onclick="(() => ConfirmDelete(session))"><i class="far fa-trash-alt icon"></i></button>
-                                    </td>
+                                </td>
                                 <td style="padding-right: .25rem; padding-left: .25rem;">
                                     <button type="button" class="btn btn-outline" @onclick="(() => EditSession(session))"><i class="fas fa-pencil-alt icon"></i></button>
                                 </td>
                                 <td>@session.Student.DisplayName</td>
                                 <td>@session.Date.ToShortDateString()</td>
-                                <td>@ConvertTimeSpanToString(session.StartTime)</td>
-                                <td>@ConvertTimeSpanToString(session.EndTime)</td>
+                                <td>@TimeConverters.ConvertTimeSpanTo12HourString(session.StartTime)</td>
+                                <td>@TimeConverters.ConvertTimeSpanTo12HourString(session.EndTime)</td>
                                 <td>@session.Provider.Name</td>
                                 <td>@session.BillingStatus.BillingStatus</td>
                                 <td>@session.Notes</td>
@@ -144,7 +128,7 @@
             </table>
 
             @* Main Row while loading the sessions *@
-            @if (sessions is null)
+            @if (OpenSessions is null)
             {
                 <div class="empty-table-cell grid-cell" style="position: relative; height: 85%">
                     <LoadingIndicator />
@@ -152,17 +136,17 @@
             }
 
             @* Main Row if sessions is empty *@
-            @if (sessions is not null && sessions.Count == 0)
+            @if (OpenSessions is not null && OpenSessions.Count == 0)
             {
                 <div class="empty-table-cell grid-cell" style="margin-top: 10rem">
-                    <h4>You don't have any open sessions now.<br />Please <button class="btn" style="font-size: inherit; padding: 0; vertical-align: baseline;" @onclick="AddSession">click here</button> to enter a session</h4>
+                    <h4>You don't have any open sessions now.<br />Please <button class="btn" style="color: inherit; font-size: inherit; padding: 0; vertical-align: baseline;" @onclick="AddSession">click here</button> to enter a session</h4>
                 </div>
             }
         </div>
 
         <ManageSessionDialog @ref="ManageDialogRef" FormSession="ManageSession" SaveForm="SaveForm" Title="@formTitle" />
         <ConfirmationDialog @ref="DeleteConfirmation" IdToDelete="ManageSession.Id" ConfirmationChanged="OnConfirmClicked" />
-        <InvoicingDialog @ref="InvoicingRef" InvoicingItems="sessions" InvoicingItemsChanged="RefreshSessionsList"/>
+        <InvoicingDialog @ref="InvoicingRef" InvoicingItems="OpenSessions" InvoicingItemsChanged="RefreshSessionsList" />
 
     </Authorized>
     <NotAuthorized>
@@ -186,11 +170,13 @@
 
     private string formState { get; set; } = string.Empty;
 
-    private List<ManageSessionModel> sessions { get; set; }
+    private List<ManageSessionModel> OpenSessions { get; set; }
+    private List<ProviderModel> Providers { get; set; }
 
     protected async override Task OnInitializedAsync()
     {
-        await RefreshSessionsList();
+        await RefreshSessionsList(); 
+        Providers = await _providerEndpoint.GetAll();
     }
 
     private async Task RefreshSessionsList()
@@ -200,9 +186,10 @@
             //TODO - getting only open sessions manually - change to dynamic...
             var allSessions = await _sessionEndpoint.GetAll();
 
-            sessions = (from s in allSessions
-                        where s.BillingStatus.Id == 1
-                        select s).ToList();
+            OpenSessions = ( from s in allSessions
+                             where s.BillingStatus.BillingStatus == "Open"
+                             select s ).ToList();
+
             StateHasChanged();
         }
         catch (HttpRequestException e)
@@ -210,27 +197,37 @@
             toastService.ShowToast("The API seems to be offline.", ToastLevel.Error);
             Console.WriteLine(e.Message);
         }
-        catch (Exception)
-        {
-            NavManager.NavigateTo("/login");
-        }
+        //catch (Exception e)
+        //{
+        //    if (e.Message == "Unauthorized")
+        //    {
+        //        NavManager.NavigateTo($"/login?url={NavManager.Uri.Replace(NavManager.BaseUri, "")}");
+        //    }
+        //}
     }
-
     private async void SaveForm()
     {
         ManageDialogRef.Hide();
 
         if (formState == "add")
         {
-            await _sessionEndpoint.SaveSession(ManageSession);
+            try
+            {
+                await _sessionEndpoint.SaveSession(ManageSession);
+                toastService.ShowToast("Changes saved successfully.", ToastLevel.Success);
+            }
+            catch (Exception)
+            {
+                toastService.ShowToast("Looks like there is already a session for this slot.", ToastLevel.Error);
+            }
             await RefreshSessionsList();
         }
         else if (formState == "edit")
         {
             await _sessionEndpoint.EditSession(ManageSession);
+            toastService.ShowToast("Changes saved successfully.", ToastLevel.Success);
             await RefreshSessionsList();
         }
-        toastService.ShowToast("Changes saved successfully.", ToastLevel.Success);
         StateHasChanged();
 
         ManageSession = new();
@@ -240,6 +237,10 @@
     {
         formState = "add";
         ManageSession = new();
+        // Make sure the database id match ---- BAD PRACTICE!!!
+        Regex secondaryProviderMatch = new(@"[l|L]egade?i?l|[m|M]e?nah?e?l");
+        ManageSession.Provider = Providers.Where(p => secondaryProviderMatch.IsMatch(p.Name)).FirstOrDefault();
+        ManageSession.BillingStatus = new BillingStatusModel() { Id = 1, BillingStatus = "Open" };
         formTitle = "Add A Session";
         ManageDialogRef.Show();
     }
@@ -286,42 +287,5 @@
     private void InvoiceClicked()
     {
         InvoicingRef.Show();
-    }
-
-    private TimeSpan ConvertToTimeSpan(string timeString)
-    {
-        var split = timeString.Split(':');
-        if (int.TryParse(split[0], out int hours) && int.TryParse(split[1], out int minutes))
-        {
-            var output = new TimeSpan(hours, minutes, 00);
-            return output;
-        }
-        else
-        {
-            throw new FormatException();
-        }
-    }
-
-
-    // TODO - move this kind of helpers to central place in app
-    private string ConvertTimeSpanToString(TimeSpan time)
-    {
-        string output = String.Empty;
-
-        int hours = time.Hours;
-        int minutes = time.Minutes;
-        if (hours == 0)
-        {
-            output = $"12:{minutes.ToString("D2")} AM";
-        }
-        else if (hours <= 12)
-        {
-            output = $"{hours.ToString()}:{minutes.ToString("D2")} AM";
-        }
-        else if (hours > 12)
-        {
-            output = $"{(hours - 12).ToString()}:{minutes.ToString("D2")} PM";
-        }
-        return output;
     }
 }

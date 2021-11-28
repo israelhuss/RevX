@@ -1,0 +1,55 @@
+﻿
+@inject IJSRuntime jsRuntime;
+<style>
+    .m-tooltip-wrapper {
+        display: inline-block;
+    }
+
+    .m-tooltip-wrapper {
+        visibility: visible;
+        position: absolute;
+        width: max-content;
+        background-color: #363636;
+        color: #fff;
+        text-align: center;
+        padding: 5px 15px;
+        border-radius: 5px;
+        z-index: 1;
+        white-space: pre-line;
+        pointer-events: none;
+    }
+</style>
+
+@if (ShowTooltip)
+{
+    <div id="m-tooltip" class="m-tooltip-wrapper">
+        @Text
+    </div>
+}
+
+@code {
+    [Parameter] public string Text { get; set; }
+
+    [Parameter] public bool ShowTooltip { get; set; } = false;
+
+    [Parameter] public string X { get; set; } = "0px";
+    [Parameter] public string Y { get; set; } = "0px";
+
+
+    public void Show()
+    {
+        ShowTooltip = true;
+        StateHasChanged();
+    }
+
+    public void Hide()
+    {
+        ShowTooltip = false;
+        StateHasChanged();
+    }
+
+    public void SetText(string text)
+    {
+        Text = text;
+    }
+}

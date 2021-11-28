@@ -1,0 +1,131 @@
+﻿@using System 
+
+<!DOCTYPE html>
+<head>
+    @*<link href="@($"{System.IO.Directory.GetCurrentDirectory()}/wwwroot/css/bootstrap.min.css")" rel="stylesheet" />*@
+    <style>
+        html,
+        body {
+            font-family: Nunito,"Helvetica Neue",Helvetica,Arial,sans-serif;
+            box-sizing: border-box;
+        }
+        .outer-table {
+            width: 60%;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .table {
+            width: 100%;
+            border: 1px solid #dadada;
+            border-collapse: collapse;
+            color: rgb(33,37,41);
+            border-spacing: 2px;
+        }
+        .table-bordered th {
+            border: 1px solid #dadada;
+            font-size: 20px;
+            padding: .75rem;
+        }
+        .table-bordered td {
+            border: 1px solid #dadada;
+            padding: .75rem;
+        }
+
+        .table-striped tbody tr:nth-child(odd) {
+            background-color: rgba(0, 0, 0, 0.06);
+        }
+
+        img + div {
+            display: none;
+        }
+</style>
+</head>
+<body>
+
+    <table class="outer-table">
+        <tbody>
+            <tr>
+                <td>
+                    <h1>@Model.InvoicePeriod</h1>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="invoice-table-container">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Date</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.InvoiceSessions)
+                                {
+                                    <tr>
+                                        <td>@item.Student</td>
+                                        <td>@item.Date.ToShortDateString()</td>
+                                        <td>@item.StartTime</td>
+                                        <td>@item.EndTime</td>
+                                        <td>@item.Notes</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <table style="margin-left: auto;">
+                        <tbody>
+                            <tr>
+                                <td style="text-align: left;">Total Hours:</td>
+                                <td style="text-align: right;">@Model.TotalHours</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;">Rate:</td>
+                                <td style="text-align: right;">$@Model.Rate</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left; font-weight: 700; font-size: larger;">Total:</td>
+                                <td style="font-weight: 700; text-align: right; font-size: larger;">@((Model.Rate * Model.TotalHours).ToString("C"))</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <table style="margin-left: auto; margin-top: 30px;">
+                        <tbody>
+                            <tr>
+                                <td style="border-bottom: solid 1px #000; position: relative;">
+                                    <span style="font-weight: 700; font-size: larger;margin-right: 10px;">X</span>
+                                    <img src="cid:Signature" alt="Employee Signature" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td style="padding: 2rem; padding-top: 4rem;">
+                    <p style=" display: flex; width: max-content; margin-left: auto; margin-right: auto;">
+                        <span style="font-weight: bold;">Powered by:</span>
+                        <span style="line-height: 1;">
+                            <img src="https://timcohussstorage.blob.core.windows.net/revxlogo/Logo-text.jpg" alt="RevX" style="height: 1.1rem; margin-left: .5rem;" />
+                        </span>
+                    </p>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+    
+</body>
