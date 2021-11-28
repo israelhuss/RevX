@@ -67,19 +67,9 @@
 </EditTable>
 @code {
     [CascadingParameter]
-    private Task<AuthenticationState> authenticationStateTask { get; set; }
-    private string userId { get; set; }
-
-    [CascadingParameter]
     public List<ProviderModel> providers { get; set; }
 
     private ProviderModel additionalProvider { get; set; } = new();
-
-    protected override async Task OnParametersSetAsync()
-    {
-        userId = ( await authenticationStateTask ).User.FindFirst(ClaimTypes.NameIdentifier).Value;
-    }
-
     public void YouClickedMe(ProviderModel provider)
     {
         if (provider.Enabled || provider.Name is null)
@@ -117,7 +107,6 @@
         {
             await jsRuntime.InvokeVoidAsync("log", additionalProvider);
             provider.isEditMode = false;
-            provider.UserId = userId;
             await _providerEndpoint.AddProvider(provider);
             additionalProvider = new();
             await RefreshProviderList();

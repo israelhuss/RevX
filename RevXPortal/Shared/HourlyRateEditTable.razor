@@ -151,10 +151,6 @@ else
 
 
 @code {
-    [CascadingParameter]
-    private Task<AuthenticationState> authenticationStateTask { get; set; }
-    private string userId { get; set; }
-
     public string testdate { get; set; } = "2021-08-22";
 
     [CascadingParameter]
@@ -172,8 +168,6 @@ else
 
     protected override async Task OnParametersSetAsync()
     {
-        userId = ( await authenticationStateTask ).User.FindFirst(ClaimTypes.NameIdentifier).Value;
-        additionalRate.UserId = userId;
         await jsRuntime.InvokeVoidAsync("log", Rates);
         if (Providers is not null)
         {
@@ -213,12 +207,10 @@ else
     {
         if (e == null || e.Key == "Enter")
         {
-            await jsRuntime.InvokeVoidAsync("log", userId);
             if (rate.StartDate is not null && rate.StartDate != DateTime.Parse("0001-01-01T00:00:00") && ( rate.Rate != 0 && rate.Rate > 0 ))
             {
                 await jsRuntime.InvokeVoidAsync("log", additionalRate);
                 rate.isEditMode = false;
-                rate.UserId = userId;
                 await _rateEndpoint.AddRate(rate);
                 additionalRate = new();
                 await RefreshRateList();
@@ -233,7 +225,7 @@ else
 
     private async Task RefreshRateList()
     {
-        Rates = await _rateEndpoint.GetAll(userId);
+        Rates = await _rateEndpoint.GetAll();
         StateHasChanged();
     }
 }

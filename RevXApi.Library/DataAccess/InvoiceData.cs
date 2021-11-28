@@ -1,4 +1,6 @@
-﻿using RazorEngine;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using RazorEngine;
 using RazorEngine.Templating;
 using RevXApi.Library.Models;
 using SelectPdf;
@@ -16,13 +18,19 @@ namespace RevXApi.Library.DataAccess
 		private readonly ISessionData _sessionData;
 		private readonly IUserData _userData;
 		private readonly IHourlyRateData _rateData;
+		private readonly ILogger<InvoiceData> _logger;
+		private readonly IConfiguration _config;
+		private readonly string _documentLocationRoot;
 
-		public InvoiceData(ISqlDataAccess sql, ISessionData sessionData, IUserData userData, IHourlyRateData rateData)
+		public InvoiceData(ISqlDataAccess sql, ISessionData sessionData, IUserData userData, IHourlyRateData rateData, ILogger<InvoiceData> logger, IConfiguration config)
 		{
 			_sql = sql;
 			_sessionData = sessionData;
 			_userData = userData;
 			_rateData = rateData;
+			_logger = logger;
+			_config = config;
+			_documentLocationRoot = _config[ "EmailConfig:DocumentTemplateLocationRoot" ];
 		}
 
 
@@ -96,6 +104,7 @@ namespace RevXApi.Library.DataAccess
 
 		public List<InvoiceModel> GenerateInvoicesFromSessions(List<SessionDbModel> sessions, string userId)
 		{
+			_logger.LogInformation(message: $"I got some sessions for {userId} to generate invoices", userId);
 			Dictionary<string, List<SessionDbModel>> keyValuePairs = new();
 			foreach (var session in sessions)
 			{
@@ -111,7 +120,7 @@ namespace RevXApi.Library.DataAccess
 				}
 			}
 			List<InvoiceModel> output = new();
-			foreach (var month in keyValuePairs.Values)
+			foreach (List<SessionDbModel> month in keyValuePairs.Values)
 			{
 				month.Sort((s, x) => s.Date < x.Date ? -1 : 1);
 				var invoice = new InvoiceModel() { UserId = userId };
@@ -131,11 +140,15 @@ namespace RevXApi.Library.DataAccess
 		public byte[] GetDocument(int id, string userId)
 		{
 			InvoiceEmailModel model = _sql.LoadData<InvoiceEmailModel, dynamic>("spInvoice_Lookup", new { InvoiceId = id, UserId = userId }, "RevXData").FirstOrDefault();
+			if (model == null)
+			{
+				return new byte[0];
+			}
 			model.InvoiceSessions = _sql.Query<SessionEmailModel>($"SELECT se.Id, CONCAT(st.FirstName, ' ', st.LastName) as Student, se.[Date], se.StartTime, se.EndTime, se.Notes FROM Session se JOIN Student st ON se.StudentId = st.Id WHERE se.InvoiceId = {id} AND se.UserId = '{userId}'", "RevXData");
 			model.InvoicePeriod = CalculateInvoicePeriod(model);
 			UserModel user = _userData.GetUserById(userId);
 			model.FullName = user.FirstName + " " + user.LastName;
-			string template = File.ReadAllText("EmailTemplates/InvoiceDocument.cshtml");
+			string template = File.ReadAllText(_documentLocationRoot + "/InvoiceDocument.cshtml");
 			string result = Engine.Razor.RunCompile(template, DateTime.Now.ToString(), null, model);
 			// instantiate the html to pdf converter
 			HtmlToPdf converter = new();
@@ -155,12 +168,15 @@ namespace RevXApi.Library.DataAccess
 		public byte[] GetDocument(int id, string userId, string signature)
 		{
 			InvoiceEmailModel model = _sql.LoadData<InvoiceEmailModel, dynamic>("spInvoice_Lookup", new { InvoiceId = id, UserId = userId }, "RevXData").FirstOrDefault();
+			_logger.LogInformation("model was set to {0}", model.Id);
 			model.InvoiceSessions = _sql.Query<SessionEmailModel>($"SELECT se.Id, CONCAT(st.FirstName, ' ', st.LastName) as Student, se.[Date], se.StartTime, se.EndTime, se.Notes FROM Session se JOIN Student st ON se.StudentId = st.Id WHERE se.InvoiceId = {id} AND se.UserId = '{userId}'", "RevXData");
 			model.InvoicePeriod = CalculateInvoicePeriod(model);
 			model.Signature = signature;
 			UserModel user = _userData.GetUserById(userId);
 			model.FullName = user.FirstName + " " + user.LastName;
-			string template = File.ReadAllText("EmailTemplates/InvoiceDocumentSignature.cshtml");
+			_logger.LogInformation("Trying to get the template from {0}", _documentLocationRoot + "/InvoiceDocumentSignature.cshtml");
+			string template = File.ReadAllText(_documentLocationRoot + "/InvoiceDocumentSignature.cshtml");
+			_logger.LogInformation("I think i got it");
 			string result = Engine.Razor.RunCompile(template, DateTime.Now.ToString(), null, model);
 			// instantiate the html to pdf converter
 			HtmlToPdf converter = new();

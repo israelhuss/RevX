@@ -66,17 +66,12 @@
     }
 </EditTable>
 @code {
-    [CascadingParameter]
-    private Task<AuthenticationState> authenticationStateTask { get; set; }
-    private string userId { get; set; }
-
     public List<BillingStatusModel> billingStatuses { get; set; }
 
     private BillingStatusModel additionalStatus { get; set; } = new();
 
     protected override async Task OnParametersSetAsync()
     {
-        userId = ( await authenticationStateTask ).User.FindFirst(ClaimTypes.NameIdentifier).Value;
         await RefreshBillingStatusList();
     }
 

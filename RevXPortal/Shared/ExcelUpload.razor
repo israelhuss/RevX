@@ -10,10 +10,6 @@
 </div>
 
 @code {
-    [CascadingParameter]
-    private Task<AuthenticationState> authenticationStateTask { get; set; }
-    private string userId { get; set; }
-
     public List<StudentModel> StudentList { get; set; }
     public List<ProviderModel> ProviderList { get; set; }
     public List<BillingStatusModel> BillingStatusList { get; set; }
@@ -22,8 +18,7 @@
     {
         try
         {
-            userId = ( await authenticationStateTask ).User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            StudentList = await _studentEndpoint.GetAll(userId);
+            StudentList = await _studentEndpoint.GetAll();
             ProviderList = await _providerEndpoint.GetAll();
             BillingStatusList = await _billingStatusEndpoint.GetAll();
         }

@@ -1,4 +1,5 @@
 ﻿using RevXPortal.Models;
+using RevXPortal.Services;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -9,7 +10,7 @@ namespace RevXPortal.API
 	public class BillingStatusEndpoint : IBillingStatusEndpoint
 	{
 		private readonly HttpClient _client;
-
+		private readonly IToastService _toastService;
 		private List<BillingStatusModel> _billingStatuses;
 
 		public List<BillingStatusModel> BillingStatuses
@@ -18,26 +19,46 @@ namespace RevXPortal.API
 			set { _billingStatuses = value; }
 		}
 
-		public BillingStatusEndpoint(HttpClient client)
+		public BillingStatusEndpoint(HttpClient client, IToastService toastService)
 		{
 			_client = client;
+			_toastService = toastService;
 		}
 
 		public async Task<List<BillingStatusModel>> GetAll()
 		{
-			using (HttpResponseMessage response = await _client.GetAsync("/api/BillingStatus"))
+			try
 			{
-				if (response.IsSuccessStatusCode)
+				using (HttpResponseMessage response = await _client.GetAsync("/api/BillingStatus"))
 				{
-					var result = await response.Content.ReadAsAsync<List<BillingStatusModel>>();
-					BillingStatuses = result;
-					return result;
+					if (response.IsSuccessStatusCode)
+					{
+						var result = await response.Content.ReadAsAsync<List<BillingStatusModel>>();
+						BillingStatuses = result;
+						return result;
+					}
+					else
+					{
+						throw new Exception(response.ReasonPhrase);
+					}
+				}
+			}
+			catch (HttpRequestException ex)
+			{
+				if (ex.Message == "TypeError: Failed to fetch")
+				{
+					_toastService.ShowToast("Looks like the API is offline.", ToastLevel.Error);
 				}
 				else
 				{
-					throw new Exception(response.ReasonPhrase);
+					throw;
 				}
 			}
+			catch (Exception ex)
+			{
+				_toastService.ShowToast("An unexpected error ocurred.", ToastLevel.Error);
+			}
+			return new List<BillingStatusModel>();
 		}
 
 		public async Task<List<BillingStatusModel>> GetEnabled()

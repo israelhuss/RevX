@@ -58,24 +58,38 @@ a, .btn-link {
 }
 
 #blazor-error-ui {
-    background: lightyellow;
-    bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
     display: none;
-    left: 0;
-    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
-    position: fixed;
-    width: 100%;
-    z-index: 1000;
 }
 
-    #blazor-error-ui .dismiss {
-        cursor: pointer;
-        position: absolute;
-        right: 0.75rem;
-        top: 0.5rem;
-    }
+.error-icon {
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 4rem;
+    font-weight: 800;
+    background-color: #e0004d;
+    color: #efefef;
+    width: 6rem;
+    height: 6rem;
+    line-height: 6.4rem;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    text-align: center;
+}
 
+.modal {
+    background-color: #000000b5;
+}
+
+.modal-body {
+    padding-top: 4rem;
+    text-align: center;
+}
+
+.error-content {
+    font-size: 1.5rem;
+    padding: 0 2.5rem;
+}
 
 .spinner-parent {
     position: absolute;

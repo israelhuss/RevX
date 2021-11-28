@@ -21,10 +21,9 @@ namespace RevXApi.Controllers
 		}
 
 		[HttpGet]
-		public List<IncomeReportModel> GetIncomeReports([FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] string userId, [FromQuery] string groupBy = "month")
+		public List<IncomeReportModel> GetIncomeReports([FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] string groupBy = "month")
 		{
-			userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			return _reportData.GetMonthlyIncome(startDate, endDate, userId, groupBy);
+			return _reportData.GetMonthlyIncome(startDate, endDate, User.FindFirstValue(ClaimTypes.NameIdentifier), groupBy);
 		}
 	}
 }

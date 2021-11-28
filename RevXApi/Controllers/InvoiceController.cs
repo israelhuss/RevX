@@ -30,10 +30,9 @@ namespace RevXApi.Controllers
 		}
 
 		[HttpGet]
-		public List<InvoiceModel> GetAll(string userId)
+		public List<InvoiceModel> GetAll()
 		{
-			userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			return _invoiceData.GetAll(userId);
+			return _invoiceData.GetAll(User.FindFirstValue(ClaimTypes.NameIdentifier));
 		}
 
 		[HttpPost]

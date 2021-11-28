@@ -2,7 +2,7 @@
 
 namespace RevXPortal.Services
 {
-	public class ToastService : IDisposable
+	public class ToastService : IDisposable, IToastService
 	{
 		public event Action<string, ToastLevel> OnShow;
 		public event Action OnHide;

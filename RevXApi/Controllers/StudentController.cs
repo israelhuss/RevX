@@ -20,36 +20,35 @@ namespace RevXApi.Controllers
 		}
 
 		[HttpGet]
-		public List<StudentModel> GetAllStudents([FromQuery] string userId)
+		public List<StudentModel> GetAllStudents()
 		{
-			userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			return _studentData.GetAll(userId);
+			return _studentData.GetAll(User.FindFirstValue(ClaimTypes.NameIdentifier));
 		}
 
 		[HttpGet("enabled")]
-		public List<StudentModel> GetEnabled([FromQuery] string userId)
+		public List<StudentModel> GetEnabled()
 		{
-			userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			return _studentData.GetEnabled(userId);
+			return _studentData.GetEnabled(User.FindFirstValue(ClaimTypes.NameIdentifier));
 		}
 
 		[HttpPost("add")]
 		public void AddStudent(StudentModel model)
 		{
+			model.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			_studentData.AddStudent(model);
 		}
 
 		[HttpPost("edit")]
 		public void EditStudent(StudentModel model)
 		{
+			model.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			_studentData.EditStudent(model);
 		}
 
 		[HttpGet("{id}")]
-		public StudentModel GetStudentById(int id, [FromQuery] string userId)
+		public StudentModel GetStudentById(int id)
 		{
-			userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			return _studentData.GetById(id, userId);
+			return _studentData.GetById(id, User.FindFirstValue(ClaimTypes.NameIdentifier));
 		}
 	}
 }

@@ -1,12 +1,11 @@
 ﻿@inject IStudentEndpoint _student
 @inject IProviderEndpoint _provider
 @inject IBillingStatusEndpoint _billingStatus
-@inject ToastService toastService
+@inject IToastService toastService
 
 @if (ShowDialog)
 {
     <div class="modal show d-block" tabindex="-1" role="dialog">
-
         <div class="modal-dialog modal-dialog-centered fade-in-and-grow" role="document">
             <EditForm Model="@FormSession" OnValidSubmit="@SaveForm">
                 <div class="modal-content">
@@ -71,10 +70,6 @@
     </div>
 }
 @code {
-    [CascadingParameter]
-    private Task<AuthenticationState> authenticationStateTask { get; set; }
-    private string userId { get; set; }
-
     private bool ShowDialog { get; set; }
 
     [Parameter]
@@ -98,8 +93,7 @@
     {
         try
         {
-            userId = ( await authenticationStateTask ).User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            availableStudents = await _student.GetEnabled(userId);
+            availableStudents = await _student.GetEnabled();
             providers = await _provider.GetEnabled();
             billingStatus = await _billingStatus.GetEnabled();
         }

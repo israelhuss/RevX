@@ -20,36 +20,35 @@ namespace RevXApi.Controllers
 		}
 
 		[HttpGet]
-		public List<ProviderModel> GetAllProviders([FromQuery] string userId)
+		public List<ProviderModel> GetAllProviders()
 		{
-			userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			return _providerData.GetAll(userId);
+			return _providerData.GetAll(User.FindFirstValue(ClaimTypes.NameIdentifier));
 		}
 
 		[HttpGet("enabled")]
-		public List<ProviderModel> GetEnabled([FromQuery] string userId)
+		public List<ProviderModel> GetEnabled()
 		{
-			userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			return _providerData.GetEnabled(userId);
+			return _providerData.GetEnabled(User.FindFirstValue(ClaimTypes.NameIdentifier));
 		}
 
 		[HttpPost("add")]
 		public void AddProvider(ProviderModel model)
 		{
+			model.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			_providerData.AddProvider(model);
 		}
 
 		[HttpPost("edit")]
 		public void EditProvider(ProviderModel model)
 		{
+			model.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			_providerData.EditProvider(model);
 		}
 
 		[HttpGet("{id}")]
-		public ProviderModel GetProviderById(int id, [FromQuery] string userId)
+		public ProviderModel GetProviderById(int id)
 		{
-			userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			return _providerData.GetById(id, userId);
+			return _providerData.GetById(id, User.FindFirstValue(ClaimTypes.NameIdentifier));
 		}
 	}
 }

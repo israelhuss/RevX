@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.Web;
 using RevXPortal.Authentication;
 using RevXPortal.Services;
+using Microsoft.Extensions.Logging;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -12,12 +13,13 @@ builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
-builder.Services.AddScoped<ToastService>();
+builder.Services.AddScoped<IToastService, ToastService>();
 
 builder.Logging.SetMinimumLevel(LogLevel.Warning);
 
 var baseAddress = builder.Configuration.GetValue<string>("apiLocation");
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseAddress) });
+
 
 //Endpoints
 builder.Services.AddTransient<IStudentEndpoint, StudentEndpoint>();

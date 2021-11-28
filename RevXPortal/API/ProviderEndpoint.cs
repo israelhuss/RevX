@@ -1,4 +1,5 @@
 ﻿using RevXPortal.Models;
+using RevXPortal.Services;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -9,26 +10,47 @@ namespace RevXPortal.API
 	public class ProviderEndpoint : IProviderEndpoint
 	{
 		private readonly HttpClient _client;
+		private readonly IToastService _toastService;
 
-		public ProviderEndpoint(HttpClient client)
+		public ProviderEndpoint(HttpClient client, IToastService toastService)
 		{
 			_client = client;
+			_toastService = toastService;
 		}
 
 		public async Task<List<ProviderModel>> GetAll()
 		{
-			using (HttpResponseMessage response = await _client.GetAsync($"/api/Provider"))
+			try
 			{
-				if (response.IsSuccessStatusCode)
+				using (HttpResponseMessage response = await _client.GetAsync($"/api/Provider"))
 				{
-					var result = await response.Content.ReadAsAsync<List<ProviderModel>>();
-					return result;
+					if (response.IsSuccessStatusCode)
+					{
+						var result = await response.Content.ReadAsAsync<List<ProviderModel>>();
+						return result;
+					}
+					else
+					{
+						throw new Exception(response.ReasonPhrase);
+					}
+				}
+			}
+			catch (HttpRequestException ex)
+			{
+				if (ex.Message == "TypeError: Failed to fetch")
+{
+					_toastService.ShowToast("Looks like the API is offline.", ToastLevel.Error);
 				}
 				else
 				{
-					throw new Exception(response.ReasonPhrase);
+					throw;
 				}
 			}
+			catch (Exception ex)
+{
+				_toastService.ShowToast("An unexpected error ocurred.", ToastLevel.Error);
+			}
+			return new List<ProviderModel>();
 		}
 
 		public async Task<List<ProviderModel>> GetEnabled()

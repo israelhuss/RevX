@@ -27,10 +27,23 @@
     </div>
 
 
-    <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
+    <div class="modal show" id="blazor-error-ui">
+        <div class="modal-dialog modal-dialog-centered fade-in-and-grow" style="max-width: 630px;">
+            <div class="modal-content">
+                <div class="modal-body" style="position: relative;">
+                    <div class="error-icon"><i class="fas fa-times"></i></div>
+                    <div style="font-size: 3.5rem; margin-bottom: 2rem;">Sorry!</div>
+                    <div class="error-content">
+                        We ran into an unexpected issue <br /> Please
+                        <a href="" class="reload">reload</a>
+                        the page to be able to continue
+                    </div>
+                    <div>
+                        <a href="" style="padding: 1rem; width: 70%; margin: 2rem 0 1rem;" class="reload btn btn-danger">Ok</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <script src="Js/Script.js"></script>
     <script src="Js/SignaturePad.js"></script>

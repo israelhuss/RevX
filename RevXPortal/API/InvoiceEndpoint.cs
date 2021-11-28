@@ -2,6 +2,7 @@
 using Microsoft.VisualBasic;
 using Org.BouncyCastle.Asn1.Ocsp;
 using RevXPortal.Models;
+using RevXPortal.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,27 +16,48 @@ namespace RevXPortal.API
 	{
 		private readonly HttpClient _client;
 		private readonly IJSRuntime jSRuntime;
+		private readonly IToastService _toastService;
 
-		public InvoiceEndpoint(HttpClient client, IJSRuntime jSRuntime)
+		public InvoiceEndpoint(HttpClient client, IJSRuntime jSRuntime, IToastService toastService)
 		{
 			_client = client;
 			this.jSRuntime = jSRuntime;
+			_toastService = toastService;
 		}
 
 		public async Task<List<InvoiceModel>> GetAll()
 		{
-			using (HttpResponseMessage response = await _client.GetAsync($"/api/Invoice"))
+			try
 			{
-				if (response.IsSuccessStatusCode)
+				using (HttpResponseMessage response = await _client.GetAsync($"/api/Invoice"))
 				{
-					var result = await response.Content.ReadAsAsync<List<InvoiceModel>>();
-					return result;
+					if (response.IsSuccessStatusCode)
+					{
+						var result = await response.Content.ReadAsAsync<List<InvoiceModel>>();
+						return result;
+					}
+					else
+					{
+						throw new Exception(response.ReasonPhrase);
+					}
+				}
+			}
+			catch (HttpRequestException ex)
+			{
+				if (ex.Message == "TypeError: Failed to fetch")
+				{
+					_toastService.ShowToast("Looks like the API is offline.", ToastLevel.Error);
 				}
 				else
 				{
-					throw new Exception(response.ReasonPhrase);
+					throw;
 				}
 			}
+			catch (Exception ex)
+			{
+				_toastService.ShowToast("An unexpected error ocurred.", ToastLevel.Error);
+			}
+			return new List<InvoiceModel>();
 		}
 
 		public async Task SaveInvoice(InvoiceModel invoice)

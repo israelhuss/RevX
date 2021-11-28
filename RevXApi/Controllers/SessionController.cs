@@ -20,10 +20,9 @@ namespace RevXApi.Controllers
 		}
 
 		[HttpGet]
-		public List<SessionModel> GetAllSessions([FromQuery] string userId)
+		public List<SessionModel> GetAllSessions()
 		{
-			userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			return _sessionData.GetAllSessions(userId);
+			return _sessionData.GetAllSessions(User.FindFirstValue(ClaimTypes.NameIdentifier));
 		}
 
 		// FIX this method - get is not supposed to have body
@@ -36,6 +35,7 @@ namespace RevXApi.Controllers
 		[HttpPost]
 		public IActionResult SaveSession(SessionModel model)
 		{
+			model.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			int affected = _sessionData.SaveSession(model);
 			if (affected > 0)
 			{
@@ -51,15 +51,15 @@ namespace RevXApi.Controllers
 		[Route("Edit")]
 		public void EditSession(SessionModel model)
 		{
+			model.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			_sessionData.EditSession(model);
 		}
 
 		[HttpPost]
 		[Route("Delete/{id}")]
-		public void DeleteSession(int id, [FromQuery] string userId)
+		public void DeleteSession(int id)
 		{
-			userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			_sessionData.DeleteSession(id, userId);
+			_sessionData.DeleteSession(id, User.FindFirstValue(ClaimTypes.NameIdentifier));
 		}
 	}
 }

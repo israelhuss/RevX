@@ -169,7 +169,15 @@
 
                 <div class="content px-4">
                     <CascadingAuthenticationState>
-                        @Body
+@*                        <ErrorBoundary>
+                            <ChildContent>*@
+                                @Body
+@*                            </ChildContent>
+                            <ErrorContent Context="errorContext">
+                                <p class="errorUI">Nothing to see here right now. Sorry!</p>
+                                @errorContext.Message
+                            </ErrorContent>
+                        </ErrorBoundary>*@
                     </CascadingAuthenticationState>
                 </div>
             </div>
@@ -278,13 +286,16 @@
                     authenticationErrorText = "There was an error when trying to log in.";
                     showAuthenticationError = true;
                 }
+                else
+                {
+                    NavManager.NavigateTo(NavManager.Uri, forceLoad: true);
+                }
             }
             catch (HttpRequestException)
             {
                 authenticationErrorText = "Looks like the API is offline.";
                 showAuthenticationError = true;
             }
-            NavManager.NavigateTo(NavManager.Uri, forceLoad: true);
             btnText = "Sign In";
         }
     }
@@ -297,5 +308,10 @@
     private async void OnLogout()
     {
         await AuthService.Logout();
+    }
+
+    private void GlobalException(Exception ex)
+    {
+        jsRuntime.InvokeVoidAsync("log", "Error has occurred" + ex.Message);
     }
 }

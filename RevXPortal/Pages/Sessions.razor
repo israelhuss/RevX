@@ -3,7 +3,7 @@
 @inject ISessionEndpoint _sessionEndpoint
 @inject IProviderEndpoint _providerEndpoint
 @inject NavigationManager NavManager
-@inject ToastService toastService
+@inject IToastService toastService
 @inject IJSRuntime jsRuntime
 
 <style>
@@ -159,12 +159,6 @@
 
 
 @code {
-    [CascadingParameter]
-    private Task<AuthenticationState> authenticationStateTask { get; set; }
-
-    [CascadingParameter]
-    private string userId { get; set; }
-
     // Dialog references
     private ManageSessionDialog ManageDialogRef { get; set; }
     private InvoicingDialog InvoicingRef { get; set; }
@@ -181,17 +175,7 @@
 
     protected async override Task OnInitializedAsync()
     {
-        if (!( await authenticationStateTask ).User.Identity.IsAuthenticated)
-        {
-            await jsRuntime.InvokeVoidAsync("log", "User id was null redirecting to login");
-            NavManager.NavigateTo($"/login?url={NavManager.Uri.Replace(NavManager.BaseUri, "")}");
-        }
-        else
-        {
-            userId = ( await authenticationStateTask ).User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            await jsRuntime.InvokeVoidAsync("log", $"User id is: {userId}");
-            await RefreshSessionsList(); 
-        }
+        await RefreshSessionsList(); 
         Providers = await _providerEndpoint.GetAll();
     }
 
@@ -232,7 +216,7 @@
                 await _sessionEndpoint.SaveSession(ManageSession);
                 toastService.ShowToast("Changes saved successfully.", ToastLevel.Success);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 toastService.ShowToast("Looks like there is already a session for this slot.", ToastLevel.Error);
             }
@@ -257,8 +241,6 @@
         Regex secondaryProviderMatch = new(@"[l|L]egade?i?l|[m|M]e?nah?e?l");
         ManageSession.Provider = Providers.Where(p => secondaryProviderMatch.IsMatch(p.Name)).FirstOrDefault();
         ManageSession.BillingStatus = new BillingStatusModel() { Id = 1, BillingStatus = "Open" };
-        ManageSession.UserId = userId;
-        jsRuntime.InvokeVoidAsync("log", userId);
         formTitle = "Add A Session";
         ManageDialogRef.Show();
     }

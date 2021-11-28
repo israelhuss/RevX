@@ -22,15 +22,15 @@ namespace RevXApi.Controllers
 		}
 
 		[HttpGet]
-		public List<HourlyRate> GetAll([FromQuery] string userId, [FromQuery] int providerId)
+		public List<HourlyRate> GetAll([FromQuery] int providerId)
 		{
-			userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			return _rateData.GetAll(userId, providerId);
+			return _rateData.GetAll(User.FindFirstValue(ClaimTypes.NameIdentifier), providerId);
 		}
 
 		[HttpPost]
 		public void AddRate(HourlyRate rate)
 		{
+			rate.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			_rateData.AddHourlyRate(rate);
 		}
 
@@ -44,6 +44,7 @@ namespace RevXApi.Controllers
 		[HttpPost("edit")]
 		public void EditRate(HourlyRate model)
 		{
+			model.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			_rateData.EditRate(model);
 		}
 	}

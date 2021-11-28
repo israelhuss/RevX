@@ -97,10 +97,6 @@ else
 }
 @code {
     [CascadingParameter]
-    private Task<AuthenticationState> authenticationStateTask { get; set; }
-    private string userId { get; set; }
-
-    [CascadingParameter]
     public List<StudentModel> students { get; set; }
 
     public IEditTable StudentTableData { get; set; }
@@ -108,11 +104,6 @@ else
     public string ElementEditing { get; set; }
 
     private StudentModel additionalStudent { get; set; } = new();
-
-    protected override async Task OnParametersSetAsync()
-    {
-        userId = ( await authenticationStateTask ).User.FindFirst(ClaimTypes.NameIdentifier).Value;
-    }
 
     public void YouClickedMe(StudentModel student, string el)
     {
@@ -152,7 +143,6 @@ else
         {
             await jsRuntime.InvokeVoidAsync("log", additionalStudent);
             student.isEditMode = false;
-            student.UserId = userId;
             await _studentEndpoint.AddStudent(student);
             additionalStudent = new();
             await RefreshStudentList();
@@ -166,7 +156,7 @@ else
 
     private async Task RefreshStudentList()
     {
-        students = await _studentEndpoint.GetAll(userId);
+        students = await _studentEndpoint.GetAll();
         StateHasChanged();
     }
 }

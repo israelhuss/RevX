@@ -1,4 +1,5 @@
 ﻿using RevXPortal.Models;
+using RevXPortal.Services;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -9,29 +10,50 @@ namespace RevXPortal.API
 	public class StudentEndpoint : IStudentEndpoint
 	{
 		private readonly HttpClient _client;
+		private readonly IToastService _toastService;
 
-		public StudentEndpoint(HttpClient client)
+		public StudentEndpoint(HttpClient client, IToastService toastService)
 		{
 			_client = client;
+			_toastService = toastService;
 		}
 
-		public async Task<List<StudentModel>> GetAll(string userId)
+		public async Task<List<StudentModel>> GetAll()
 		{
-			using HttpResponseMessage response = await _client.GetAsync($"/api/Student?userId={userId}");
-			if (response.IsSuccessStatusCode)
+			try
 			{
-				var result = await response.Content.ReadAsAsync<List<StudentModel>>();
-				return result;
+				using HttpResponseMessage response = await _client.GetAsync($"/api/Student");
+				if (response.IsSuccessStatusCode)
+				{
+					var result = await response.Content.ReadAsAsync<List<StudentModel>>();
+					return result;
+				}
+				else
+				{
+					throw new Exception(response.ReasonPhrase);
+				}
 			}
-			else
+			catch (HttpRequestException ex)
 			{
-				throw new Exception(response.ReasonPhrase);
+				if (ex.Message == "TypeError: Failed to fetch")
+				{
+					_toastService.ShowToast("Looks like the API is offline.", ToastLevel.Error);
+				}
+				else
+				{
+					throw;
+				}
 			}
+			catch (Exception ex)
+			{
+				_toastService.ShowToast("An unexpected error ocurred.", ToastLevel.Error);
+			}
+			return new List<StudentModel>();
 		}
 
-		public async Task<List<StudentModel>> GetEnabled(string userId)
+		public async Task<List<StudentModel>> GetEnabled()
 		{
-			using (HttpResponseMessage response = await _client.GetAsync($"/api/Student/enabled?userId={userId}"))
+			using (HttpResponseMessage response = await _client.GetAsync($"/api/Student/enabled"))
 			{
 				if (response.IsSuccessStatusCode)
 				{

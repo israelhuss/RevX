@@ -9,7 +9,7 @@ namespace RevXPortal.API
 	{
 		Task AddRate(HourlyRate model);
 		Task EditRate(HourlyRate model);
-		Task<List<HourlyRate>> GetAll(string userId);
-		Task<HourlyRate> GetByDate(DateTime date, string userId);
+		Task<List<HourlyRate>> GetAll();
+		Task<HourlyRate> GetByDate(DateTime date);
 	}
 }

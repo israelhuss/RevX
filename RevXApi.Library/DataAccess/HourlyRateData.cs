@@ -26,7 +26,8 @@ namespace RevXApi.Library.DataAccess
 
 		public HourlyRate GetByDate(DateTime date, string userId, int providerId)
 		{
-			return _sql.LoadData<HourlyRate, dynamic>("dbo.spRates_GetByDate", new { Date = date, userId, providerId }, "RevXData").FirstOrDefault();
+			var res = _sql.LoadData<HourlyRate, dynamic>("dbo.spRates_GetByDate", new { Date = date, userId, providerId }, "RevXData").FirstOrDefault();
+			return res ?? new HourlyRate() { Rate = 0 };
 		}
 
 		public void EditRate(HourlyRate model)

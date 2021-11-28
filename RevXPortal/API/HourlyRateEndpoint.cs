@@ -1,4 +1,5 @@
 ﻿using RevXPortal.Models;
+using RevXPortal.Services;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -9,26 +10,47 @@ namespace RevXPortal.API
 	public class HourlyRateEndpoint : IHourlyRateEndpoint
 	{
 		private readonly HttpClient _client;
+		private readonly IToastService _toastService;
 
-		public HourlyRateEndpoint(HttpClient client)
+		public HourlyRateEndpoint(HttpClient client, IToastService toastService)
 		{
 			_client = client;
+			_toastService = toastService;
 		}
 
-		public async Task<List<HourlyRate>> GetAll(string userId)
+		public async Task<List<HourlyRate>> GetAll()
 		{
-			using (HttpResponseMessage response = await _client.GetAsync($"/api/HourlyRates?userId={userId}"))
+			try
 			{
-				if (response.IsSuccessStatusCode)
+				using (HttpResponseMessage response = await _client.GetAsync($"/api/HourlyRates"))
 				{
-					var result = await response.Content.ReadAsAsync<List<HourlyRate>>();
-					return result;
+					if (response.IsSuccessStatusCode)
+					{
+						var result = await response.Content.ReadAsAsync<List<HourlyRate>>();
+						return result;
+					}
+					else
+					{
+						throw new Exception(response.ReasonPhrase);
+					}
+				}
+			}
+			catch (HttpRequestException ex)
+			{
+				if (ex.Message == "TypeError: Failed to fetch")
+				{
+					_toastService.ShowToast("Looks like the API is offline.", ToastLevel.Error);
 				}
 				else
 				{
-					throw new Exception(response.ReasonPhrase);
+					throw;
 				}
 			}
+			catch (Exception ex)
+			{
+				_toastService.ShowToast("An unexpected error ocurred.", ToastLevel.Error);
+			}
+			return new List<HourlyRate>();
 		}
 
 		public async Task AddRate(HourlyRate model)
@@ -62,9 +84,9 @@ namespace RevXPortal.API
 			}
 		}
 
-		public async Task<HourlyRate> GetByDate(DateTime date, string userId)
+		public async Task<HourlyRate> GetByDate(DateTime date)
 		{
-			using (HttpResponseMessage response = await _client.GetAsync($"/api/HourlyRates/date?userId={userId}&Date={date}"))
+			using (HttpResponseMessage response = await _client.GetAsync($"/api/HourlyRates/date?Date={date}"))
 			{
 				if (response.IsSuccessStatusCode)
 				{

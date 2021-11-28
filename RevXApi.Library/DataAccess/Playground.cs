@@ -1,4 +1,5 @@
-﻿using RevXApi.Library.Models;
+﻿using Microsoft.Extensions.Logging;
+using RevXApi.Library.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,27 +12,37 @@ namespace RevXApi.Library.DataAccess
 	{
 		private readonly ISqlDataAccess _sql;
 		private readonly IInvoiceData _invoiceData;
+		private readonly ILogger<Playground> _logger;
 
-		public Playground(ISqlDataAccess sql, IInvoiceData invoiceData)
+		public Playground(ISqlDataAccess sql, IInvoiceData invoiceData, ILogger<Playground> logger)
 		{
 			_sql = sql;
 			_invoiceData = invoiceData;
+			_logger = logger;
 		}
 
-		public void Play(string userId)
+		public string Play(string userId)
 		{
-			var allDetails = _sql.Query<SessionDbModel>($"Select * From Session Where InvoiceId is null AND UserId = '{userId}'", "RevXData");
-			var invoices = _invoiceData.GenerateInvoicesFromSessions(allDetails, userId);
-			foreach (var invoice in invoices)
+			var allDetails = _sql.Query<SessionDbModel>($"Select * From Session Where InvoiceId is null AND UserId = '{userId}' AND BillingStatusId > 1", "RevXData");
+			if (allDetails.Count > 0)
 			{
-				try
+				var invoices = _invoiceData.GenerateInvoicesFromSessions(allDetails, userId);
+				foreach (var invoice in invoices)
 				{
-					_invoiceData.SaveInvoice(invoice);
+					try
+					{
+						_invoiceData.SaveInvoice(invoice);
+					}
+					catch (Exception ex)
+					{
+						Console.WriteLine(ex.ToString());
+					}
 				}
-				catch (Exception ex)
-				{
-					Console.WriteLine(ex.ToString());
-				}
+				return $"allDetails was {allDetails.Count} long, I'm done";
+			}
+			else
+			{
+				return "I didnt get any results from the database, sql query was" + $"Select * From Session Where InvoiceId is null AND UserId = '{userId}'";
 			}
 		}
 	}

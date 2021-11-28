@@ -5,12 +5,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using NLog;
+using NLog.Common;
 using RevXApi.Data;
 using RevXApi.Library.DataAccess;
 using RevXApi.Library.Services;
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Mail;
 using System.Text;
@@ -111,6 +115,29 @@ namespace RevXApi
 					Title = "RevX API",
 					Version = "v1"
 				});
+				// Security
+				setup.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+				{
+					Description = "JWT Authorization header using the Bearer scheme (Example: 'Bearer 12345abcdef')",
+					Name = "Authorization",
+					In = ParameterLocation.Header,
+					Type = SecuritySchemeType.ApiKey,
+					Scheme = "Bearer"
+				});
+				setup.AddSecurityRequirement(new OpenApiSecurityRequirement
+				{
+					{
+						new OpenApiSecurityScheme
+						{
+							Reference = new OpenApiReference
+							{
+								Type = ReferenceType.SecurityScheme,
+								Id = "Bearer"
+							}
+						},
+						Array.Empty<string>()
+					}
+				});
 			});
 		}
 
@@ -140,6 +167,21 @@ namespace RevXApi
 			app.UseStaticFiles();
 
 			app.UseRouting();
+
+			string logfileRoot = Configuration.GetValue<string>("nlog:LogFileRootDirectory");
+			LogManager.Configuration.Variables[ "LogFileRootDirectory" ] = logfileRoot;
+			InternalLogger.LogFile = Path.Combine(logfileRoot, "NlogInternal.log");
+			InternalLogger.LogWriter = new StringWriter(); //e.g. TextWriter writer = File.CreateText("C:\\perl.txt")
+
+			bool logAll = Configuration.GetValue<bool>("nlog:InternalLogAll");
+			if (logAll)
+			{
+				InternalLogger.LogLevel = NLog.LogLevel.Trace;
+			}
+			else
+			{
+				InternalLogger.LogLevel = NLog.LogLevel.Info;
+			}
 
 			app.UseAuthentication();
 			app.UseAuthorization();
