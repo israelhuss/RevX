@@ -1,0 +1,195 @@
+﻿@page "/Test"
+@inject IInvoiceEndpoint _invoiceEndpoint
+@inject ISessionEndpoint _sessionEndpoint
+@inject IProviderEndpoint _providerEndpoint
+@inject IJSRuntime jsRuntime
+
+<ChartBase RowCount="5" Lables="LablesList" FooterLabelStyle="FooterStyles.UnderLine" Values="Values" SkipFirstFooterLabel="true">
+	<ChartContent>
+		<LineChart Values="Values" TooltipValues="GetTooltipValues()"></LineChart>
+	</ChartContent>
+</ChartBase>
+
+@*<PieChart Data="Values" TootlipData="Values.Select(v => v.ToString()).ToList()" NoText="true"></PieChart>*@
+
+<ChartBase RowCount="5" Lables="LablesList" FooterLabelStyle="FooterStyles.CenteredSlant" Values="Values">
+	<ChartHeader>
+		@if (ReportData is not null)
+		{
+			<div>
+				<div>School Hours - @ReportData.Select(d => (d.SchoolEncore.Hours * d.SchoolEncore.Rate) + (d.SchoolLegadel.Hours * d.SchoolLegadel.Rate)).Sum().ToString("C")</div>
+				<div>After School Hours - @ReportData.Select(d => (d.AfterEncore.Hours * d.AfterEncore.Rate) + (d.AfterLegadel.Hours * d.AfterLegadel.Rate)).Sum().ToString("C")</div>
+			</div>
+			<div style="display: flex;">
+				<div style="padding: .5rem;">
+					<div style="display: flex; align-items: center; padding-bottom: 7px;">
+						<div style="width: 12px; height: 12px; background-color: #1365fc; margin-right: 5px;"></div>
+						<p style="margin: 0; line-height:1;">School Hours / Encore</p>
+					</div>
+					<div style="display: flex; align-items: center; padding-bottom: 7px;">
+						<div style="width: 12px; height: 12px; background-color: #6299ff; margin-right: 5px;"></div>
+						<p style="margin: 0; line-height:1;">School Hours / @(Providers.Where(p => secondaryProviderMatch.IsMatch(p.DisplayName)).FirstOrDefault().Name)</p>
+					</div>
+				</div>
+				<div style="padding: .5rem;">
+					<div style="display: flex; align-items: center; padding-bottom: 7px;">
+						<div style="width: 12px; height: 12px; background-color: #298a00; margin-right: 5px;"></div>
+						<p style="margin: 0; line-height:1;">After School Hours / Encore</p>
+					</div>
+					<div style="display: flex; align-items: center; padding-bottom: 7px;">
+						<div style="width: 12px; height: 12px; background-color: #4dac25; margin-right: 5px;"></div>
+						<p style="margin: 0; line-height:1;">After School Hours / @(Providers.Where(p => secondaryProviderMatch.IsMatch(p.DisplayName)).FirstOrDefault().Name)</p>
+					</div>
+				</div>
+			</div>
+		}
+	</ChartHeader>
+	<ChartContent>
+		@if (ReportData is not null)
+		{
+			<StackedBarChart>
+				@foreach (var dataPoint in ReportData)
+				{
+					<BarGroup>
+						<BarOne>
+							<StackedBar StackOne="dataPoint.SchoolEncore.Hours * dataPoint.SchoolEncore.Rate" StackTwo="dataPoint.SchoolLegadel.Hours * dataPoint.SchoolLegadel.Rate" Color="#1365fc"></StackedBar>
+						</BarOne>
+						<BarTwo>
+							<StackedBar StackOne="dataPoint.AfterEncore.Hours * dataPoint.AfterEncore.Rate" StackTwo="dataPoint.AfterLegadel.Hours * dataPoint.AfterLegadel.Rate" Color="#298a00"></StackedBar>
+						</BarTwo>
+					</BarGroup>
+				}
+			</StackedBarChart>
+		}
+	</ChartContent>
+</ChartBase>
+
+
+
+@code {
+	public List<string> LablesList { get; set; } = new() { "", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+	public List<InvoiceModel> Invoices { get; set; }
+	public List<ProviderModel> Providers { get; set; }
+	public List<IGrouping<DateOnly, InvoiceModel>> InvoicesByMonth { get; set; }
+	public List<ManageSessionModel> Sessions { get; set; }
+	public List<SchoolAndAfterSchoolData> ReportData { get; set; }
+	public List<double> Values { get; set; }
+	Regex secondaryProviderMatch = new(@"[l|L]egade?i?l|[m|M]e?nah?e?l");
+
+	protected override async Task OnInitializedAsync()
+	{
+		Invoices = new();
+		Values = new();
+		LablesList = new();
+		Invoices = await _invoiceEndpoint.GetAll();
+		Sessions = await _sessionEndpoint.GetAll();
+		Providers = await _providerEndpoint.GetAll();
+		InvoicesByMonth = Invoices.GroupBy(i => new DateOnly(i.StartDate.Year, i.StartDate.Month, 1)).ToList();
+		InvoicesByMonth.Sort((a, b) => a.Key < b.Key ? -1 : 1);
+		//LablesList = Invoices.Select(i => i.StartDate.ToString("MMM")).ToList();
+		LablesList = InvoicesByMonth.Select(i => i.Key.ToString("MMM yyyy")).ToList();
+		await jsRuntime.InvokeVoidAsync("log", JsonSerializer.Serialize(Invoices));
+		ReportData = GetSchoolAndAfterSchoolData();
+		Values = GetValuesFromReportData();
+		await jsRuntime.InvokeVoidAsync("log", JsonSerializer.Serialize(Values));
+	}
+
+	private List<ListDictionary> GetTooltipValues()
+	{
+		List<ListDictionary> output = new();
+		foreach (var invoice in Invoices)
+		{
+			ListDictionary TooltipData = new();
+			TooltipData.Add("Title", invoice.StartDate.ToString("MMMM yyyy"));
+			TooltipData.Add("Total Hours", invoice.TotalHours.ToString());
+			TooltipData.Add("Rate", invoice.Rate.ToString("C"));
+			TooltipData.Add("Total", invoice.Total.ToString("C"));
+			output.Add(TooltipData);
+		}
+		return output;
+	}
+
+	public record DataPoint
+	{
+		public double Hours { get; set; }
+		public double Rate { get; set; }
+	}
+
+	public record SchoolAndAfterSchoolData
+	{
+		public DataPoint SchoolEncore { get; set; }
+		public DataPoint SchoolLegadel { get; set; }
+		public DataPoint AfterEncore { get; set; }
+		public DataPoint AfterLegadel { get; set; }
+		public double SchoolTotal => ( SchoolEncore.Hours * SchoolEncore.Rate ) + ( SchoolLegadel.Hours * SchoolLegadel.Rate );
+		public double AfterTotal => ( AfterEncore.Hours * AfterEncore.Rate ) + ( AfterEncore.Hours * AfterLegadel.Rate );
+	}
+
+	private List<SchoolAndAfterSchoolData> GetSchoolAndAfterSchoolData()
+	{
+		int encoreId = Providers.Where(p => p.Name.ToLower() == "encore").FirstOrDefault().Id;
+		int secondaryProviderId = Providers.Where(p => secondaryProviderMatch.IsMatch(p.Name.ToLower())).FirstOrDefault().Id;
+		List<SchoolAndAfterSchoolData> output = new();
+		foreach (var month in InvoicesByMonth)
+		{
+			List<ManageSessionModel> mySessions = new();
+			SchoolAndAfterSchoolData dataPoint = new();
+			foreach (var invoice in month)
+			{
+				mySessions.AddRange(Sessions.Where(s => s.InvoiceId == invoice.Id));
+			}
+			jsRuntime.InvokeVoidAsync("log", mySessions.Count);
+			dataPoint.SchoolEncore = new();
+			dataPoint.AfterEncore = new();
+			dataPoint.SchoolEncore.Hours = mySessions.Select(s => s.Provider.Id == encoreId ? GetHoursBetween(s, new TimeOnly(08, 00, 00), new TimeOnly(14, 00, 00)) : 0).Sum();
+			if (dataPoint.SchoolEncore.Hours > 0)
+			{
+				dataPoint.SchoolEncore.Rate = mySessions.Where(s => s.Provider.Id == encoreId).FirstOrDefault().Rate.Rate;
+			}
+			dataPoint.AfterEncore.Hours = mySessions.Select(s => s.Provider.Id == encoreId ? GetHoursBetween(s, new TimeOnly(14, 00, 00), new TimeOnly(16, 00, 00)) : 0).Sum();
+			if (dataPoint.AfterEncore.Hours > 0)
+			{
+				dataPoint.AfterEncore.Rate = mySessions.Where(s => s.Provider.Id == encoreId).FirstOrDefault().Rate.Rate;
+			}
+
+			dataPoint.SchoolLegadel = new();
+			dataPoint.AfterLegadel = new();
+			dataPoint.SchoolLegadel.Hours = mySessions.Select(s => s.Provider.Id == secondaryProviderId ? GetHoursBetween(s, new TimeOnly(08, 00, 00), new TimeOnly(14, 00, 00)) : 0).Sum();
+			if (dataPoint.SchoolLegadel.Hours > 0)
+			{
+				dataPoint.SchoolLegadel.Rate = mySessions.Where(s => s.Provider.Id == secondaryProviderId).FirstOrDefault().Rate.Rate;
+			}
+			dataPoint.AfterLegadel.Hours = mySessions.Select(s => s.Provider.Id == secondaryProviderId ? GetHoursBetween(s, new TimeOnly(14, 00, 00), new TimeOnly(16, 00, 00)) : 0).Sum();
+			if (dataPoint.AfterLegadel.Hours > 0)
+			{
+				dataPoint.AfterLegadel.Rate = mySessions.Where(s => s.Provider.Id == secondaryProviderId).FirstOrDefault().Rate.Rate;
+			}
+			jsRuntime.InvokeVoidAsync("log", JsonSerializer.Serialize(dataPoint));
+			output.Add(dataPoint);
+		}
+		return output;
+	}
+
+	private double GetHoursBetween(ManageSessionModel session, TimeOnly from, TimeOnly to)
+	{
+		// jsRuntime.InvokeVoidAsync("log", TimeOnly.FromTimeSpan(session.StartTime).ToString() + "-----" + TimeOnly.FromTimeSpan(session.EndTime).ToString());
+		// jsRuntime.InvokeVoidAsync("log", from.ToString() + "-----" + to.ToString());
+		var start = from > TimeOnly.FromTimeSpan(session.StartTime) ? from : TimeOnly.FromTimeSpan(session.StartTime);
+		var end = to < TimeOnly.FromTimeSpan(session.EndTime) ? to : TimeOnly.FromTimeSpan(session.EndTime);
+		// jsRuntime.InvokeVoidAsync("log", start.ToString() + "-----" + end.ToString());
+		var output = end > start ? ( end - start ).TotalHours : 0;
+		// jsRuntime.InvokeVoidAsync("log", output);
+		return output;
+	}
+
+	private List<double> GetValuesFromReportData()
+	{
+		List<double> output = new();
+		foreach (var dataPoint in ReportData)
+		{
+			output.Add(dataPoint.SchoolTotal);
+			output.Add(dataPoint.AfterTotal);
+		}
+		return output;
+	}
+}

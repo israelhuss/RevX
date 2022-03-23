@@ -26,5 +26,6 @@ namespace RevXPortal.Models
 
 		public string Notes { get; set; }
 		public HourlyRate Rate { get; set; }
+		public int InvoiceId { get; set; }
 	}
 }

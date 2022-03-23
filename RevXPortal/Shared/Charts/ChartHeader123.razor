@@ -1,0 +1,13 @@
+﻿<div class="card-header">
+	@HeaderContent
+	@Chart
+</div>
+
+
+@code {
+	[Parameter]
+	public ChartBase Chart { get; set; }
+
+	[Parameter]
+	public RenderFragment HeaderContent { get; set; }
+}

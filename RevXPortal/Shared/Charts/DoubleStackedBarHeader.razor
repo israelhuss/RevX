@@ -1,0 +1,50 @@
+﻿<style>
+    .card-header {
+        display: flex;
+        justify-content: space-between
+    }
+</style>
+
+    <div>
+        <h5>@BarOneTitle - @BarOneTotals.ToString("C")</h5>
+        <h5 style="margin-bottom: 0;">@BarTwoTitle - @BarTwoTotals.ToString("C")</h5>
+    </div>
+    <div style="display: flex;">
+        <div style="padding: .5rem;">
+            <div style="display: flex; align-items: center; padding-bottom: 7px;">
+                <div style="width: 12px; height: 12px; background-color: #1365fc; margin-right: 5px;"></div>
+                <p style="margin: 0; line-height:1;">@BarOneTitle / @StackOneTitle</p>
+            </div>
+            <div style="display: flex; align-items: center; padding-bottom: 7px;">
+                <div style="width: 12px; height: 12px; background-color: #6299ff; margin-right: 5px;"></div>
+                <p style="margin: 0; line-height:1;">@BarOneTitle / @StackTwoTitle</p>
+            </div>
+        </div>
+        <div style="padding: .5rem;">
+            <div style="display: flex; align-items: center; padding-bottom: 7px;">
+                <div style="width: 12px; height: 12px; background-color: #298a00; margin-right: 5px;"></div>
+                <p style="margin: 0; line-height:1;">@BarTwoTitle / @StackOneTitle</p>
+            </div>
+            <div style="display: flex; align-items: center; padding-bottom: 7px;">
+                <div style="width: 12px; height: 12px; background-color: #4dac25; margin-right: 5px;"></div>
+                <p style="margin: 0; line-height:1;">@BarTwoTitle / @StackTwoTitle</p>
+            </div>
+        </div>
+    </div>
+
+
+
+@code {
+    [Parameter]
+    public string BarOneTitle { get; set; } 
+    [Parameter]
+    public string BarTwoTitle { get; set; } 
+    [Parameter]
+    public string StackOneTitle { get; set; } 
+    [Parameter]
+    public string StackTwoTitle { get; set; }
+    [Parameter]
+    public double BarOneTotals { get; set; }
+    [Parameter]
+    public double BarTwoTotals { get; set; }
+}

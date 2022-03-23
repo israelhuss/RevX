@@ -8,7 +8,7 @@ namespace RevXPortal.Converters
 		public static TimeSpan Convert24HourStringToTimeSpan(string timeString)
 		{
 			var split = timeString.Split(':');
-			if (int.TryParse(split[0], out int hours) && int.TryParse(split[1], out int minutes))
+			if (int.TryParse(split[ 0 ], out int hours) && int.TryParse(split[ 1 ], out int minutes))
 			{
 				var output = new TimeSpan(hours, minutes, 00);
 				return output;
@@ -24,36 +24,15 @@ namespace RevXPortal.Converters
 		{
 			var newTime = TimeOnly.FromTimeSpan(time);
 			return newTime.ToString("h:mm tt", CultureInfo.InvariantCulture);
-			string output = String.Empty;
-
-			int hours = time.Hours;
-			int minutes = time.Minutes;
-			if (hours == 0)
-			{
-				output = $"12:{minutes:D2} AM";
-			}
-			else if (hours < 12)
-			{
-				output = $"{hours}:{minutes:D2} AM";
-			}
-			else if (hours == 12)
-			{
-				output = $"{hours}:{minutes:D2} PM";
-			}
-			else if (hours > 12)
-			{
-				output = $"{hours - 12}:{minutes:D2} PM";
-			}
-			return output;
 		}
 
 		public static TimeSpan Convert12HourStringToTimeSpan(string timeString)
 		{
 			var output = new TimeSpan();
 			var split = timeString.Split(' ');
-			var prefix = split[1];
-			var hoursNminutes = split[0].Split(':');
-			if (int.TryParse(hoursNminutes[0], out int hours) && int.TryParse(hoursNminutes[1], out int minutes))
+			var prefix = split[ 1 ];
+			var hoursNminutes = split[ 0 ].Split(':');
+			if (int.TryParse(hoursNminutes[ 0 ], out int hours) && int.TryParse(hoursNminutes[ 1 ], out int minutes))
 			{
 				if (prefix.ToLower() == "am")
 				{

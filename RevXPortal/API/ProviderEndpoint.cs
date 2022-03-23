@@ -38,16 +38,17 @@ namespace RevXPortal.API
 			catch (HttpRequestException ex)
 			{
 				if (ex.Message == "TypeError: Failed to fetch")
-{
+				{
 					_toastService.ShowToast("Looks like the API is offline.", ToastLevel.Error);
+					throw;
 				}
 				else
 				{
 					throw;
 				}
 			}
-			catch (Exception ex)
-{
+			catch (Exception)
+			{
 				_toastService.ShowToast("An unexpected error ocurred.", ToastLevel.Error);
 			}
 			return new List<ProviderModel>();

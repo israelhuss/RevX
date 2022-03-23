@@ -8,7 +8,7 @@ BEGIN
 	BEGIN
 		Create Table #TempRates(Id int, [UserId] NVARCHAR(128), [StartDate] DATETIME2, [EndDate] DATETIME2, [Rate] FLOAT, [ProviderId] INT)
 		INSERT INTO #TempRates(Id, UserId, StartDate, EndDate, Rate) SELECT * FROM Rate Where UserId = @UserId
-		INSERT INTO #TempRates(Id, UserId, StartDate, EndDate, Rate, ProviderId) SELECT * FROM RateByProvider Where UserId = @UserId
+		INSERT INTO #TempRates(Id, UserId, StartDate, EndDate, Rate, ProviderId) SELECT * FROM RateByProvider Where UserId = @UserId AND ProviderId = @ProviderId
 
 		SELECT * FROM #TempRates
 	END

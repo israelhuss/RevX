@@ -13,4 +13,11 @@
 		Money,
 		Time
 	}
+
+	public enum FooterStyles
+	{
+		Centered,
+		CenteredSlant,
+		UnderLine
+	}
 }

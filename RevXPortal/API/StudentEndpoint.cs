@@ -44,7 +44,7 @@ namespace RevXPortal.API
 					throw;
 				}
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				_toastService.ShowToast("An unexpected error ocurred.", ToastLevel.Error);
 			}

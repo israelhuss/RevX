@@ -1,0 +1,28 @@
+﻿@inject IJSRuntime jsRuntime
+
+<div class="stack-1" style="height: calc(@(StackOne)rem * var(--chart-height-number) / @MaxValue); background-color: @Color; border-top-left-radius: @(StackTwo > 0 ? "0" : "5px"); border-top-right-radius: @(StackTwo > 0 ? "0" : "5px"); ">
+	<p style="color: white; display: inline;"></p>
+</div>
+<div class="stack-2" style="height: calc(@(StackTwo)rem * var(--chart-height-number) / @MaxValue); background-color: @Color; background-image: linear-gradient(rgb(255 255 255 / 0.35), rgb(255 255 255 / 0.35));">
+	<p style="color: white; display: inline;"></p>
+</div>
+<div>@(StackOne + StackTwo > 0 ? (StackOne + StackTwo).ToString("C0") : "")</div>
+
+@code {
+	[CascadingParameter]
+	public double MaxValue { get; set; }
+
+	[Parameter]
+	public double StackOne { get; set; }
+
+	[Parameter]
+	public double StackTwo { get; set; }
+
+	[Parameter]
+	public string Color { get; set; }
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		jsRuntime.InvokeVoidAsync("log", "Stack One: " + StackOne + " Stack Two: " + StackTwo);
+	}
+}

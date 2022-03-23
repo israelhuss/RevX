@@ -1,0 +1,16 @@
+﻿<div class="bar-group">
+	<div class="bar bar-1">
+		@BarOne
+	</div>
+	<div class="bar bar-2">
+		@BarTwo
+	</div>
+</div>
+@code {
+	[CascadingParameter]
+	public double MaxValue { get; set; }
+	[Parameter]
+	public RenderFragment BarOne { get; set; }
+	[Parameter]
+	public RenderFragment BarTwo { get; set; }
+}

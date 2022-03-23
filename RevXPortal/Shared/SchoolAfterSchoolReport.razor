@@ -17,33 +17,18 @@
 
 
 @code {
-    [CascadingParameter]
-    private Task<AuthenticationState> authenticationStateTask { get; set; }
-    private string userId { get; set; }
-
     public string EndDate { get; set; } = DateTime.Now.ToString("d");
-
 
     public IEnumerable<IncomeReportModel> results { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
-        if (!( await authenticationStateTask ).User.Identity.IsAuthenticated)
-        {
-            await jsRuntime.InvokeVoidAsync("log", "User id was null redirecting to login");
-            NavManager.NavigateTo($"/login?url={NavManager.Uri.Replace(NavManager.BaseUri, "")}");
-        }
-        else
-        {
-            userId = ( await authenticationStateTask ).User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            await jsRuntime.InvokeVoidAsync("log", $"User id was: {userId}");
-            await RefreshReportData(endDate: EndDate);
-        }
+        await RefreshReportData(endDate: EndDate);
     }
 
     private async Task RefreshReportData(string endDate, string startDate = "2020-09-01", string reportBy = "month")
     {
-        results = await _reportEndpoint.GetMonthlyIncome(DateTime.Parse(startDate), DateTime.Parse(endDate), userId, reportBy);
+        results = await _reportEndpoint.GetMonthlyIncome(DateTime.Parse(startDate), DateTime.Parse(endDate), reportBy);
         foreach (var item in results)
         {
             item.Title = DateTime.Parse(item.Date).ToString("MMMM");

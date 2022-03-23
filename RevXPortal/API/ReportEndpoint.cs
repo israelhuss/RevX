@@ -15,9 +15,9 @@ namespace RevXPortal.API
 			_client = client;
 		}
 
-		public async Task<List<IncomeReportModel>> GetMonthlyIncome(DateTime startDate, DateTime endDate, string userId, string groupBy)
+		public async Task<List<IncomeReportModel>> GetMonthlyIncome(DateTime startDate, DateTime endDate, string groupBy)
 		{
-			using (HttpResponseMessage response = await _client.GetAsync($"/api/Report?StartDate={startDate}&EndDate={endDate}&userId={userId}&groupBy={groupBy}"))
+			using (HttpResponseMessage response = await _client.GetAsync($"/api/Report?StartDate={startDate}&EndDate={endDate}&groupBy={groupBy}"))
 			{
 				if (response.IsSuccessStatusCode)
 				{

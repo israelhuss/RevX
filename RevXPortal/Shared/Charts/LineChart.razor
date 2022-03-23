@@ -1,0 +1,332 @@
+﻿@inject IJSRuntime jsRuntime
+
+<style>
+	.line-cover {
+		position: absolute;
+		top: 0;
+		left: 2px;
+		width: 100%;
+		height: 100%;
+		z-index: 501;
+	}
+
+	.floater-container {
+		position: absolute;
+		height: 100%;
+		transform: translate(-50%);
+		left: @(FloatersX + "px");
+		z-index: 500;
+	}
+
+	.floater {
+		width: max-content;
+		border-radius: 5px;
+		box-shadow: 2px 2px 6px 0px #00000042;
+		padding: 5px 10px;
+		position: relative;
+		background-color: #fff;
+		margin-top: 5px;
+	}
+
+	.floater-title {
+		font-weight: bold;
+		font-size: 1.1rem;
+		text-align: center;
+	}
+
+	.floater-pair {
+		display: flex;
+		justify-content: space-between;
+		font-size: .6rem;
+	}
+
+	.dotted-line {
+		border: none;
+		border-right: 2px dashed #858585;
+		color: #fff;
+		background-color: transparent;
+		height: 100%;
+		position: absolute;
+		top: 0;
+		left: 50%;
+		margin: 0;
+	}
+</style>
+
+<svg xmlns="http://www.w3.org/2000/svg" id="svg-line-chart" width="100%" height="100%" style="position: absolute; top: 0; left: 2px;">
+	@if (Points is not null)
+	{
+		<g><path stroke="#1ad000" stroke-width="2" stroke-linecap="round" fill="transparent" d="@SvgPath(Points)"></path></g>
+		for (var i = 0; i < Points.Count; i++)
+		{
+			double[] point = Points[ i ];
+			if (i != 0)
+			{
+				@*<circle cx="@(point[0] - .5)" cy="@(point[1])" r="3" style="fill: #108100;" />*@
+			}
+		}
+	}
+</svg>
+<div class="line-cover" @onmousemove="MouseMoved" @onmouseout="MouseExited"></div>
+<div style="display: @(ShowFloater ? "block" : "none");" class="floater-container">
+	<div class="dotted-line"></div>
+	<div class="floater">
+		<div>
+			@if (FloatersContent.Contains("Title"))
+			{
+				<div class="floater-title">@FloatersContent["Title"]</div>
+			}
+			@foreach (var i in FloatersContent)
+			{
+				DictionaryEntry t = (DictionaryEntry)i;
+				if (t.Key.ToString() != "Title")
+				{
+					<div class="floater-pair">
+						<div style="margin-right: 3px;">@t.Key:</div>
+						<div>@t.Value</div>
+					</div>
+				}
+			}
+		</div>
+
+
+	</div>
+</div>
+
+
+@code {
+	[Parameter]
+	public List<double> Values { get; set; }
+	[Parameter]
+	public List<ListDictionary> TooltipValues { get; set; }
+
+	// The labels for the side
+	[CascadingParameter]
+	public List<double> ValuePointsNumbers { get; set; }
+	[CascadingParameter]
+	public double MinValue { get; set; }
+	[CascadingParameter]
+	public string Width { get; set; }
+	[CascadingParameter]
+	public string Height { get; set; }
+	private double ActualHeight { get; set; }
+	private List<double[]> Points { get; set; }
+	private string pointString { get; set; }
+	private double smoothing { get; set; } = 0;
+	public bool ShowFloater { get; set; }
+	public double FloatersX { get; set; }
+	public ListDictionary FloatersContent { get; set; } = new();
+
+
+	protected override async Task OnParametersSetAsync()
+	{
+		await RefreshGraph();
+		await jsRuntime.InvokeVoidAsync("browserResize.registerResizeCallback");
+		BrowserResizeService.OnResize += OnBrowserResize;
+		await jsRuntime.InvokeVoidAsync("log", JsonSerializer.Serialize(Points));
+		await jsRuntime.InvokeVoidAsync("log", "THE STRING ---- " + pointString);
+	}
+
+	private async Task RefreshGraph()
+	{
+		Points = await CalculatePoints();
+		ActualHeight = ( await jsRuntime.InvokeAsync<double>("getActualValue", "svg-line-chart", "clientHeight") ) - 2;
+		pointString = GetPointsString();
+	}
+
+	private async Task OnBrowserResize()
+	{
+		await jsRuntime.InvokeVoidAsync("log", "You Resized Me!!!");
+		await RefreshGraph();
+		StateHasChanged();
+	}
+
+	private async Task<List<double[]>> CalculatePoints()
+	{
+		double ActualWidth = await jsRuntime.InvokeAsync<double>("getActualValue", "svg-line-chart", "clientWidth");
+		double xAxis = 0;
+		double xAxisIncrement = ActualWidth / ( Values.Count + 1 );
+		List<double[]> output = new() { new double[] { 1, ActualHeight } };
+		if (Values is not null)
+		{
+			foreach (var value in Values)
+			{
+				await jsRuntime.InvokeVoidAsync("log", xAxisIncrement + "  Hello");
+				//await jsRuntime.InvokeVoidAsync("log", ActualHeight + "  ActualHeight");
+				var y = ActualHeight - Math.Ceiling(( ActualHeight / ValuePointsNumbers.Last() ) * value);
+				//await jsRuntime.InvokeVoidAsync("log", ValuePointsNumbers.Last() + "  max");
+				//await jsRuntime.InvokeVoidAsync("log", y + "  Y");
+				var x = xAxis += xAxisIncrement;
+				//await jsRuntime.InvokeVoidAsync("log", x + "  X");
+				if (x > ActualWidth - 5)
+				{ x = ActualWidth - 5; }
+				//await jsRuntime.InvokeVoidAsync("log", x + "  X");
+				var set = new double[ 2 ] { x, y };
+				output.Add(set);
+			}
+		}
+		return output;
+	}
+
+	private string GetPointsString()
+	{
+		string output = "";
+		if (Points is not null)
+		{
+			foreach (var point in Points)
+			{
+				string join = string.Join(',', point);
+				output += join + " ";
+			}
+		}
+		return output;
+	}
+
+	private string CurveBetweenTwoPoints(double[] p1, double[] p2)
+	{
+		var p1x = p1[ 0 ];
+		var p1y = p1[ 1 ];
+		var p2x = p2[ 0 ];
+		var p2y = p2[ 1 ];
+
+		// mid-point of line:
+		var mpx = ( p2x + p1x ) * 0.5;
+		var mpy = ( p2y + p1y ) * 0.5;
+
+		// angle of perpendicular to line:
+		var theta = Math.Atan2(p2y - p1y, p2x - p1x) - Math.PI / 2;
+
+		// distance of control point from mid-point of line:
+		var offset = 0;
+
+		// location of control point:
+		var c1x = mpx + offset * Math.Cos(theta);
+		var c1y = mpy + offset * Math.Sin(theta);
+
+		var curve = $"M{p1x} {p1y} C{c1x} {c1y} {p2x} {p2y}";
+		return curve;
+	}
+
+	record LineReturn
+	{
+		public double Length { get; set; }
+		public double Angle { get; set; }
+	}
+
+	private LineReturn Line(double[] pointA, double[] pointB)
+	{
+		var lengthX = pointB[ 0 ] - pointA[ 0 ];
+		var lengthY = pointB[ 1 ] - pointA[ 1 ];
+		return new LineReturn()
+			{
+				Length = Math.Sqrt(Math.Pow(lengthX, 2) + Math.Pow(lengthY, 2)),
+				Angle = Math.Atan2(lengthY, lengthX)
+			};
+	}
+
+	private double[] ControlPoint(double[] current, double[] previous, double[] next, bool reverse)
+	{
+
+		// When 'current' is the first or last point of the array
+		// 'previous' or 'next' don't exist.
+		// Replace with 'current'
+		var p = previous ?? current;
+		var n = next ?? current;
+
+		// Properties of the opposed-line
+		var o = Line(p, n);
+
+		// If is end-control-point, add PI to the angle to go backward
+		var angle = o.Angle + ( reverse ? Math.PI : 0 );
+		var length = o.Length * smoothing;
+
+		// The control point position is relative to the current point
+		var x = current[ 0 ] + Math.Cos(angle) * length;
+		var y = current[ 1 ] + Math.Sin(angle) * length;
+		return new double[ 2 ] { x, y };
+	}
+
+	private string BezierCommand(double[] point, int i, List<double[]> a)
+	{
+		double[] cps;
+		double[] cpe;
+		// start control point
+		if (i - 1 < 0)
+		{
+			cps = ControlPoint(null, null, point, false);
+			if (i + 1 < a.Count)
+			{
+				cpe = ControlPoint(point, null, a[ i + 1 ], true);
+			}
+			else
+			{
+				cpe = ControlPoint(point, null, null, true);
+			}
+		}
+		else if (i - 2 < 0)
+		{
+			cps = ControlPoint(a[ i - 1 ], null, point, false);
+			if (i + 1 < a.Count)
+			{
+				cpe = ControlPoint(point, a[ i - 1 ], a[ i + 1 ], true);
+			}
+			else
+			{
+				cpe = ControlPoint(point, a[ i - 1 ], null, true);
+			}
+		}
+		else
+		{
+			cps = ControlPoint(a[ i - 1 ], a[ i - 2 ], point, false);
+			if (i + 1 < a.Count)
+			{
+				cpe = ControlPoint(point, a[ i - 1 ], a[ i + 1 ], true);
+			}
+			else
+			{
+				cpe = ControlPoint(point, a[ i - 1 ], null, true);
+			}
+		}
+
+		// end control point
+		return $"C { cps[ 0 ]},{ cps[ 1 ]} { cpe[ 0 ]},{ cpe[ 1 ]} { point[ 0 ]},{ point[ 1 ]}";
+	}
+
+	private string SvgPath(List<double[]> points)
+	{
+		// build the d attributes by looping over the points
+		var d = points.Aggregate("", (acc, point) => points.IndexOf(point) == 0 ? $"M { point[ 0 ]},{ point[ 1 ]}" : $"{acc} {BezierCommand(point, points.IndexOf(point), points)}");
+		return d;
+	}
+
+	private void MouseMoved(MouseEventArgs e)
+	{
+		double closest = Points.Select(p => p[ 0 ]).OrderBy(x => Math.Abs(e.OffsetX - x)).First();
+		var index = Points.IndexOf(Points.Where(p => p[ 0 ] == closest).First());
+		jsRuntime.InvokeVoidAsync("log", index);
+		jsRuntime.InvokeVoidAsync("log", TooltipValues);
+		if (index == 0)
+		{
+			ShowFloater = false;
+		}
+		else
+		{
+			try
+			{
+				FloatersContent = TooltipValues[ index - 1 ];
+			}
+			catch (Exception ex)
+			{
+				jsRuntime.InvokeVoidAsync("log", ex.Message);
+				FloatersContent.Add("Value", Values[ index - 1 ].ToString("C"));
+			}
+			FloatersX = closest;
+			ShowFloater = true;
+		}
+	}
+
+	private void MouseExited(MouseEventArgs e)
+	{
+		ShowFloater = false;
+	}
+}

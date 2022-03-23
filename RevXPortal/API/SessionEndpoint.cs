@@ -37,6 +37,7 @@ namespace RevXPortal.API
 								BillingStatus = result.BillingStatus,
 								Notes = result.Notes,
 								Rate = result.Rate,
+								InvoiceId = result.InvoiceId
 							};
 
 							output.Add(model);
@@ -54,13 +55,14 @@ namespace RevXPortal.API
 				if (ex.Message == "TypeError: Failed to fetch")
 				{
 					_toastService.ShowToast("Looks like the API is offline.", ToastLevel.Error);
+					throw;
 				}
 				else
 				{
 					throw;
 				}
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				_toastService.ShowToast("An unexpected error ocurred.", ToastLevel.Error);
 			}

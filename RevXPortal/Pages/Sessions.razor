@@ -159,6 +159,9 @@
 
 
 @code {
+    [CascadingParameter]
+    public Error Error { get; set; }
+
     // Dialog references
     private ManageSessionDialog ManageDialogRef { get; set; }
     private InvoicingDialog InvoicingRef { get; set; }
@@ -194,6 +197,7 @@
         }
         catch (HttpRequestException e)
         {
+            Error.ProcessError(e);
             toastService.ShowToast("The API seems to be offline.", ToastLevel.Error);
             Console.WriteLine(e.Message);
         }

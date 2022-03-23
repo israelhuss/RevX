@@ -1,4 +1,5 @@
-﻿using RevXApi.Library.Models;
+﻿using Microsoft.Extensions.Logging;
+using RevXApi.Library.Models;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,15 +8,18 @@ namespace RevXApi.Library.DataAccess
 	public class BillingStatusData : IBillingStatusData
 	{
 		private readonly ISqlDataAccess _sql;
+        private readonly ILogger _logger;
 
-		public BillingStatusData(ISqlDataAccess sql)
+        public BillingStatusData(ISqlDataAccess sql, ILogger<BillingStatusData> logger)
 		{
 			_sql = sql;
-		}
+            _logger = logger;
+        }
 
 		public List<BillingStatusModel> GetAll()
 		{
-			return _sql.LoadData<BillingStatusModel>("dbo.spBillingStatus_GetAll", "RevXData");
+			List<BillingStatusModel> result = _sql.LoadData<BillingStatusModel>("dbo.spBillingStatus_GetAll", "RevXData");
+			return result;
 		}
 
 		public List<BillingStatusModel> GetEnabled()

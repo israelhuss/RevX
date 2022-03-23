@@ -1,0 +1,30 @@
+﻿<style>
+	:root {
+        --container-width: 75vw;
+    }
+
+    .container {
+        width: var(--container-width);
+        -webkit-print-color-adjust: exact;
+    }
+</style>
+
+
+<div class="double-stacked-bar-chart container">
+	<div class="card">
+		<div class="double-stacked-bar-chart_header card-header">
+			@Header
+		</div>
+		<div class="double-stacked-bar-chart_content card-body">
+			@Content
+		</div>
+	</div>
+</div>
+
+
+@code {
+	[Parameter]
+	public RenderFragment Header { get; set; }
+	[Parameter]
+	public RenderFragment Content { get; set; }
+}

@@ -13,5 +13,6 @@ namespace RevXApi.Library.Models
 		public int ProviderId { get; set; }
 		public int BillingStatusId { get; set; }
 		public string Notes { get; set; }
+		public int InvoiceId { get; set; }
 	}
 }

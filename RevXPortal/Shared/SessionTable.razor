@@ -1,32 +1,47 @@
 ﻿@using System.Globalization
 <style>
-	.table {
+	.session-table-outer {
+		max-height: 90vh;
+		overflow: auto;
 		width: 80%;
 		margin: 1rem auto;
 	}
+
+	.table {
+		width: 100%;
+		position: relative;
+	}
+
+		.table thead tr th {
+			position: sticky;
+			top: 0;
+			z-index: 1;
+		}
 </style>
 
 @if (Sessions is not null)
 {
-	<table class="table table-bordered table-striped">
-		<thead>
-			<tr>
-				<th>Student</th>
-				<th>Date</th>
-				<th>Duration</th>
-			</tr>
-		</thead>
-		<tbody>
-			@foreach (var session in Sessions)
-			{
+	<div class="session-table-outer">
+		<table class="table table-bordered table-striped">
+			<thead>
 				<tr>
-					<td>@session.Student.DisplayName</td>
-					<td>@(DateOnly.FromDateTime(session.Date))</td>
-					<td>@((session.EndTime - session.StartTime).ToString("hh\\:mm").TrimStart(new Char[] { '0' }))</td>
+					<th>Student</th>
+					<th>Date</th>
+					<th>Duration</th>
 				</tr>
-			}
-		</tbody>
-	</table>
+			</thead>
+			<tbody>
+				@foreach (var session in Sessions)
+				{
+					<tr>
+						<td>@session.Student.DisplayName</td>
+						<td>@(DateOnly.FromDateTime(session.Date))</td>
+						<td>@((session.EndTime - session.StartTime).ToString("hh\\:mm").TrimStart(new Char[] { '0' }))</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
 
 }
 

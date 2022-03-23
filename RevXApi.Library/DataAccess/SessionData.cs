@@ -38,7 +38,8 @@ namespace RevXApi.Library.DataAccess
 					Date = session.Date,
 					StartTime = session.StartTime.ToString(),
 					EndTime = session.EndTime.ToString(),
-					Notes = session.Notes
+					Notes = session.Notes,
+					InvoiceId = session.InvoiceId
 				};
 
 				model.Student = _studentData.GetById(session.StudentId, session.UserId);
@@ -76,7 +77,7 @@ namespace RevXApi.Library.DataAccess
 			output.BillingStatus = _billingStatusData.GetById(session.BillingStatusId);
 			output.Rate = _rateData.GetByDate(session.Date, session.UserId, session.ProviderId);
 			if (output.Rate == null)
-{
+			{
 				output.Rate = new HourlyRate();
 			}
 
