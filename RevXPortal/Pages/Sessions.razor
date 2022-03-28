@@ -2,294 +2,298 @@
 @page "/sessions"
 @inject ISessionEndpoint _sessionEndpoint
 @inject IProviderEndpoint _providerEndpoint
+@inject IWorkplaceEndpoint _workplaceEndpoint
 @inject NavigationManager NavManager
 @inject IToastService toastService
 @inject IJSRuntime jsRuntime
 
 <style>
-    .table-container {
-        border: solid 1px #626263;
-        border-radius: 4.5px;
-        text-align: center;
-        margin: 1rem;
-        height: 75vh;
-        overflow: hidden;
-    }
+	.table-container {
+		border: solid 1px #626263;
+		border-radius: 4.5px;
+		text-align: center;
+		margin: 1rem;
+		height: 75vh;
+		overflow: hidden;
+	}
 
-    .table {
-        margin-bottom: 0;
-    }
+	.table {
+		margin-bottom: 0;
+	}
 
-        .table td {
-            vertical-align: middle;
-        }
+		.table td {
+			vertical-align: middle;
+		}
 
-    th {
-        font-size: 1.3rem;
-    }
+	th {
+		font-size: 1.3rem;
+	}
 
-    .d-flex {
-        align-items: baseline;
-    }
+	.d-flex {
+		align-items: baseline;
+	}
 
-    .icon {
-        font-size: 1rem;
-        padding-top: 2px;
-        padding-bottom: 2px;
-    }
+	.icon {
+		font-size: 1rem;
+		padding-top: 2px;
+		padding-bottom: 2px;
+	}
 
-    .custom-select:focus {
-        box-shadow: none;
-    }
+	.custom-select:focus {
+		box-shadow: none;
+	}
 
-    .valid.modified:not([type=checkbox]) {
-        outline: none;
-        border: solid 1px #26b050;
-    }
+	.valid.modified:not([type=checkbox]) {
+		outline: none;
+		border: solid 1px #26b050;
+	}
 
-    .modal {
-        background-color: rgb(0 0 0 / 0.70)
-    }
+	.modal {
+		background-color: rgb(0 0 0 / 0.70)
+	}
 
-    .fade-in-and-grow {
-        animation: fade-in-and-grow;
-        animation-duration: .6s;
-    }
+	.fade-in-and-grow {
+		animation: fade-in-and-grow;
+		animation-duration: .6s;
+	}
 
-    .form-group > label {
-        margin-bottom: 0;
-    }
+	.form-group > label {
+		margin-bottom: 0;
+	}
 
-    td > .btn,
-    th > .btn {
-        line-height: 1;
-        padding: 0rem 0.2rem;
-        margin-right: 2.5px;
-        margin-left: 2.5px;
-    }
+	td > .btn,
+	th > .btn {
+		line-height: 1;
+		padding: 0rem 0.2rem;
+		margin-right: 2.5px;
+		margin-left: 2.5px;
+	}
 
-        td > .btn:focus,
-        th > .btn:focus {
-            box-shadow: none;
-        }
+		td > .btn:focus,
+		th > .btn:focus {
+			box-shadow: none;
+		}
 </style>
 <AuthorizeView>
-    <Authorized>
-        <div class="d-flex justify-content-between mt-4">
-            <h3></h3>
-            <button class="btn btn-primary" @onclick="AddSession">Add Session</button>
-        </div>
+	<Authorized>
+		<CascadingValue Value="WorkplaceInfo">
+			<div class="d-flex justify-content-between mt-4">
+				<h3></h3>
+				<button class="btn btn-primary" @onclick="AddSession">Add Session</button>
+			</div>
 
-        <div class="table-container overflow-auto">
-            <table class="table table-bordered table-striped" style="margin-top: -1px">
-                <thead style="position: sticky; top: 0;">
-                    <tr>
-                        @if (OpenSessions is not null && OpenSessions.Count > 0)
-                        {
-                            <th colspan="2">
-                                <button class="btn" @onclick="InvoiceClicked">
-                                    <i class="fas fa-file-invoice-dollar" style="font-size: 2.1rem"></i>
-                                </button>
-                            </th>
-                        }
-                        <th>Student</th>
-                        <th>Date</th>
-                        <th>Start Time</th>
-                        <th>End Time</th>
-                        <th>Provider</th>
-                        <th>Billing Status</th>
-                        <th>Notes</th>
-                    </tr>
-                </thead>
+			<div class="table-container overflow-auto">
+				<table class="table table-bordered table-striped" style="margin-top: -1px">
+					<thead style="position: sticky; top: 0;">
+						<tr style="background-color: #fff;">
+							@if (OpenSessions is not null && OpenSessions.Count > 0)
+							{
+								<th colspan="2">
+									<button class="btn" @onclick="InvoiceClicked">
+										<i class="fas fa-file-invoice-dollar" style="font-size: 2.1rem"></i>
+									</button>
+								</th>
+							}
+							<th>@(WorkplaceInfo is not null && WorkplaceInfo.ClientNickname is not null ? WorkplaceInfo.ClientNickname : "Client")</th>
+							<th>Date</th>
+							<th>Start Time</th>
+							<th>End Time</th>
+							<th>Provider</th>
+							<th>Billing Status</th>
+							<th>Notes</th>
+						</tr>
+					</thead>
 
-                @if (OpenSessions is not null && OpenSessions.Count > 0)
-                {
-                    <tbody>
-                        @foreach (var session in OpenSessions)
-                        {
-                            <tr>
-                                <td style="padding-right: .25rem; padding-left: .25rem;">
-                                    <button type="button" class="btn btn-outline" @onclick="(() => ConfirmDelete(session))"><i class="far fa-trash-alt icon"></i></button>
-                                </td>
-                                <td style="padding-right: .25rem; padding-left: .25rem;">
-                                    <button type="button" class="btn btn-outline" @onclick="(() => EditSession(session))"><i class="fas fa-pencil-alt icon"></i></button>
-                                </td>
-                                <td>@session.Student.DisplayName</td>
-                                <td>@session.Date.ToShortDateString()</td>
-                                <td>@TimeConverters.ConvertTimeSpanTo12HourString(session.StartTime)</td>
-                                <td>@TimeConverters.ConvertTimeSpanTo12HourString(session.EndTime)</td>
-                                <td>@session.Provider.Name</td>
-                                <td>@session.BillingStatus.BillingStatus</td>
-                                <td>@session.Notes</td>
-                            </tr>
-                        }
-                    </tbody>
-                }
-            </table>
+					@if (OpenSessions is not null && OpenSessions.Count > 0)
+					{
+						<tbody>
+							@foreach (var session in OpenSessions)
+							{
+								<tr>
+									<td style="padding-right: .25rem; padding-left: .25rem;">
+										<button type="button" class="btn btn-outline" @onclick="(() => ConfirmDelete(session))"><i class="far fa-trash-alt icon"></i></button>
+									</td>
+									<td style="padding-right: .25rem; padding-left: .25rem;">
+										<button type="button" class="btn btn-outline" @onclick="(() => EditSession(session))"><i class="fas fa-pencil-alt icon"></i></button>
+									</td>
+									<td>@session.Client.DisplayName</td>
+									<td>@session.Date.ToShortDateString()</td>
+									<td>@TimeConverters.ConvertTimeSpanTo12HourString(session.StartTime)</td>
+									<td>@TimeConverters.ConvertTimeSpanTo12HourString(session.EndTime)</td>
+									<td>@session.Provider.Name</td>
+									<td>@session.BillingStatus.BillingStatus</td>
+									<td>@session.Notes</td>
+								</tr>
+							}
+						</tbody>
+					}
+				</table>
 
-            @* Main Row while loading the sessions *@
-            @if (OpenSessions is null)
-            {
-                <div class="empty-table-cell grid-cell" style="position: relative; height: 85%">
-                    <LoadingIndicator />
-                </div>
-            }
+				@* Main Row while loading the sessions *@
+				@if (OpenSessions is null)
+				{
+					<div class="empty-table-cell grid-cell" style="position: relative; height: 85%">
+						<LoadingIndicator />
+					</div>
+				}
 
-            @* Main Row if sessions is empty *@
-            @if (OpenSessions is not null && OpenSessions.Count == 0)
-            {
-                <div class="empty-table-cell grid-cell" style="margin-top: 10rem">
-                    <h4>You don't have any open sessions now.<br />Please <button class="btn" style="color: inherit; font-size: inherit; padding: 0; vertical-align: baseline;" @onclick="AddSession">click here</button> to enter a session</h4>
-                </div>
-            }
-        </div>
+				@* Main Row if sessions is empty *@
+				@if (OpenSessions is not null && OpenSessions.Count == 0)
+				{
+					<div class="empty-table-cell grid-cell" style="margin-top: 10rem">
+						<h4>You don't have any open sessions now.<br />Please <button class="btn" style="color: inherit; font-size: inherit; padding: 0; vertical-align: baseline;" @onclick="AddSession">click here</button> to enter a session</h4>
+					</div>
+				}
+			</div>
 
-        <ManageSessionDialog @ref="ManageDialogRef" FormSession="ManageSession" SaveForm="SaveForm" Title="@formTitle" />
-        <ConfirmationDialog @ref="DeleteConfirmation" IdToDelete="ManageSession.Id" ConfirmationChanged="OnConfirmClicked" />
-        <InvoicingDialog @ref="InvoicingRef" InvoicingItems="OpenSessions" InvoicingItemsChanged="RefreshSessionsList" />
-
-    </Authorized>
-    <NotAuthorized>
-        <div style="position: relative; height: calc(100vh - 3.5rem)">
-            <h3 style="text-align: center; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: max-content;">You need to be logged in to view sessions.</h3>
-        </div>
-    </NotAuthorized>
+			<ManageSessionDialog @ref="ManageDialogRef" FormSession="ManageSession" SaveForm="SaveForm" Title="@formTitle" />
+			<ConfirmationDialog @ref="DeleteConfirmation" IdToDelete="ManageSession.Id" ConfirmationChanged="OnConfirmClicked" />
+			<InvoicingDialog @ref="InvoicingRef" InvoicingItems="OpenSessions" InvoicingItemsChanged="RefreshSessionsList" />
+		</CascadingValue>
+	</Authorized>
+	<NotAuthorized>
+		<div style="position: relative; height: calc(100vh - 3.5rem)">
+			<h3 style="text-align: center; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: max-content;">You need to be logged in to view sessions.</h3>
+		</div>
+	</NotAuthorized>
 </AuthorizeView>
 
 
 
 @code {
-    [CascadingParameter]
-    public Error Error { get; set; }
+	[CascadingParameter]
+	public Error Error { get; set; }
 
-    // Dialog references
-    private ManageSessionDialog ManageDialogRef { get; set; }
-    private InvoicingDialog InvoicingRef { get; set; }
-    protected ConfirmationDialog DeleteConfirmation { get; set; }
+	// Dialog references
+	private ManageSessionDialog ManageDialogRef { get; set; }
+	private InvoicingDialog InvoicingRef { get; set; }
+	protected ConfirmationDialog DeleteConfirmation { get; set; }
 
-    public ManageSessionModel ManageSession { get; set; } = new();
+	public ManageSessionModel ManageSession { get; set; } = new();
 
-    public string formTitle { get; set; }
+	public string formTitle { get; set; }
 
-    private string formState { get; set; } = string.Empty;
+	private string formState { get; set; } = string.Empty;
 
-    private List<ManageSessionModel> OpenSessions { get; set; }
-    private List<ProviderModel> Providers { get; set; }
+	private List<ManageSessionModel> OpenSessions { get; set; }
+	private List<ProviderModel> Providers { get; set; }
+	private WorkplaceModel WorkplaceInfo { get; set; }
 
-    protected async override Task OnInitializedAsync()
-    {
-        await RefreshSessionsList(); 
-        Providers = await _providerEndpoint.GetAll();
-    }
+	protected async override Task OnInitializedAsync()
+	{
+		await RefreshSessionsList();
+		Providers = await _providerEndpoint.GetAll();
+		WorkplaceInfo = await _workplaceEndpoint.GetMyWorkplaceInfo();
+	}
 
-    private async Task RefreshSessionsList()
-    {
-        try
-        {
-            //TODO - getting only open sessions manually - change to dynamic...
-            var allSessions = await _sessionEndpoint.GetAll();
+	private async Task RefreshSessionsList()
+	{
+		try
+		{
+			//TODO - getting only open sessions manually - change to dynamic...
+			var allSessions = await _sessionEndpoint.GetAll();
 
-            OpenSessions = ( from s in allSessions
-                             where s.BillingStatus.BillingStatus == "Open"
-                             select s ).ToList();
+			OpenSessions = ( from s in allSessions
+								where s.BillingStatus.BillingStatus == "Open"
+								select s ).ToList();
 
-            StateHasChanged();
-        }
-        catch (HttpRequestException e)
-        {
-            Error.ProcessError(e);
-            toastService.ShowToast("The API seems to be offline.", ToastLevel.Error);
-            Console.WriteLine(e.Message);
-        }
-        //catch (Exception e)
-        //{
-        //    if (e.Message == "Unauthorized")
-        //    {
-        //        NavManager.NavigateTo($"/login?url={NavManager.Uri.Replace(NavManager.BaseUri, "")}");
-        //    }
-        //}
-    }
-    private async void SaveForm()
-    {
-        ManageDialogRef.Hide();
+			StateHasChanged();
+		}
+		catch (HttpRequestException e)
+		{
+			Error.ProcessError(e);
+			toastService.ShowToast("The API seems to be offline.", ToastLevel.Error);
+			Console.WriteLine(e.Message);
+		}
+		//catch (Exception e)
+		//{
+		//    if (e.Message == "Unauthorized")
+		//    {
+		//        NavManager.NavigateTo($"/login?url={NavManager.Uri.Replace(NavManager.BaseUri, "")}");
+		//    }
+		//}
+	}
+	private async void SaveForm()
+	{
+		ManageDialogRef.Hide();
 
-        if (formState == "add")
-        {
-            try
-            {
-                await _sessionEndpoint.SaveSession(ManageSession);
-                toastService.ShowToast("Changes saved successfully.", ToastLevel.Success);
-            }
-            catch (Exception)
-            {
-                toastService.ShowToast("Looks like there is already a session for this slot.", ToastLevel.Error);
-            }
-            await RefreshSessionsList();
-        }
-        else if (formState == "edit")
-        {
-            await _sessionEndpoint.EditSession(ManageSession);
-            toastService.ShowToast("Changes saved successfully.", ToastLevel.Success);
-            await RefreshSessionsList();
-        }
-        StateHasChanged();
+		if (formState == "add")
+		{
+			try
+			{
+				await _sessionEndpoint.SaveSession(ManageSession);
+				toastService.ShowToast("Changes saved successfully.", ToastLevel.Success);
+			}
+			catch (Exception)
+			{
+				toastService.ShowToast("Looks like there is already a session for this slot.", ToastLevel.Error);
+			}
+			await RefreshSessionsList();
+		}
+		else if (formState == "edit")
+		{
+			await _sessionEndpoint.EditSession(ManageSession);
+			toastService.ShowToast("Changes saved successfully.", ToastLevel.Success);
+			await RefreshSessionsList();
+		}
+		StateHasChanged();
 
-        ManageSession = new();
-    }
+		ManageSession = new();
+	}
 
-    private void AddSession()
-    {
-        formState = "add";
-        ManageSession = new();
-        // Make sure the database id match ---- BAD PRACTICE!!!
-        Regex secondaryProviderMatch = new(@"[l|L]egade?i?l|[m|M]e?nah?e?l");
-        ManageSession.Provider = Providers.Where(p => secondaryProviderMatch.IsMatch(p.Name)).FirstOrDefault();
-        ManageSession.BillingStatus = new BillingStatusModel() { Id = 1, BillingStatus = "Open" };
-        formTitle = "Add A Session";
-        ManageDialogRef.Show();
-    }
+	private void AddSession()
+	{
+		formState = "add";
+		ManageSession = new();
+		// Make sure the database id match ---- BAD PRACTICE!!!
+		Regex secondaryProviderMatch = new(@"[l|L]egade?i?l|[m|M]e?nah?e?l");
+		ManageSession.Provider = Providers.Where(p => secondaryProviderMatch.IsMatch(p.Name)).FirstOrDefault();
+		ManageSession.BillingStatus = new BillingStatusModel() { Id = 1, BillingStatus = "Open" };
+		formTitle = "Add A Session";
+		ManageDialogRef.Show();
+	}
 
-    private void EditSession(ManageSessionModel session)
-    {
-        formState = "edit";
-        ManageSession = session;
-        formTitle = "Edit A Session";
-        ManageDialogRef.Show();
-    }
+	private void EditSession(ManageSessionModel session)
+	{
+		formState = "edit";
+		ManageSession = session;
+		formTitle = "Edit A Session";
+		ManageDialogRef.Show();
+	}
 
-    private void ConfirmDelete(ManageSessionModel session)
-    {
-        ManageSession = session;
-        DeleteConfirmation.Show();
-    }
+	private void ConfirmDelete(ManageSessionModel session)
+	{
+		ManageSession = session;
+		DeleteConfirmation.Show();
+	}
 
-    private async Task OnConfirmClicked(bool isConfirmed)
-    {
-        if (isConfirmed)
-        {
-            try
-            {
-                await _sessionEndpoint.DeleteSession(DeleteConfirmation.IdToDelete);
-                toastService.ShowToast("Session was successfully deleted.", ToastLevel.Success);
-                await RefreshSessionsList();
+	private async Task OnConfirmClicked(bool isConfirmed)
+	{
+		if (isConfirmed)
+		{
+			try
+			{
+				await _sessionEndpoint.DeleteSession(DeleteConfirmation.IdToDelete);
+				toastService.ShowToast("Session was successfully deleted.", ToastLevel.Success);
+				await RefreshSessionsList();
 
 
-                StateHasChanged();
-            }
-            catch (Exception)
-            {
-                toastService.ShowToast("Sorry. We are having some trouble deleting the session :(", ToastLevel.Error);
-            }
-        }
-        else
-        {
-            Console.WriteLine("Not Confirmed");
-            Console.WriteLine(DeleteConfirmation.IdToDelete);
-        }
-    }
+				StateHasChanged();
+			}
+			catch (Exception)
+			{
+				toastService.ShowToast("Sorry. We are having some trouble deleting the session :(", ToastLevel.Error);
+			}
+		}
+		else
+		{
+			Console.WriteLine("Not Confirmed");
+			Console.WriteLine(DeleteConfirmation.IdToDelete);
+		}
+	}
 
-    private void InvoiceClicked()
-    {
-        InvoicingRef.Show();
-    }
+	private void InvoiceClicked()
+	{
+		InvoicingRef.Show();
+	}
 }

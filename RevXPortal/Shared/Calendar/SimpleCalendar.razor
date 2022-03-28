@@ -1,4 +1,6 @@
-﻿<style>
+﻿@inject IJSRuntime jsRuntime
+
+<style>
 	.calendar-container {
 		display: grid;
 		grid-template-columns: repeat(7, 1fr);
@@ -67,14 +69,14 @@
 	protected override void OnInitialized()
 	{
 		LastDay = DateTime.DaysInMonth(FirstDayOfMonth.Year, FirstDayOfMonth.Month);
-		AllDates = GetAllDatesForCalendar();
+		AllDates = GetAllDatesForCalendar(LastDay);
 		base.OnInitialized();
 	}
 
-	private List<KeyValuePair<bool, DateOnly>> GetAllDatesForCalendar()
+	private List<KeyValuePair<bool, DateOnly>> GetAllDatesForCalendar(int lastDay)
 	{
 		List<KeyValuePair<bool, DateOnly>> output = new();
-		DateOnly LastDate = new DateOnly(FirstDayOfMonth.Year, FirstDayOfMonth.Month, LastDay);
+		DateOnly LastDate = new DateOnly(FirstDayOfMonth.Year, FirstDayOfMonth.Month, lastDay);
 
 		int fromLastMonth = (int)FirstDayOfMonth.DayOfWeek;
 		int fromNextMonth = 6 - (int)LastDate.DayOfWeek;
@@ -85,7 +87,7 @@
 			int lastMonthDays = DateTime.DaysInMonth(lastMonthYear, lastMonth) - (fromLastMonth - 1);
 			for (var i = 0; i < fromLastMonth; i++ )
 			{
-				output.Add(new KeyValuePair<bool, DateOnly>(false, new DateOnly(FirstDayOfMonth.Year, FirstDayOfMonth.Month - 1, lastMonthDays)));
+				output.Add(new KeyValuePair<bool, DateOnly>(false, new DateOnly(lastMonthYear, lastMonth, lastMonthDays)));
 				lastMonthDays++;
 			}
 		}

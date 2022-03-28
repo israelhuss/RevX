@@ -9,15 +9,15 @@ namespace RevXApi.Library.DataAccess
 	public class SessionData : ISessionData
 	{
 		private readonly ISqlDataAccess _sql;
-		private readonly IStudentData _studentData;
+		private readonly IClientData _clientData;
 		private readonly IProviderData _providerData;
 		private readonly IBillingStatusData _billingStatusData;
 		private readonly IHourlyRateData _rateData;
 
-		public SessionData(ISqlDataAccess sql, IStudentData studentData, IProviderData providerData, IBillingStatusData billingStatusData, IHourlyRateData rateData)
+		public SessionData(ISqlDataAccess sql, IClientData clientData, IProviderData providerData, IBillingStatusData billingStatusData, IHourlyRateData rateData)
 		{
 			_sql = sql;
-			_studentData = studentData;
+			_clientData = clientData;
 			_providerData = providerData;
 			_billingStatusData = billingStatusData;
 			_rateData = rateData;
@@ -42,7 +42,7 @@ namespace RevXApi.Library.DataAccess
 					InvoiceId = session.InvoiceId
 				};
 
-				model.Student = _studentData.GetById(session.StudentId, session.UserId);
+				model.Client = _clientData.GetById(session.ClientId, session.UserId);
 				model.Provider = _providerData.GetById(session.ProviderId, session.UserId);
 				model.BillingStatus = _billingStatusData.GetById(session.BillingStatusId);
 				model.Rate = _rateData.GetByDate(session.Date, session.UserId, session.ProviderId);
@@ -72,7 +72,7 @@ namespace RevXApi.Library.DataAccess
 				Notes = session.Notes
 			};
 
-			output.Student = _studentData.GetById(session.StudentId, session.UserId);
+			output.Client = _clientData.GetById(session.ClientId, session.UserId);
 			output.Provider = _providerData.GetById(session.ProviderId, session.UserId);
 			output.BillingStatus = _billingStatusData.GetById(session.BillingStatusId);
 			output.Rate = _rateData.GetByDate(session.Date, session.UserId, session.ProviderId);
@@ -104,7 +104,7 @@ namespace RevXApi.Library.DataAccess
 					Notes = session.Notes
 				};
 
-				model.Student = _studentData.GetById(session.StudentId, session.UserId);
+				model.Client = _clientData.GetById(session.ClientId, session.UserId);
 				model.Provider = _providerData.GetById(session.ProviderId, session.UserId);
 				model.BillingStatus = _billingStatusData.GetById(session.BillingStatusId);
 				model.Rate = _rateData.GetByDate(session.Date, session.UserId, session.ProviderId);
@@ -123,7 +123,7 @@ namespace RevXApi.Library.DataAccess
 		{
 			var dbModel = new SessionDbModel()
 			{
-				StudentId = model.Student.Id,
+				ClientId = model.Client.Id,
 				UserId = model.UserId,
 				Date = model.Date,
 				StartTime = ConvertToTimeSpan(model.StartTime),
@@ -142,7 +142,7 @@ namespace RevXApi.Library.DataAccess
 			{
 				Id = model.Id,
 				UserId = model.UserId,
-				StudentId = model.Student.Id,
+				ClientId = model.Client.Id,
 				Date = model.Date,
 				StartTime = ConvertToTimeSpan(model.StartTime),
 				EndTime = ConvertToTimeSpan(model.EndTime),

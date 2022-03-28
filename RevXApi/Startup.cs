@@ -1,3 +1,4 @@
+using FluentEmail.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -58,13 +59,14 @@ namespace RevXApi
 			services.AddTransient<ISqlDataAccess, SqlDataAccess>();
 			services.AddTransient<IUserData, UserData>();
 			services.AddTransient<ISessionData, SessionData>();
-			services.AddTransient<IStudentData, StudentData>();
+			services.AddTransient<IClientData, ClientData>();
 			services.AddTransient<IProviderData, ProviderData>();
 			services.AddTransient<IBillingStatusData, BillingStatusData>();
 			services.AddTransient<IInvoiceData, InvoiceData>();
 			services.AddTransient<IReportData, ReportData>();
 			services.AddTransient<IHourlyRateData, HourlyRateData>();
 			services.AddTransient<IUserData, UserData>();
+			services.AddTransient<IWorkplaceData, WorkplaceData>();
 			services.AddTransient<IPlayground, Playground>();
 
 			// FluentEmail Configuration
@@ -78,13 +80,18 @@ namespace RevXApi
 			//	});
 
 			// Gmail Setup
-			services.AddFluentEmail(Configuration[ "EmailConfig:FaigyEmailAddress" ], "Faigy Huss")
+			services.AddFluentEmail("RevXReports@gmail.com", "RevX")
 				.AddRazorRenderer()
 				.AddSmtpSender(new SmtpClient("smtp.gmail.com", 587)
 				{
-					Credentials = new NetworkCredential(Configuration[ "EmailConfig:FaigyEmailAddress" ], Configuration[ "EmailConfig:FaigyAppPassword" ]),
+					Credentials = new NetworkCredential("RevXReports@gmail.com", "ngsfhyicqzmaxwni"),
 					EnableSsl = true
 				});
+				//.AddSmtpSender(new SmtpClient("smtp.gmail.com", 587)
+				//{
+				//	Credentials = new NetworkCredential(Configuration[ "EmailConfig:FaigyEmailAddress" ], Configuration[ "EmailConfig:FaigyAppPassword" ]),
+				//	EnableSsl = true
+				//});
 
 			// JWT Authentication
 			services.AddAuthentication(options =>

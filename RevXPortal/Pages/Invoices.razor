@@ -3,6 +3,7 @@
 @inject IProviderEndpoint _providerEndpiont
 @inject ISessionEndpoint _sessionEndpiont
 @inject IUserEndpoint _userEndpoint
+@inject IWorkplaceEndpoint _workplaceEndpoint
 @inject IJSRuntime jsRuntime
 
 
@@ -13,26 +14,28 @@
 </style>
 <CascadingValue Value="Sessions">
 	<CascadingValue Value="Providers">
-		@if (InvoicesByMonth is null)
-		{
-			<LoadingIndicator />
-		}
-		else if (InvoicesByMonth.Count == 0)
-		{
-			<h3>No Invoices Found</h3>
-		}
-		else if (InvoicesByMonth is not null)
-		{
-			<div style="margin-top: 20px; padding: 2rem;">
-				@foreach (var month in InvoicesByMonth)
-				{
-					<div class="invoice-container">
-						<h4>@month.Key</h4>
-						<InvoiceCard Invoices="month.Value"></InvoiceCard>
-					</div>
-				}
-			</div>
-		}
+		<CascadingValue Value="WorkplaceInfo">
+			@if (InvoicesByMonth is null)
+			{
+				<LoadingIndicator />
+			}
+			else if (InvoicesByMonth.Count == 0)
+			{
+				<h3>No Invoices Found</h3>
+			}
+			else if (InvoicesByMonth is not null)
+			{
+				<div style="margin-top: 20px; padding: 2rem;">
+					@foreach (var month in InvoicesByMonth)
+					{
+						<div class="invoice-container">
+							<h4>@month.Key</h4>
+							<InvoiceCard Invoices="month.Value"></InvoiceCard>
+						</div>
+					}
+				</div>
+			}
+		</CascadingValue>
 	</CascadingValue>
 </CascadingValue>
 
@@ -43,6 +46,7 @@
 	public List<ProviderModel> Providers { get; set; }
 	public List<ManageSessionModel> Sessions { get; set; }
 	public Dictionary<string, List<InvoiceModel>> InvoicesByMonth { get; set; }
+	public WorkplaceModel WorkplaceInfo { get; set; }
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -51,6 +55,7 @@
 		InvoicesByMonth = GroupInvoicesByMonth(AllInvoices);
 		Providers = await _providerEndpiont.GetAll();
 		Sessions = await _sessionEndpiont.GetAll();
+		WorkplaceInfo = await _workplaceEndpoint.GetMyWorkplaceInfo();
 		await jsRuntime.InvokeVoidAsync("log", JsonSerializer.Serialize(InvoicesByMonth));
 	}
 
@@ -67,7 +72,7 @@
 			}
 			else
 			{
-				keyValuePairs.Add($"{month} {year}", new List<InvoiceModel> {invoice});
+				keyValuePairs.Add($"{month} {year}", new List<InvoiceModel> { invoice });
 			}
 		}
 		return keyValuePairs;

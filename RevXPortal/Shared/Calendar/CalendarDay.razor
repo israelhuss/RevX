@@ -6,10 +6,10 @@
 	<div class="calendar-day-events">
 		@foreach (var ev in Events)
 		{
-			<div class="calendar-day-event">
-				<span style="font-size: .9rem;">@GetShortHourString(ev.StartTime)</span>
-				<span style="font-size: .6rem;">@ev.Student.DisplayName</span>
-			</div>
+						<div class="calendar-day-event">
+							<span style="font-size: .9rem;">@GetShortHourString(ev.StartTime)</span>
+							<span style="font-size: .6rem;">@ev.Client.DisplayName</span>
+						</div>
 		}
 	</div>
 </div>

@@ -49,7 +49,7 @@ namespace RevXApi.Controllers
 			invoice.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			InvoiceEmailModel emailModel = _invoiceData.PrepareEmailModel(invoice);
 			emailModel.Id = _invoiceData.SaveInvoice(invoice);
-			var status = _emailService.SendInvoiceEmail(_config[ "EmailConfig:SecretaryEmail" ], emailModel);
+			var status = _emailService.SendInvoiceEmail(emailModel);
 			if (status.Exception is null)
 			{
 				return Ok();

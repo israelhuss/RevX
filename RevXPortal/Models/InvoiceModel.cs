@@ -16,5 +16,7 @@ namespace RevXPortal.Models
 		public double Rate { get; set; }
 		public double Total { get; set; }
 		public string Signature { get; set; }
+		public string SentTo { get; set; }
+		public string CC { get; set; }
 	}
 }

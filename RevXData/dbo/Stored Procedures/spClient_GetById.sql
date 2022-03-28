@@ -1,9 +1,9 @@
-﻿CREATE PROCEDURE [dbo].[spStudent_GetById]
+﻿CREATE PROCEDURE [dbo].[spClient_GetById]
 	@Id int,
 	@UserId nvarchar(128)
 AS
 BEGIN
 	SELECT [Id], [UserId], [FirstName], [LastName], [Enabled]
-	FROM dbo.Student
+	FROM dbo.Client
 	WHERE Id = @Id AND UserId = @UserId;
 END

@@ -7,6 +7,6 @@ namespace RevXApi.Library.Services
 	public interface IEmailService
 	{
 		Task SendEmail();
-		Task<SendResponse> SendInvoiceEmail(string emailAddress, InvoiceEmailModel emailModel);
+		Task<SendResponse> SendInvoiceEmail(InvoiceEmailModel emailModel);
 	}
 }

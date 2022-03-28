@@ -6,7 +6,7 @@ namespace RevXPortal.Models
 	{
 		public int Id { get; set; }
 		public string UserId { get; set; }
-		public StudentModel Student { get; set; }
+		public ClientModel Client { get; set; }
 		public DateTime Date { get; set; }
 		public string StartTime { get; set; }
 		public string EndTime { get; set; }

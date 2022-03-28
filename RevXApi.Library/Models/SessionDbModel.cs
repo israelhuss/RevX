@@ -6,7 +6,7 @@ namespace RevXApi.Library.Models
 	{
 		public int Id { get; set; }
 		public string UserId { get; set; }
-		public int StudentId { get; set; }
+		public int ClientId { get; set; }
 		public DateTime Date { get; set; }
 		public TimeSpan StartTime { get; set; }
 		public TimeSpan EndTime { get; set; }

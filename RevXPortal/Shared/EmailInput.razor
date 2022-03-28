@@ -1,0 +1,134 @@
+﻿@inject IJSRuntime jsRuntime
+
+<style>
+	.email-input-box {
+		padding: 0.375rem;
+		border-bottom: 1px solid #dbdada;
+		margin-bottom: .75rem;
+		/*border-radius: 5px;*/
+		display: flex;
+		flex-wrap: wrap;
+	}
+
+	.email-input_input {
+		border: none;
+		outline: none;
+		flex: 1;
+		padding: 0 0.5rem;
+	}
+
+	.address-box {
+		padding: 0 0.5rem;
+		border: 1px solid #dedede;
+		border-radius: 50px;
+		display: flex;
+	}
+
+	.address-box:not(:last-of-type) {
+		margin-right: 5px;
+	}
+
+	.address-span {
+		font-size: 0.9rem;
+		line-height: 1.5rem;
+	}
+
+	.email-input-placeholder {
+		margin-right: 5px;
+		color: #484848;
+	}
+
+	.email-remove {
+		line-height: 1.5rem;
+		margin: 0 0 0 5px;
+		cursor: pointer;
+		font-size: 1.1rem;
+	}
+
+	.email-remove:hover {
+		color: #000;
+	}
+
+</style>
+
+<div class="email-input-box">
+	<div class="email-input-placeholder">@PlaceHolder</div>
+	@foreach (var address in Addresses)
+	{
+		<div class="address-box">
+			<span class="address-span">
+				@address
+			</span>
+			<div class="email-remove" @onclick="(() => RemoveAddress(address))">x</div>
+		</div>
+	}
+	<input class="email-input_input" type="text" @oninput="InputChanged" @onkeyup="@KeyUp" @bind-value="InputValue" />
+</div>
+
+
+@code {
+	[Parameter]
+	public List<string> Addresses { get; set; }
+
+	[Parameter]
+	public string PlaceHolder { get; set; }
+
+	[Parameter]
+	public EventCallback<List<string>> AddressListChanged { get; set; }	
+
+	protected override void OnParametersSet()
+	{
+		if (Addresses is null)
+		{
+			Addresses = new List<string>();
+		}
+
+		if (PlaceHolder is null)
+		{
+			PlaceHolder = "To";
+		}
+	}
+
+	private bool ValidateEmail(string str)
+	{
+		Regex regex = new Regex("(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])");
+		return regex.IsMatch(str);
+	}
+
+
+	public string InputValue { get; set; }
+	private void InputChanged(ChangeEventArgs args)
+	{
+		InputValue = args.Value.ToString();
+	}
+
+	private void KeyUp(KeyboardEventArgs e)
+	{
+		if (e.Key == "Enter" || e.Key == " ")
+		{
+			bool isValidEmail = ValidateEmail(InputValue);
+			if (isValidEmail)
+			{
+				Addresses.Add(InputValue);
+				AddressListChanged.InvokeAsync(Addresses);
+				InputValue = "";
+			}
+		} 
+		else if (e.Key == "Backspace")
+		{
+			if (InputValue == "")
+			{
+				if (Addresses.Count > 0)
+				{
+					Addresses.RemoveAt(Addresses.Count - 1);
+					AddressListChanged.InvokeAsync(Addresses);
+				}
+			}
+		}
+	}
+
+	private void RemoveAddress(string address)
+	{
+		Addresses.Remove(address);
+	}
+}

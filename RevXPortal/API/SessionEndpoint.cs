@@ -29,7 +29,7 @@ namespace RevXPortal.API
 							{
 								Id = result.Id,
 								UserId = result.UserId,
-								Student = result.Student,
+								Client = result.Client,
 								Date = result.Date,
 								StartTime = TimeConverters.Convert24HourStringToTimeSpan(result.StartTime),
 								EndTime = TimeConverters.Convert24HourStringToTimeSpan(result.EndTime),
@@ -73,7 +73,7 @@ namespace RevXPortal.API
 		{
 			//SessionDbModel dbModel = new()
 			//{
-			//	StudentId = model.Student.Id,
+			//	ClientId = model.Client.Id,
 			//	Date = model.Date,
 			//	StartTime = ConvertToTimeSpan(model.StartTime),
 			//	EndTime = ConvertToTimeSpan(model.EndTime),

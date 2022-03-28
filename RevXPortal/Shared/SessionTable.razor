@@ -1,4 +1,6 @@
-﻿@using System.Globalization
+﻿@inject IJSRuntime jsRuntime
+
+@using System.Globalization
 <style>
 	.session-table-outer {
 		max-height: 90vh;
@@ -25,7 +27,7 @@
 		<table class="table table-bordered table-striped">
 			<thead>
 				<tr>
-					<th>Student</th>
+					<th>@(WorkplaceInfo is not null && WorkplaceInfo.ClientNickname is not null ? WorkplaceInfo.ClientNickname : "Client")</th>
 					<th>Date</th>
 					<th>Duration</th>
 				</tr>
@@ -34,7 +36,7 @@
 				@foreach (var session in Sessions)
 				{
 					<tr>
-						<td>@session.Student.DisplayName</td>
+						<td>@session.Client.DisplayName</td>
 						<td>@(DateOnly.FromDateTime(session.Date))</td>
 						<td>@((session.EndTime - session.StartTime).ToString("hh\\:mm").TrimStart(new Char[] { '0' }))</td>
 					</tr>
@@ -47,6 +49,14 @@
 
 
 @code {
+	[CascadingParameter]
+	public WorkplaceModel WorkplaceInfo { get; set; }
+
 	[Parameter]
 	public List<ManageSessionModel> Sessions { get; set; }
+
+	protected override void OnParametersSet()
+	{
+		jsRuntime.InvokeVoidAsync("log", WorkplaceInfo?.ClientNickname);
+	}
 }

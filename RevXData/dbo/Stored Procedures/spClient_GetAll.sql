@@ -1,10 +1,10 @@
-﻿CREATE PROCEDURE [dbo].[spStudent_GetEnabled]
+﻿CREATE PROCEDURE [dbo].[spClient_GetAll]
 	@UserId nvarchar(128)
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	SELECT [Id], [UserId], [FirstName], [LastName], [Enabled]
-	FROM dbo.Student
-	WHERE [Enabled] = 1 AND USerId = @UserId;
+	FROM dbo.Client
+	WHERE UserId = @UserId
 END

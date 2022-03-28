@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using FluentEmail.Core;
+using FluentEmail.Core.Models;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using RazorEngine;
 using RazorEngine.Templating;
@@ -18,16 +20,18 @@ namespace RevXApi.Library.DataAccess
 		private readonly ISessionData _sessionData;
 		private readonly IUserData _userData;
 		private readonly IHourlyRateData _rateData;
+		private readonly IWorkplaceData _workplaceData;
 		private readonly ILogger<InvoiceData> _logger;
 		private readonly IConfiguration _config;
 		private readonly string _documentLocationRoot;
 
-		public InvoiceData(ISqlDataAccess sql, ISessionData sessionData, IUserData userData, IHourlyRateData rateData, ILogger<InvoiceData> logger, IConfiguration config)
+		public InvoiceData(ISqlDataAccess sql, ISessionData sessionData, IUserData userData, IHourlyRateData rateData, IWorkplaceData workplaceData, ILogger<InvoiceData> logger, IConfiguration config)
 		{
 			_sql = sql;
 			_sessionData = sessionData;
 			_userData = userData;
 			_rateData = rateData;
+			_workplaceData = workplaceData;
 			_logger = logger;
 			_config = config;
 			_documentLocationRoot = _config[ "EmailConfig:DocumentTemplateLocationRoot" ];
@@ -76,8 +80,13 @@ namespace RevXApi.Library.DataAccess
 
 			// Get the Name of employee
 			UserModel employee = _userData.GetUserById(invoice.UserId);
+			WorkplaceModel WorkplaceInfo = _workplaceData.GetCurrentUserInfo(employee.Id);
 			string employeeName = $"{employee.FirstName} {employee.LastName}";
 			output.FullName = employeeName;
+			output.FromAddress = employee.EmailAddress;
+			output.ToAddress = invoice.SentTo.Split(";").Select(s => new Address(s)).ToList();
+			output.CC = invoice.CC?.Split(";").Select(s => new Address(s)).ToList();
+			output.ClientNickname = WorkplaceInfo.ClientNickname;
 
 			// Get the full session models, and change to email model
 			output.InvoiceSessions = new();
@@ -86,7 +95,7 @@ namespace RevXApi.Library.DataAccess
 				var temp = _sessionData.GetById(item, invoice.UserId);
 				SessionEmailModel model = new()
 				{
-					Student = $"{temp.Student.FirstName} {temp.Student.LastName}",
+					Client = $"{temp.Client.FirstName} {temp.Client.LastName}",
 					Date = temp.Date,
 					StartTime = TimeSpan.Parse(temp.StartTime),
 					EndTime = TimeSpan.Parse(temp.EndTime),
@@ -96,7 +105,7 @@ namespace RevXApi.Library.DataAccess
 			}
 
 			// Calculate the invoicing period
-			output.InvoicePeriod = CalculateInvoicePeriod(output);
+			output.InvoicePeriod = CalculateInvoicePeriod(output, employee.BillingCycleId);
 
 			return output;
 
@@ -116,7 +125,7 @@ namespace RevXApi.Library.DataAccess
 				}
 				else
 				{
-					keyValuePairs.Add($"{month}-{year}-{session.ProviderId}", new List<SessionDbModel> {session});
+					keyValuePairs.Add($"{month}-{year}-{session.ProviderId}", new List<SessionDbModel> { session });
 				}
 			}
 			List<InvoiceModel> output = new();
@@ -130,7 +139,7 @@ namespace RevXApi.Library.DataAccess
 				invoice.EndDate = month.Last().Date;
 				invoice.Rate = _rateData.GetByDate(invoice.StartDate, invoice.UserId, month.First().ProviderId).Rate;
 				invoice.ProviderId = month.First().ProviderId;
-				invoice.TotalHours = month.Select(s => (s.EndTime - s.StartTime).TotalHours).Sum();
+				invoice.TotalHours = month.Select(s => ( s.EndTime - s.StartTime ).TotalHours).Sum();
 				invoice.Total = invoice.Rate * invoice.TotalHours;
 				output.Add(invoice);
 			}
@@ -142,11 +151,11 @@ namespace RevXApi.Library.DataAccess
 			InvoiceEmailModel model = _sql.LoadData<InvoiceEmailModel, dynamic>("spInvoice_Lookup", new { InvoiceId = id, UserId = userId }, "RevXData").FirstOrDefault();
 			if (model == null)
 			{
-				return new byte[0];
+				return new byte[ 0 ];
 			}
-			model.InvoiceSessions = _sql.Query<SessionEmailModel>($"SELECT se.Id, CONCAT(st.FirstName, ' ', st.LastName) as Student, se.[Date], se.StartTime, se.EndTime, se.Notes FROM Session se JOIN Student st ON se.StudentId = st.Id WHERE se.InvoiceId = {id} AND se.UserId = '{userId}'", "RevXData");
-			model.InvoicePeriod = CalculateInvoicePeriod(model);
+			model.InvoiceSessions = _sql.Query<SessionEmailModel>($"SELECT se.Id, CONCAT(cl.FirstName, ' ', cl.LastName) as Client, se.[Date], se.StartTime, se.EndTime, se.Notes FROM Session se JOIN Client cl ON se.ClientId = cl.Id WHERE se.InvoiceId = {id} AND se.UserId = '{userId}'", "RevXData");
 			UserModel user = _userData.GetUserById(userId);
+			model.InvoicePeriod = CalculateInvoicePeriod(model, user.BillingCycleId);
 			model.FullName = user.FirstName + " " + user.LastName;
 			string template = File.ReadAllText(_documentLocationRoot + "/InvoiceDocument.cshtml");
 			string result = Engine.Razor.RunCompile(template, DateTime.Now.ToString(), null, model);
@@ -169,10 +178,10 @@ namespace RevXApi.Library.DataAccess
 		{
 			InvoiceEmailModel model = _sql.LoadData<InvoiceEmailModel, dynamic>("spInvoice_Lookup", new { InvoiceId = id, UserId = userId }, "RevXData").FirstOrDefault();
 			_logger.LogInformation("model was set to {0}", model.Id);
-			model.InvoiceSessions = _sql.Query<SessionEmailModel>($"SELECT se.Id, CONCAT(st.FirstName, ' ', st.LastName) as Student, se.[Date], se.StartTime, se.EndTime, se.Notes FROM Session se JOIN Student st ON se.StudentId = st.Id WHERE se.InvoiceId = {id} AND se.UserId = '{userId}'", "RevXData");
-			model.InvoicePeriod = CalculateInvoicePeriod(model);
-			model.Signature = signature;
+			model.InvoiceSessions = _sql.Query<SessionEmailModel>($"SELECT se.Id, CONCAT(cl.FirstName, ' ', cl.LastName) as Client, se.[Date], se.StartTime, se.EndTime, se.Notes FROM Session se JOIN Client cl ON se.ClientId = cl.Id WHERE se.InvoiceId = {id} AND se.UserId = '{userId}'", "RevXData");
 			UserModel user = _userData.GetUserById(userId);
+			model.InvoicePeriod = CalculateInvoicePeriod(model, user.BillingCycleId);
+			model.Signature = signature;
 			model.FullName = user.FirstName + " " + user.LastName;
 			_logger.LogInformation("Trying to get the template from {0}", _documentLocationRoot + "/InvoiceDocumentSignature.cshtml");
 			string template = File.ReadAllText(_documentLocationRoot + "/InvoiceDocumentSignature.cshtml");
@@ -192,22 +201,41 @@ namespace RevXApi.Library.DataAccess
 			return res;
 		}
 
-		private string CalculateInvoicePeriod(InvoiceEmailModel model)
+		private string CalculateInvoicePeriod(InvoiceEmailModel model, int billingCycleId)
 		{
-			// Calculate the invoicing period
-			List<string> tempMonth = new();
-			List<string> tempYear = new();
-			foreach (var item in model.InvoiceSessions)
+			if (billingCycleId == (int)BillingCycles.Monthly)
 			{
-				tempMonth.Add(item.Date.ToString("MMMM"));
-				tempYear.Add(item.Date.Year.ToString());
+
+				// Calculate the invoicing period
+				List<string> tempMonth = new();
+				List<string> tempYear = new();
+				foreach (var item in model.InvoiceSessions)
+				{
+					tempMonth.Add(item.Date.ToString("MMMM"));
+					tempYear.Add(item.Date.Year.ToString());
+				}
+				var monthString = String.Join(" - ", tempMonth.Distinct());
+				var yearString = String.Join(" - ", tempYear.Distinct());
+
+				string period = $"{monthString} {yearString}";
+				return period;
 			}
-			var monthString = String.Join(" - ", tempMonth.Distinct());
-			var yearString = String.Join(" - ", tempYear.Distinct());
+			else
+			{
+				model.InvoiceSessions.Sort((a, b) => a.Date.CompareTo(b.Date));
+				var start = model.InvoiceSessions[ 0 ].Date;
+				var end = model.InvoiceSessions[ model.InvoiceSessions.Count - 1 ].Date;
+				if (start == end)
+				{
+					return start.ToShortDateString();
+				}
+				else
+				{
+					string period = $"{start.ToShortDateString()} - {end.ToShortDateString()}";
+					return period;
+				}
+			}
 
-			string period = $"{monthString} {yearString}";
-
-			return period;
 		}
 
 		private string Convert24HourTo12Hour(string twentyfour)

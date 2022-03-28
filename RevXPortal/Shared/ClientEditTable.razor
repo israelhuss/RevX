@@ -1,0 +1,178 @@
+﻿@inject IJSRuntime jsRuntime
+@inject IClientEndpoint _clientEndpoint
+
+
+@if (clients is not null)
+{
+	<EditTable>
+		<thead>
+			<tr>
+				<th></th>
+				@foreach (var col in new List<string>() { "First Name", "Last Name" })
+				{
+					<th>@col</th>
+				}
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var client in clients)
+			{
+				<tr>
+					<td>
+						<Switch TValue="ClientModel" Item="client" ValueChanged="OnSwitchChange"></Switch>
+					</td>
+					<td class="@(client.Enabled ? "" : "disabled")">
+						@if (client.isEditMode && ElementEditing == "First")
+						{
+							<div class="edit-table-td">
+
+								<input class="form-control" type="text" @bind-value="client.FirstName" @onfocusout="() => DoneEditing(client)" style="width:70%; margin: auto;" />
+							</div>
+						}
+						else
+						{
+							<div class="edit-table-td" @ondblclick="@(() => YouClickedMe(client, "First"))" style="min-height: 15px">
+								@client.FirstName
+							</div>
+						}
+					</td>
+					<td class="@(client.Enabled ? "" : "disabled")">
+						@if (client.isEditMode && ElementEditing == "Last")
+						{
+							<div class="edit-table-td">
+
+								<input class="form-control" type="text" @bind-value="client.LastName" @onfocusout="() => DoneEditing(client)" style="width:70%; margin: auto;" />
+							</div>
+						}
+						else
+						{
+							<div class="edit-table-td" @ondblclick="@(() => YouClickedMe(client, "Last"))" style="min-height: 15px">
+								@client.LastName
+							</div>
+						}
+					</td>
+				</tr>
+
+			}
+			<tr>
+				<td class="additional"></td>
+				<td class="additional">
+					@if (additionalClient.isEditMode)
+					{
+						<div class="edit-table-td">
+							<input class="form-control" type="text" @bind-value="additionalClient.FirstName" @onfocusout="() => DoneCreating(additionalClient)" style="width:70%; margin: auto;" />
+						</div>
+					}
+					else
+					{
+						<div class="edit-table-td" @ondblclick="@(() => YouClickedMe(additionalClient, ""))" style="min-height: 15px">
+							@additionalClient.FirstName
+						</div>
+					}
+				</td>
+				<td class="additional">
+					@if (additionalClient.isEditMode)
+					{
+						<div class="edit-table-td">
+
+							<input class="form-control" type="text" @bind-value="additionalClient.LastName" @onfocusout="() => DoneCreating(additionalClient)" style="width:70%; margin: auto;" />
+						</div>
+					}
+					else
+					{
+						<div class="edit-table-td" @ondblclick="@(() => YouClickedMe(additionalClient, ""))" style="min-height: 15px">
+							@additionalClient.LastName
+						</div>
+					}
+				</td>
+			</tr>
+		</tbody>
+	</EditTable>
+}
+else
+{
+	<div class="empty-table-cell grid-cell" style="position: relative; height: 85%; z-index: 0">
+		<LoadingIndicator />
+	</div>
+}
+@code {
+	[CascadingParameter]
+	public List<ClientModel> clients { get; set; }
+
+	[CascadingParameter]
+	public WorkplaceModel WorkplaceInfo { get; set; }
+
+	public IEditTable ClientTableData { get; set; }
+
+	public string ElementEditing { get; set; }
+
+	private ClientModel additionalClient { get; set; } = new();
+
+	protected override void OnParametersSet()
+	{
+		clients.Sort((a, b) =>
+				{
+					return a.Enabled ? -1 : 1;
+				});
+	}
+
+	public void YouClickedMe(ClientModel client, string el)
+	{
+		if (client.Enabled || client.FirstName is null)
+		{
+			ElementEditing = el;
+			client.isEditMode = true;
+			jsRuntime.InvokeVoidAsync("log", client);
+		}
+		else
+		{
+			jsRuntime.InvokeVoidAsync("log", client);
+		}
+	}
+
+	public async void OnSwitchChange(ClientModel e)
+	{
+		await jsRuntime.InvokeVoidAsync("log", e);
+		await _clientEndpoint.Edit(e);
+		await RefreshClientList();
+	}
+
+	public async void DoneEditing(ClientModel client)
+	{
+		client.isEditMode = false;
+		await _clientEndpoint.Edit(client);
+		await RefreshClientList();
+	}
+
+	public async void DoneCreating(ClientModel client)
+	{
+		if (( client.FirstName is null || client.FirstName == "" ) && client.LastName is null || client.LastName == "")
+		{
+			client.isEditMode = false;
+			additionalClient = new();
+		}
+		else if (client.FirstName is not null && client.LastName is not null)
+		{
+			await jsRuntime.InvokeVoidAsync("log", additionalClient);
+			client.isEditMode = false;
+			await _clientEndpoint.Add(client);
+			additionalClient = new();
+			await RefreshClientList();
+		}
+		else
+		{
+			await jsRuntime.InvokeVoidAsync("log", "Waiting you should finish");
+			await jsRuntime.InvokeVoidAsync("log", client);
+		}
+	}
+
+	private async Task RefreshClientList()
+	{
+		clients = await _clientEndpoint.GetAll();
+		clients.Sort((a, b) =>
+				{
+					return a.Enabled ? -1 : 1;
+				});
+		StateHasChanged();
+	}
+}

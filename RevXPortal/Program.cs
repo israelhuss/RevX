@@ -22,7 +22,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseAddr
 
 
 //Endpoints
-builder.Services.AddTransient<IStudentEndpoint, StudentEndpoint>();
+builder.Services.AddTransient<IClientEndpoint, ClientEndpoint>();
 builder.Services.AddTransient<ISessionEndpoint, SessionEndpoint>();
 builder.Services.AddTransient<IInvoiceEndpoint, InvoiceEndpoint>();
 builder.Services.AddTransient<IProviderEndpoint, ProviderEndpoint>();
@@ -30,6 +30,7 @@ builder.Services.AddTransient<IBillingStatusEndpoint, BillingStatusEndpoint>();
 builder.Services.AddTransient<IReportEndpoint, ReportEndpoint>();
 builder.Services.AddTransient<IHourlyRateEndpoint, HourlyRateEndpoint>();
 builder.Services.AddTransient<IUserEndpoint, UserEndpoint>();
+builder.Services.AddTransient<IWorkplaceEndpoint, WorkplaceEndpoint>();
 
 await builder.Build().RunAsync();
 
@@ -56,7 +57,7 @@ await builder.Build().RunAsync();
 //			builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseAddress) });
 
 //			//Endpoints
-//			builder.Services.AddTransient<IStudentEndpoint, StudentEndpoint>();
+//			builder.Services.AddTransient<IClientEndpoint, ClientEndpoint>();
 //			builder.Services.AddTransient<ISessionEndpoint, SessionEndpoint>();
 //			builder.Services.AddTransient<IInvoiceEndpoint, InvoiceEndpoint>();
 //			builder.Services.AddTransient<IProviderEndpoint, ProviderEndpoint>();

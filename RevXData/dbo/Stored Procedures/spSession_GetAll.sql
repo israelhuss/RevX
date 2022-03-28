@@ -3,7 +3,7 @@
 AS	
 BEGIN
 	SET NOCOUNT ON
-	SELECT [Id], [UserId], [StudentId], [Date], [StartTime], [EndTime], [ProviderId], [BillingStatusId], [InvoiceId], [Notes]
+	SELECT [Id], [UserId], [ClientId], [Date], [StartTime], [EndTime], [ProviderId], [BillingStatusId], [InvoiceId], [Notes]
 	FROM dbo.[Session]
 	WHERE UserId = @UserId
 	ORDER BY [Date] , [StartTime]

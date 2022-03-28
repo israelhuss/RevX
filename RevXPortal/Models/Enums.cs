@@ -20,4 +20,11 @@
 		CenteredSlant,
 		UnderLine
 	}
+
+	public enum BillingCycles
+	{
+		Monthly = 1,
+		Biweeky = 2,
+		Weekly = 3,
+	}
 }

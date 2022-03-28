@@ -4,70 +4,72 @@
 @inject IProviderEndpoint _providerEndpoint
 @inject IJSRuntime jsRuntime
 
-<ChartBase RowCount="5" Lables="LablesList" FooterLabelStyle="FooterStyles.UnderLine" Values="Values" SkipFirstFooterLabel="true">
+@*<ChartBase RowCount="5" Lables="LablesList" FooterLabelStyle="FooterStyles.UnderLine" Values="Values" SkipFirstFooterLabel="true">
 	<ChartContent>
-		<LineChart Values="Values" TooltipValues="GetTooltipValues()"></LineChart>
+	<LineChart Values="Values" TooltipValues="GetTooltipValues()"></LineChart>
 	</ChartContent>
-</ChartBase>
-
+	</ChartBase>
+*@
 @*<PieChart Data="Values" TootlipData="Values.Select(v => v.ToString()).ToList()" NoText="true"></PieChart>*@
 
-<ChartBase RowCount="5" Lables="LablesList" FooterLabelStyle="FooterStyles.CenteredSlant" Values="Values">
-	<ChartHeader>
-		@if (ReportData is not null)
-		{
-			<div>
-				<div>School Hours - @ReportData.Select(d => (d.SchoolEncore.Hours * d.SchoolEncore.Rate) + (d.SchoolLegadel.Hours * d.SchoolLegadel.Rate)).Sum().ToString("C")</div>
-				<div>After School Hours - @ReportData.Select(d => (d.AfterEncore.Hours * d.AfterEncore.Rate) + (d.AfterLegadel.Hours * d.AfterLegadel.Rate)).Sum().ToString("C")</div>
-			</div>
-			<div style="display: flex;">
-				<div style="padding: .5rem;">
-					<div style="display: flex; align-items: center; padding-bottom: 7px;">
-						<div style="width: 12px; height: 12px; background-color: #1365fc; margin-right: 5px;"></div>
-						<p style="margin: 0; line-height:1;">School Hours / Encore</p>
+<div style="padding: 2rem;">
+	<ChartBase RowCount="5" Lables="LablesList" FooterLabelStyle="FooterStyles.Centered" Values="Values" SkipFirstFooterLabel="false">
+		<ChartHeader>
+			@if (ReportData is not null)
+			{
+				<div>
+					<div>School Hours - @ReportData.Select(d => (d.SchoolEncore.Hours * d.SchoolEncore.Rate) + (d.SchoolLegadel.Hours * d.SchoolLegadel.Rate)).Sum().ToString("C")</div>
+					<div>After School Hours - @ReportData.Select(d => (d.AfterEncore.Hours * d.AfterEncore.Rate) + (d.AfterLegadel.Hours * d.AfterLegadel.Rate)).Sum().ToString("C")</div>
+				</div>
+				<div style="display: flex;">
+					<div style="padding: .5rem;">
+						<div style="display: flex; align-items: center; padding-bottom: 7px;">
+							<div style="width: 12px; height: 12px; background-color: #1365fc; margin-right: 5px;"></div>
+							<p style="margin: 0; line-height:1;">School Hours / Encore</p>
+						</div>
+						<div style="display: flex; align-items: center; padding-bottom: 7px;">
+							<div style="width: 12px; height: 12px; background-color: #6299ff; margin-right: 5px;"></div>
+							<p style="margin: 0; line-height:1;">School Hours / @(Providers.Where(p => secondaryProviderMatch.IsMatch(p.DisplayName)).FirstOrDefault().Name)</p>
+						</div>
 					</div>
-					<div style="display: flex; align-items: center; padding-bottom: 7px;">
-						<div style="width: 12px; height: 12px; background-color: #6299ff; margin-right: 5px;"></div>
-						<p style="margin: 0; line-height:1;">School Hours / @(Providers.Where(p => secondaryProviderMatch.IsMatch(p.DisplayName)).FirstOrDefault().Name)</p>
+					<div style="padding: .5rem;">
+						<div style="display: flex; align-items: center; padding-bottom: 7px;">
+							<div style="width: 12px; height: 12px; background-color: #298a00; margin-right: 5px;"></div>
+							<p style="margin: 0; line-height:1;">After School Hours / Encore</p>
+						</div>
+						<div style="display: flex; align-items: center; padding-bottom: 7px;">
+							<div style="width: 12px; height: 12px; background-color: #4dac25; margin-right: 5px;"></div>
+							<p style="margin: 0; line-height:1;">After School Hours / @(Providers.Where(p => secondaryProviderMatch.IsMatch(p.DisplayName)).FirstOrDefault().Name)</p>
+						</div>
 					</div>
 				</div>
-				<div style="padding: .5rem;">
-					<div style="display: flex; align-items: center; padding-bottom: 7px;">
-						<div style="width: 12px; height: 12px; background-color: #298a00; margin-right: 5px;"></div>
-						<p style="margin: 0; line-height:1;">After School Hours / Encore</p>
-					</div>
-					<div style="display: flex; align-items: center; padding-bottom: 7px;">
-						<div style="width: 12px; height: 12px; background-color: #4dac25; margin-right: 5px;"></div>
-						<p style="margin: 0; line-height:1;">After School Hours / @(Providers.Where(p => secondaryProviderMatch.IsMatch(p.DisplayName)).FirstOrDefault().Name)</p>
-					</div>
-				</div>
-			</div>
-		}
-	</ChartHeader>
-	<ChartContent>
-		@if (ReportData is not null)
-		{
-			<StackedBarChart>
-				@foreach (var dataPoint in ReportData)
-				{
-					<BarGroup>
-						<BarOne>
-							<StackedBar StackOne="dataPoint.SchoolEncore.Hours * dataPoint.SchoolEncore.Rate" StackTwo="dataPoint.SchoolLegadel.Hours * dataPoint.SchoolLegadel.Rate" Color="#1365fc"></StackedBar>
-						</BarOne>
-						<BarTwo>
-							<StackedBar StackOne="dataPoint.AfterEncore.Hours * dataPoint.AfterEncore.Rate" StackTwo="dataPoint.AfterLegadel.Hours * dataPoint.AfterLegadel.Rate" Color="#298a00"></StackedBar>
-						</BarTwo>
-					</BarGroup>
-				}
-			</StackedBarChart>
-		}
-	</ChartContent>
-</ChartBase>
+			}
+		</ChartHeader>
+		<ChartContent>
+			@if (ReportData is not null)
+			{
+				<StackedBarChart>
+					@foreach (var dataPoint in ReportData)
+					{
+						<BarGroup>
+							<BarOne>
+								<StackedBar StackOne="dataPoint.SchoolEncore.Hours * dataPoint.SchoolEncore.Rate" StackTwo="dataPoint.SchoolLegadel.Hours * dataPoint.SchoolLegadel.Rate" Color="#1365fc"></StackedBar>
+							</BarOne>
+							<BarTwo>
+								<StackedBar StackOne="dataPoint.AfterEncore.Hours * dataPoint.AfterEncore.Rate" StackTwo="dataPoint.AfterLegadel.Hours * dataPoint.AfterLegadel.Rate" Color="#298a00"></StackedBar>
+							</BarTwo>
+						</BarGroup>
+					}
+				</StackedBarChart>
+			}
+		</ChartContent>
+	</ChartBase>
+</div>
 
 
 
 @code {
-	public List<string> LablesList { get; set; } = new() { "", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+	public List<string> LablesList { get; set; } = new();
 	public List<InvoiceModel> Invoices { get; set; }
 	public List<ProviderModel> Providers { get; set; }
 	public List<IGrouping<DateOnly, InvoiceModel>> InvoicesByMonth { get; set; }
@@ -85,9 +87,10 @@
 		Sessions = await _sessionEndpoint.GetAll();
 		Providers = await _providerEndpoint.GetAll();
 		InvoicesByMonth = Invoices.GroupBy(i => new DateOnly(i.StartDate.Year, i.StartDate.Month, 1)).ToList();
+		InvoicesByMonth = InvoicesByMonth.Where(i => i.Key > new DateOnly(2021, 8, 15)).ToList();
 		InvoicesByMonth.Sort((a, b) => a.Key < b.Key ? -1 : 1);
 		//LablesList = Invoices.Select(i => i.StartDate.ToString("MMM")).ToList();
-		LablesList = InvoicesByMonth.Select(i => i.Key.ToString("MMM yyyy")).ToList();
+		LablesList = InvoicesByMonth.Select(i => i.Key.ToString("MMMM yyyy")).ToList();
 		await jsRuntime.InvokeVoidAsync("log", JsonSerializer.Serialize(Invoices));
 		ReportData = GetSchoolAndAfterSchoolData();
 		Values = GetValuesFromReportData();

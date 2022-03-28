@@ -1,6 +1,6 @@
 ﻿namespace RevXApi.Library.Models
 {
-	public class StudentModel
+	public class ClientModel
 	{
 		public int Id { get; set; }
 		public string UserId { get; set; }

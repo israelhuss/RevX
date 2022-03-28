@@ -13,22 +13,22 @@ namespace RevXPortal.Converters
 
 	// NOT IN USE!!!
 
-	public class StudentConverter : TypeConverter
+	public class ClientConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 		{
 			return sourceType == typeof(string) || base.CanConvertFrom(context, sourceType);
 		}
 
-		public override StudentModel ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+		public override ClientModel ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			var result = new StudentModel();
+			var result = new ClientModel();
 			var split = value.ToString().Split(',');
 			if (split is not null && split.Length == 3)
 			{
-				result.Id = int.Parse(split[0]);
-				result.FirstName = split[1];
-				result.LastName = split[2];
+				result.Id = int.Parse(split[ 0 ]);
+				result.FirstName = split[ 1 ];
+				result.LastName = split[ 2 ];
 
 				return result;
 			}

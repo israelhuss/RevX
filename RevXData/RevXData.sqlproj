@@ -22,6 +22,7 @@
     <SqlServerVerification>False</SqlServerVerification>
     <IncludeCompositeObjects>True</IncludeCompositeObjects>
     <TargetDatabaseSet>True</TargetDatabaseSet>
+    <IncludeSchemaNameInFileName>False</IncludeSchemaNameInFileName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release\</OutputPath>
@@ -65,13 +66,13 @@
     <Build Include="dbo\Tables\Provider.sql" />
     <Build Include="dbo\Tables\Session.sql" />
     <Build Include="dbo\Tables\BillingStatus.sql" />
-    <Build Include="dbo\Tables\Student.sql" />
+    <Build Include="dbo\Tables\Client.sql" />
     <Build Include="dbo\Tables\SessionPlan.sql" />
     <Build Include="dbo\Stored Procedures\spSession_GetAll.sql" />
     <Build Include="dbo\Stored Procedures\spSession_Insert.sql" />
-    <Build Include="dbo\Stored Procedures\spStudent_GetAll.sql" />
-    <Build Include="dbo\Stored Procedures\spStudent_Insert.sql" />
-    <Build Include="dbo\Stored Procedures\spStudent_GetById.sql" />
+    <Build Include="dbo\Stored Procedures\spClient_GetAll.sql" />
+    <Build Include="dbo\Stored Procedures\spClient_Insert.sql" />
+    <Build Include="dbo\Stored Procedures\spClient_GetById.sql" />
     <Build Include="dbo\Stored Procedures\spProvider_GetAll.sql" />
     <Build Include="dbo\Stored Procedures\spProvider_GetById.sql" />
     <Build Include="dbo\Stored Procedures\spProvider_Insert.sql" />
@@ -90,8 +91,8 @@
     <Build Include="dbo\Stored Procedures\spSession_GetById.sql" />
     <Build Include="dbo\Tables\Rate.sql" />
     <Build Include="dbo\Stored Procedures\spReport_SchoolAndAfterSchool.sql" />
-    <Build Include="dbo\Stored Procedures\spStudent_Update.sql" />
-    <Build Include="dbo\Stored Procedures\spStudent_GetEnabled.sql" />
+    <Build Include="dbo\Stored Procedures\spClient_Update.sql" />
+    <Build Include="dbo\Stored Procedures\spClient_GetEnabled.sql" />
     <Build Include="dbo\Stored Procedures\spProvider_Update.sql" />
     <Build Include="dbo\Stored Procedures\spProvider_GetEnabled.sql" />
     <Build Include="dbo\Stored Procedures\spBillingStatus_Update.sql" />
@@ -106,6 +107,10 @@
     <Build Include="dbo\Tables\RateByProvider.sql" />
     <Build Include="dbo\Stored Procedures\spRates_GetUnique.sql" />
     <Build Include="dbo\Stored Procedures\spInvoice_GetAll.sql" />
+    <Build Include="dbo\Tables\Workplace.sql" />
+    <Build Include="dbo\Stored Procedures\spWorkplace_getAll.sql" />
+    <Build Include="dbo\Stored Procedures\spWorkplace_GetByUserId.sql" />
+    <Build Include="dbo\Tables\BillingCycle.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="RevXData.refactorlog" />

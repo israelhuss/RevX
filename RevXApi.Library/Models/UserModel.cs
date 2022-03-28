@@ -9,5 +9,6 @@ namespace RevXApi.Library.Models
 		public string LastName { get; set; }
 		public string EmailAddress { get; set; }
 		public DateTime CreatedDate { get; set; }
+		public int BillingCycleId { get; set; }
 	}
 }

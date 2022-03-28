@@ -1,263 +1,403 @@
 ﻿@inject IInvoiceEndpoint _invoiceEndpoint
+@inject IUserEndpoint _userEndpoint
 @inject IToastService toastService
 @inject NavigationManager NavManager
 @inject IJSRuntime jsRuntime
 
 
 <style>
-    .invoice-table-container {
-        border: solid 1px #626263;
-        border-radius: 4.5px;
-        text-align: center;
-        margin: 1rem;
-        overflow: hidden;
-    }
+	.invoice-table-container {
+		/*border: solid 1px #626263;*/
+		border-radius: 4.5px;
+		text-align: center;
+		margin: 1rem;
+		overflow: hidden;
+	}
 
-    .disabled {
-        color: lightgray;
-    }
+	.invoice-card-body-row {
+		margin-top: -1px;
+		border-top: solid 1px rgb(228, 228, 231);
+		display: flex;
+		padding: 1rem 3rem 1rem 0;
+		justify-content: space-between;
+		font-size: 1.6rem;
+		position: relative;
+	}
+
+	.invoice-row-icon {
+		color: #00d210;
+	}
+
+	.icon-container {
+		width: 3rem;
+		margin-right: 5px;
+	}
+
+	.disabled {
+		cursor: default !important;
+	}
+
+		.disabled:hover {
+		}
+
+	.modal {
+		overflow: auto;
+	}
+
+	.signature-box {
+		display: flex;
+		justify-content: flex-end;
+		padding: 1rem 0;
+	}
+
+	.email-box {
+		padding: 0 2rem 2rem;
+	}
 </style>
 @if (ShowDialog)
 {
-    <div class="modal show d-block" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-dialog-centered fade-in-and-grow" role="document" style="max-width: max-content;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Invoicing</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="Hide">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" id="modal-body">
-                    <div class="invoice-table-container" style="position:relative">
-                        @if (SavingInProgress)
-                        {
-                            <div style="height: 100%; width: 100%; position: absolute; top: 0; left: 0; z-index: 10000; background-color: rgb(16 16 16 / 0.75)">
-                                <div class="spinner-parent">
-                                    <div class="spinner spinner-border" style="border: .15em solid #ffffff; border-right-color: transparent"></div>
-                                    <div class="loading-text" style="color: #fff;">Saving Invoice</div>
-                                </div>
-                            </div>
-                        }
-                        <table class="table table-bordered table-striped" style="margin-top: -1px" @ref="TableRef">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th>Student</th>
-                                    <th>Date</th>
-                                    <th>Start Time</th>
-                                    <th>End Time</th>
-                                    <th>Notes</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in InvoicingItems.Where(i => disabledList.Find(x => i.Id == x.Id) == null).OrderBy(s => s.Date).ThenBy(s => s.StartTime))
-                                {
-                                    <tr>
-                                        <td>
-                                            <input class="checkbox" type="checkbox" checked @onchange="( (e) => CheckBoxClicked(e, item))">
-                                        </td>
-                                        <td>@item.Student.DisplayName</td>
-                                        <td>@item.Date.ToShortDateString()</td>
-                                        <td>@TimeConverters.ConvertTimeSpanTo12HourString(item.StartTime)</td>
-                                        <td>@TimeConverters.ConvertTimeSpanTo12HourString(item.EndTime)</td>
-                                        <td>@item.Notes</td>
-                                    </tr>
-                                }
-                                @foreach (var item in disabledList)
-                                {
-                                    <tr>
-                                        <td class="disabled">
-                                            <input class="checkbox" type="checkbox" disabled>
-                                        </td>
-                                        <td class="disabled">@item.Student.DisplayName</td>
-                                        <td class="disabled">@item.Date.ToShortDateString()</td>
-                                        <td class="disabled">@TimeConverters.ConvertTimeSpanTo12HourString(item.StartTime)</td>
-                                        <td class="disabled">@TimeConverters.ConvertTimeSpanTo12HourString(item.EndTime)</td>
-                                        <td class="disabled">@item.Notes</td>
-                                    </tr>
-                                }
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="6">
-                                        <div style="margin-left: auto; width: max-content;">
-                                            <div style=" display: flex; justify-content: space-between;">
-                                                <h6 style="margin-right: 0.6rem;">Total Hours: </h6>
-                                                <h6>@TotalHours</h6>
-                                            </div>
-                                            <div style=" display: flex; justify-content: space-between;">
-                                                <h6 style="margin-right: 0.6rem;">Rate: </h6>
-                                                <h6>@InvoicingItems[0].Rate.Rate.ToString("C")</h6>
-                                            </div>
-                                            <div style=" display: flex; justify-content: space-between;">
-                                                <h4 style="margin-right: 0.6rem;">Total: </h4>
-                                                <h4>@((InvoicingItems[0].Rate.Rate * TotalHours).ToString("C"))</h4>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <SignaturePad SignatureChanged="(data) => Signature = data"/>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="Hide">
-                        Cancel
-                    </button>
-                    <button type="button" class="btn btn-primary @(Signature is null || Signature == String.Empty ? "disabled" : "")" @onclick="InvoiceClicked">
-                        Invoice
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+	<div class="modal show d-block" tabindex="-1" role="dialog">
+		<div class="modal-dialog modal-dialog-centered fade-in-and-grow" role="document" style="max-width: max-content; min-width: 40rem;">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Invoicing</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="Hide">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body" id="modal-body">
+					<div class="invoice-table-container" style="position:relative">
+						@if (SavingInProgress)
+						{
+							<div style="height: 100%; width: 100%; position: absolute; top: 0; left: 0; z-index: 10000; background-color: rgb(16 16 16 / 0.75)">
+								<div class="spinner-parent">
+									<div class="spinner spinner-border" style="border: .15em solid #ffffff; border-right-color: transparent"></div>
+									<div class="loading-text" style="color: #fff;">Saving Invoice</div>
+								</div>
+							</div>
+						}
+						<div class="email-box">
+							<div style="text-align: left; margin-bottom: 0.5rem;">Email Invoice:</div>
+							<div class="email_to">
+								<EmailInput PlaceHolder="To" Addresses="@EmailToAddresses" AddressListChanged="((adr) => EmailToAddresses = adr)"></EmailInput>
+							</div>
+							<div class="email_cc">
+								<EmailInput PlaceHolder="CC" Addresses="@EmailCCAddresses" AddressListChanged="@((adr) => EmailCCAddresses = adr)"></EmailInput>
+							</div>
+						</div>
+						<AccordionContainer AllowMultiple="true">
+							<AccordionItem>
+								<Header>
+									<div class="invoice-card-body-row">
+										<div style="display: flex;">
+											<div class="icon-container">
+												<i class="far fa-clock invoice-row-icon"></i>
+											</div>
+											<div>Total Hours</div>
+										</div>
+										<div>@TotalHours</div>
+									</div>
+								</Header>
+								<Content>
+									<table class="table table-bordered table-striped" style="margin: 1rem; width: calc(100% - 2rem);" @ref="TableRef">
+										<thead>
+											<tr>
+												<th></th>
+												<th>@(WorkplaceInfo is not null && WorkplaceInfo.ClientNickname is not null ? WorkplaceInfo.ClientNickname : "Client")</th>
+												<th>Date</th>
+												<th>Start Time</th>
+												<th>End Time</th>
+												<th>Notes</th>
+											</tr>
+										</thead>
+										<tbody>
+											@foreach (var item in InvoicingItems.Where(i => disabledList.Find(x => i.Id == x.Id) == null).OrderBy(s => s.Date).ThenBy(s => s.StartTime))
+											{
+												<tr>
+													<td>
+														<input class="checkbox" type="checkbox" checked @onchange="( (e) => CheckBoxClicked(e, item))">
+													</td>
+													<td>@item.Client.DisplayName</td>
+													<td>@item.Date.ToShortDateString()</td>
+													<td>@TimeConverters.ConvertTimeSpanTo12HourString(item.StartTime)</td>
+													<td>@TimeConverters.ConvertTimeSpanTo12HourString(item.EndTime)</td>
+													<td>@item.Notes</td>
+												</tr>
+											}
+											@foreach (var item in disabledList)
+											{
+												<tr>
+													<td class="disabled">
+														<input class="checkbox" type="checkbox" disabled>
+													</td>
+													<td class="disabled">@item.Client.DisplayName</td>
+													<td class="disabled">@item.Date.ToShortDateString()</td>
+													<td class="disabled">@TimeConverters.ConvertTimeSpanTo12HourString(item.StartTime)</td>
+													<td class="disabled">@TimeConverters.ConvertTimeSpanTo12HourString(item.EndTime)</td>
+													<td class="disabled">@item.Notes</td>
+												</tr>
+											}
+										</tbody>
+										@*<tfoot>
+											<tr>
+											<td colspan="6">
+											<div style="margin-left: auto; width: max-content;">
+											<div style=" display: flex; justify-content: space-between;">
+											<h6 style="margin-right: 0.6rem;">Total Hours: </h6>
+											<h6>@TotalHours</h6>
+											</div>
+											<div style=" display: flex; justify-content: space-between;">
+											<h6 style="margin-right: 0.6rem;">Rate: </h6>
+											<h6>@InvoicingItems[0].Rate.Rate.ToString("C")</h6>
+											</div>
+											<div style=" display: flex; justify-content: space-between;">
+											<h4 style="margin-right: 0.6rem;">Total: </h4>
+											<h4>@((InvoicingItems[0].Rate.Rate * TotalHours).ToString("C"))</h4>
+											</div>
+											</div>
+											<div>
+											<SignaturePad SignatureChanged="(data) => Signature = data" />
+											</div>
+											</td>
+											</tr>
+											</tfoot>*@
+									</table>
+								</Content>
+							</AccordionItem>
+							<div class="invoice-card-body-row">
+								<div style="display: flex;">
+									<div class="icon-container">
+										<i class="fas fa-dollar-sign invoice-row-icon"></i>
+									</div>
+									<div>Hourly Rate</div>
+								</div>
+								<div>@InvoicingItems[0].Rate.Rate.ToString("C")</div>
+							</div>
+							<div class="invoice-card-body-row">
+								<div style="display: flex;">
+									<div class="icon-container">
+										<i class="fas fa-money-check-alt invoice-row-icon"></i>
+									</div>
+									<div>Invoice Total</div>
+								</div>
+								<div>@((InvoicingItems[0].Rate.Rate * TotalHours).ToString("C"))</div>
+							</div>
+						</AccordionContainer>
+						<div class="signature-box">
+							<SignaturePad SignatureChanged="(data) => Signature = data" />
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="Hide">
+						Cancel
+					</button>
+					<button type="button" class="btn btn-primary @(!CanInvoice() ? "disabled" : "")" @onclick="InvoiceClicked">
+						Invoice
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
 }
 @code {
-    protected bool ShowDialog { get; set; }
-    protected bool SavingInProgress { get; set; } = false;
+	protected bool ShowDialog { get; set; }
+	protected bool SavingInProgress { get; set; } = false;
+	public List<string> EmailToAddresses { get; set; }
+	public List<string> EmailCCAddresses { get; set; }
 
-    [Parameter]
-    public List<ManageSessionModel> InvoicingItems { get; set; }
+	[CascadingParameter]
+	public WorkplaceModel WorkplaceInfo { get; set; }
 
-    [Parameter]
-    public EventCallback<List<ManageSessionModel>> InvoicingItemsChanged { get; set; }
+	[Parameter]
+	public List<ManageSessionModel> InvoicingItems { get; set; }
 
-    public string Signature { get; set; }
+	[Parameter]
+	public EventCallback<List<ManageSessionModel>> InvoicingItemsChanged { get; set; }
 
-    public double TotalHours { get; set; } = 0;
+	public UserModel UserInfo { get; set; }
 
-    private List<ManageSessionModel> finalList { get; set; }
-    private List<ManageSessionModel> disabledList { get; set; }
+	public string Signature { get; set; }
 
-    private ElementReference TableRef { get; set; }
+	public double TotalHours { get; set; } = 0;
 
-    protected override Task OnParametersSetAsync()
-    {
-        if (InvoicingItems is not null)
-        {
-            double invoiceRate = GetInvoiceRate();
-            finalList = new();
-            disabledList = new();
-            foreach (var i in InvoicingItems)
-            {
-                if (i.Rate.Rate == invoiceRate)
-                {
-                    finalList.Add(i);
-                }
-                else
-                {
-                    disabledList.Add(i);
+	private List<ManageSessionModel> finalList { get; set; }
+	private List<ManageSessionModel> disabledList { get; set; }
 
-                }
-            }
-            TotalHours = CalculateTotalHours(finalList);
-        }
-        return Task.CompletedTask;
-    }
+	private ElementReference TableRef { get; set; }
 
-    public void Show()
-    {
-        ShowDialog = true;
-        StateHasChanged();
-    }
+	protected override Task OnParametersSetAsync()
+	{
+		if (InvoicingItems is not null)
+		{
+			double invoiceRate = GetInvoiceRate();
+			finalList = new();
+			disabledList = new();
+			foreach (var i in InvoicingItems)
+			{
+				if (i.Rate.Rate == invoiceRate)
+				{
+					finalList.Add(i);
+				}
+				else
+				{
+					disabledList.Add(i);
 
-    public void Hide()
-    {
-        ShowDialog = false;
-        StateHasChanged();
-    }
+				}
+			}
+			TotalHours = CalculateTotalHours(finalList);
+		}
+		if (WorkplaceInfo is not null && WorkplaceInfo.EmailAddress is not null)
+		{
+			EmailToAddresses = WorkplaceInfo.EmailAddress.Split(";").ToList();
+		}
+		else
+		{
+			EmailToAddresses = new();
+		}
 
-    private void CheckBoxClicked(ChangeEventArgs e, ManageSessionModel model)
-    {
-        double invoiceRate = GetInvoiceRate();
-        if ((bool)e.Value && model.Rate.Rate == invoiceRate)
-        {
-            finalList.Add(model);
-            TotalHours = CalculateTotalHours(finalList);
-        }
-        else if (!(bool)e.Value)
-        {
-            finalList.Remove(model);
-            TotalHours = CalculateTotalHours(finalList);
-        }
-    }
+		return Task.CompletedTask;
+	}
 
-    private double GetInvoiceRate()
-    {
-        List<double> rates = new();
-        foreach (var session in InvoicingItems)
-        {
-            if (session.Rate == null)
-            {
-                rates.Add(0);
-            }
-            else
-            {
-                rates.Add(session.Rate.Rate);
-            }
-        }
-        if (rates.Count > 0)
-        {
-            return rates[ 0 ];
-        }
-        else
-        {
-            return 0;
-        }
-    } 
+	protected override async Task OnInitializedAsync()
+	{
+		UserInfo = await _userEndpoint.GetCurrentUser();
+		if (UserInfo.EmailAddress is not null)
+		{
+			EmailCCAddresses = UserInfo.EmailAddress.Split(";").ToList();
+		}
+		else
+		{
+			EmailCCAddresses = new();
+		}
+	}
 
-    private async void InvoiceClicked()
-    {
-        if (Signature is null || Signature == String.Empty)
-        {
-            await jsRuntime.InvokeVoidAsync("log", "Signature is Empty");
-        } 
-        else
-        {
-            try
-            {
-                InvoiceModel invoiceModel = new() { SessionIds = new List<int>(), TotalHours = TotalHours, StartDate = finalList.First().Date, EndDate = finalList.Last().Date, Rate = GetInvoiceRate(), Total = (TotalHours * GetInvoiceRate()), Signature = Signature, ProviderId = finalList.First().Provider.Id };
-                foreach (var item in finalList)
-                {
-                    invoiceModel.SessionIds.Add(item.Id);
-                }
-                SavingInProgress = true;
-                await Task.Delay(3000);
-                await _invoiceEndpoint.SaveInvoice(invoiceModel);
+	public void Show()
+	{
+		ShowDialog = true;
+		StateHasChanged();
+	}
 
-                ShowDialog = false;
-                SavingInProgress = false;
-                await InvoicingItemsChanged.InvokeAsync();
-                StateHasChanged();
+	public void Hide()
+	{
+		ShowDialog = false;
+		StateHasChanged();
+	}
 
-                toastService.ShowToast("The invoice was successfully submitted.", ToastLevel.Success);
-            }
-            catch (Exception)
-            {
-                ShowDialog = false;
-                SavingInProgress = false;
-                toastService.ShowToast("There was a error proccessing your invoice.", ToastLevel.Error);
-            }
-        }
-    }
+	private void CheckBoxClicked(ChangeEventArgs e, ManageSessionModel model)
+	{
+		double invoiceRate = GetInvoiceRate();
+		if ((bool)e.Value && model.Rate.Rate == invoiceRate)
+		{
+			finalList.Add(model);
+			TotalHours = CalculateTotalHours(finalList);
+		}
+		else if (!(bool)e.Value)
+		{
+			finalList.Remove(model);
+			TotalHours = CalculateTotalHours(finalList);
+		}
+	}
 
-    private void ConsoleWriter(List<ManageSessionModel> models)
-    {
-        foreach (var model in models)
-        {
-            Console.WriteLine($"{model.Student.DisplayName} | {model.Date} | {model.StartTime} | {model.EndTime}");
-        }
-    }
+	private double GetInvoiceRate()
+	{
+		List<double> rates = new();
+		foreach (var session in InvoicingItems)
+		{
+			if (session.Rate == null)
+			{
+				rates.Add(0);
+			}
+			else
+			{
+				rates.Add(session.Rate.Rate);
+			}
+		}
+		if (rates.Count > 0)
+		{
+			return rates[ 0 ];
+		}
+		else
+		{
+			return 0;
+		}
+	}
 
-    private double CalculateTotalHours(List<ManageSessionModel> sessions)
-    {
-        double output = 0;
-        output = sessions.Sum(s => (s.EndTime - s.StartTime).TotalHours);
-        return Math.Round(output, 2);
-    }
+	private bool CanInvoice()
+	{
+		bool can = true;
+		if (WorkplaceInfo.RequireSignature && (Signature is null || Signature == String.Empty))
+		{
+			can = false;
+		}
+		return can;
+	}
+
+	private async void InvoiceClicked()
+	{
+		if (!CanInvoice())
+		{
+			await jsRuntime.InvokeVoidAsync("log", "Signature is Empty");
+		}
+		else
+		{
+			try
+			{
+				InvoiceModel invoiceModel = new()
+					{
+						SessionIds = new List<int>(),
+						TotalHours = TotalHours,
+						StartDate = finalList.First().Date,
+						EndDate = finalList.Last().Date,
+						Rate = GetInvoiceRate(),
+						Total = ( TotalHours * GetInvoiceRate() ),
+						Signature = Signature,
+						ProviderId = finalList.First().Provider.Id,
+						SentTo = String.Join(';', EmailToAddresses),
+						CC = String.Join(';', EmailCCAddresses)
+					};
+				foreach (var item in finalList)
+				{
+					invoiceModel.SessionIds.Add(item.Id);
+				}
+				SavingInProgress = true;
+				await Task.Delay(3000);
+				await _invoiceEndpoint.SaveInvoice(invoiceModel);
+
+				ShowDialog = false;
+				SavingInProgress = false;
+				await InvoicingItemsChanged.InvokeAsync();
+				StateHasChanged();
+
+				toastService.ShowToast("The invoice was successfully submitted.", ToastLevel.Success);
+			}
+			catch (Exception)
+			{
+				ShowDialog = false;
+				SavingInProgress = false;
+				toastService.ShowToast("There was a error proccessing your invoice.", ToastLevel.Error);
+			}
+		}
+	}
+
+	private void ConsoleWriter(List<ManageSessionModel> models)
+	{
+		foreach (var model in models)
+		{
+			Console.WriteLine($"{model.Client.DisplayName} | {model.Date} | {model.StartTime} | {model.EndTime}");
+		}
+	}
+
+	private double CalculateTotalHours(List<ManageSessionModel> sessions)
+	{
+		double output = 0;
+		output = sessions.Sum(s => ( s.EndTime - s.StartTime ).TotalHours);
+		return Math.Round(output, 2);
+	}
+
+	private void ToAddressChanged(List<string> addresses)
+	{
+		EmailToAddresses = addresses;
+	}
 
 }

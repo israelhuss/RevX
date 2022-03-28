@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [dbo].[spStudent_Update]
+﻿CREATE PROCEDURE [dbo].[spClient_Update]
 	@Id int = 0,
 	@UserId nvarchar(128),
 	@FirstName nvarchar(50),
@@ -6,6 +6,6 @@
 	@Enabled bit
 AS
 BEGIN
-	UPDATE Student SET FirstName = @FirstName, LastName = @LastName, [Enabled] = @Enabled
+	UPDATE Client SET FirstName = @FirstName, LastName = @LastName, [Enabled] = @Enabled
 	Where Id = @Id AND UserId = @UserId;
 END

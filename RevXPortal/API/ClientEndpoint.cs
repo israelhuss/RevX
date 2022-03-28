@@ -7,25 +7,25 @@ using System.Threading.Tasks;
 
 namespace RevXPortal.API
 {
-	public class StudentEndpoint : IStudentEndpoint
+	public class ClientEndpoint : IClientEndpoint
 	{
 		private readonly HttpClient _client;
 		private readonly IToastService _toastService;
 
-		public StudentEndpoint(HttpClient client, IToastService toastService)
+		public ClientEndpoint(HttpClient client, IToastService toastService)
 		{
 			_client = client;
 			_toastService = toastService;
 		}
 
-		public async Task<List<StudentModel>> GetAll()
+		public async Task<List<ClientModel>> GetAll()
 		{
 			try
 			{
-				using HttpResponseMessage response = await _client.GetAsync($"/api/Student");
+				using HttpResponseMessage response = await _client.GetAsync($"/api/Client");
 				if (response.IsSuccessStatusCode)
 				{
-					var result = await response.Content.ReadAsAsync<List<StudentModel>>();
+					var result = await response.Content.ReadAsAsync<List<ClientModel>>();
 					return result;
 				}
 				else
@@ -48,16 +48,16 @@ namespace RevXPortal.API
 			{
 				_toastService.ShowToast("An unexpected error ocurred.", ToastLevel.Error);
 			}
-			return new List<StudentModel>();
+			return new List<ClientModel>();
 		}
 
-		public async Task<List<StudentModel>> GetEnabled()
+		public async Task<List<ClientModel>> GetEnabled()
 		{
-			using (HttpResponseMessage response = await _client.GetAsync($"/api/Student/enabled"))
+			using (HttpResponseMessage response = await _client.GetAsync($"/api/Client/enabled"))
 			{
 				if (response.IsSuccessStatusCode)
 				{
-					var result = await response.Content.ReadAsAsync<List<StudentModel>>();
+					var result = await response.Content.ReadAsAsync<List<ClientModel>>();
 					return result;
 				}
 				else
@@ -67,14 +67,14 @@ namespace RevXPortal.API
 			}
 		}
 
-		public async Task AddStudent(StudentModel model)
+		public async Task Add(ClientModel model)
 		{
-			using (HttpResponseMessage response = await _client.PostAsJsonAsync("/api/Student/add", model))
+			using (HttpResponseMessage response = await _client.PostAsJsonAsync("/api/Client/add", model))
 			{
 				if (response.IsSuccessStatusCode)
 				{
 					//TODO - Log successful post
-					Console.WriteLine("Successfully Added Student.");
+					Console.WriteLine("Successfully Added Client.");
 				}
 				else
 				{
@@ -83,9 +83,9 @@ namespace RevXPortal.API
 			}
 		}
 
-		public async Task EditStudent(StudentModel model)
+		public async Task Edit(ClientModel model)
 		{
-			using (HttpResponseMessage response = await _client.PostAsJsonAsync("/api/Student/edit", model))
+			using (HttpResponseMessage response = await _client.PostAsJsonAsync("/api/Client/edit", model))
 			{
 				if (response.IsSuccessStatusCode)
 				{

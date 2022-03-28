@@ -11,7 +11,7 @@ namespace RevXPortal.Models
 		public int Id { get; set; }
 		public string UserId { get; set; }
 		[Required]
-		public StudentModel Student { get; set; }
+		public ClientModel Client { get; set; }
 		[Required]
 		[NotAfterToday]
 		public DateTime Date { get; set; } = DateTime.Today;

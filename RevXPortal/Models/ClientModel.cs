@@ -1,6 +1,6 @@
 ﻿namespace RevXPortal.Models
 {
-	public class StudentModel : ISelectionFriendly, IEnable
+	public class ClientModel : ISelectionFriendly, IEnable
 	{
 		public int Id { get; set; }
 		public string UserId { get; set; }

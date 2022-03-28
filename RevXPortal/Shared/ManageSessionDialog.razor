@@ -1,127 +1,130 @@
-﻿@inject IStudentEndpoint _student
+﻿@inject IClientEndpoint _client
 @inject IProviderEndpoint _provider
 @inject IBillingStatusEndpoint _billingStatus
 @inject IToastService toastService
 
 @if (ShowDialog)
 {
-    <div class="modal show d-block" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-dialog-centered fade-in-and-grow" role="document">
-            <EditForm Model="@FormSession" OnValidSubmit="@SaveForm">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">@Title</h5>
-                        <button type="button" class="close btn" @onclick="Hide">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <DataAnnotationsValidator />
-                        <ValidationSummary />
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label for="Student">Student</label>
-                                <CustomSelect TValue="StudentModel" @bind-Value="@FormSession.Student" Items="availableStudents" />
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label for="Date">Date</label>
-                                <InputDate TValue="DateTime" min="2021-01-01" class="form-control" @bind-Value="@FormSession.Date" />
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label for="StartTime">Start Time</label>
-                                @*<InputText type="time" class="form-control" @bind-Value="@FormSession.StartTime" />*@
-                                <TimeInput @bind-Time="@FormSession.StartTime" />
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label for="EndTime">End Time</label>
-                                @*<InputText type="time" class="form-control" @bind-Value="@FormSession.EndTime" />*@
-                                <TimeInput @bind-Time="@FormSession.EndTime" />
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label for="Provider">Provider</label>
-                                <CustomSelect TValue="ProviderModel" @bind-Value="@FormSession.Provider" Items="providers" />
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label for="BillingStatus">Billing Status</label>
-                                <CustomSelect TValue="BillingStatusModel" @bind-Value="@FormSession.BillingStatus" Items="billingStatus" />
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group col-md-12">
-                                <label for="Notes">Notes</label>
-                                <textarea rows="2" type="text" class="form-control" @bind="@FormSession.Notes"></textarea>
-                            </div>
-                        </div>
+	<div class="modal show d-block" tabindex="-1" role="dialog">
+		<div class="modal-dialog modal-dialog-centered fade-in-and-grow" role="document">
+			<EditForm Model="@FormSession" OnValidSubmit="@SaveForm">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">@Title</h5>
+						<button type="button" class="close btn" @onclick="Hide">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<DataAnnotationsValidator />
+						<ValidationSummary />
+						<div class="form-row">
+							<div class="form-group col-md-6">
+								<label for="Client">@(WorkplaceInfo is not null && WorkplaceInfo.ClientNickname is not null ? WorkplaceInfo.ClientNickname : "Client")</label>
+								<CustomSelect TValue="ClientModel" @bind-Value="@FormSession.Client" Items="availableClients" />
+							</div>
+							<div class="form-group col-md-6">
+								<label for="Date">Date</label>
+								<InputDate TValue="DateTime" min="2021-01-01" class="form-control" @bind-Value="@FormSession.Date" />
+							</div>
+						</div>
+						<div class="form-row">
+							<div class="form-group col-md-6">
+								<label for="StartTime">Start Time</label>
+								@*<InputText type="time" class="form-control" @bind-Value="@FormSession.StartTime" />*@
+								<TimeInput @bind-Time="@FormSession.StartTime" />
+							</div>
+							<div class="form-group col-md-6">
+								<label for="EndTime">End Time</label>
+								@*<InputText type="time" class="form-control" @bind-Value="@FormSession.EndTime" />*@
+								<TimeInput @bind-Time="@FormSession.EndTime" />
+							</div>
+						</div>
+						<div class="form-row">
+							<div class="form-group col-md-6">
+								<label for="Provider">Provider</label>
+								<CustomSelect TValue="ProviderModel" @bind-Value="@FormSession.Provider" Items="providers" />
+							</div>
+							<div class="form-group col-md-6">
+								<label for="BillingStatus">Billing Status</label>
+								<CustomSelect TValue="BillingStatusModel" @bind-Value="@FormSession.BillingStatus" Items="billingStatus" />
+							</div>
+						</div>
+						<div class="form-row">
+							<div class="form-group col-md-12">
+								<label for="Notes">Notes</label>
+								<textarea rows="2" type="text" class="form-control" @bind="@FormSession.Notes"></textarea>
+							</div>
+						</div>
 
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" @onclick="Hide">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save changes</button>
-                    </div>
-                </div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" @onclick="Hide">Cancel</button>
+						<button type="submit" class="btn btn-primary">Save changes</button>
+					</div>
+				</div>
 
 
-            </EditForm>
-        </div>
-    </div>
+			</EditForm>
+		</div>
+	</div>
 }
 @code {
-    private bool ShowDialog { get; set; }
+	private bool ShowDialog { get; set; }
 
-    [Parameter]
-    public ManageSessionModel FormSession { get; set; }
+	[CascadingParameter]
+	public WorkplaceModel WorkplaceInfo { get; set; }
 
-    [Parameter]
-    public EventCallback SaveForm { get; set; }
+	[Parameter]
+	public ManageSessionModel FormSession { get; set; }
 
-    [Parameter]
-    public string Title { get; set; }
+	[Parameter]
+	public EventCallback SaveForm { get; set; }
+
+	[Parameter]
+	public string Title { get; set; }
 
 
-    private List<SessionApiModel> sessions = new();
-    private List<StudentModel> availableStudents { get; set; }
+	private List<SessionApiModel> sessions = new();
+	private List<ClientModel> availableClients { get; set; }
 
 
-    private List<ProviderModel> providers { get; set; }
-    private List<BillingStatusModel> billingStatus { get; set; }
+	private List<ProviderModel> providers { get; set; }
+	private List<BillingStatusModel> billingStatus { get; set; }
 
-    protected override async Task OnInitializedAsync()
-    {
-        try
-        {
-            availableStudents = await _student.GetEnabled();
-            providers = await _provider.GetEnabled();
-            billingStatus = await _billingStatus.GetEnabled();
-        }
-        catch (HttpRequestException e)
-        {
-            Console.WriteLine(e.Message);
-        }
-        catch (Exception e)
-        {
-            if (e.Message != "Unauthorized")
-            {
-                toastService.ShowToast($"Unhandled exeption. {e.Message}", ToastLevel.Error);
-            }
-        }
-    }
+	protected override async Task OnInitializedAsync()
+	{
+		try
+		{
+			availableClients = await _client.GetEnabled();
+			providers = await _provider.GetEnabled();
+			billingStatus = await _billingStatus.GetEnabled();
+		}
+		catch (HttpRequestException e)
+		{
+			Console.WriteLine(e.Message);
+		}
+		catch (Exception e)
+		{
+			if (e.Message != "Unauthorized")
+			{
+				toastService.ShowToast($"Unhandled exeption. {e.Message}", ToastLevel.Error);
+			}
+		}
+	}
 
-    public void Show()
-    {
-        ShowDialog = true;
-    }
+	public void Show()
+	{
+		ShowDialog = true;
+	}
 
-    public void Hide()
-    {
-        ShowDialog = false;
-    }
+	public void Hide()
+	{
+		ShowDialog = false;
+	}
 
-    private void ToggleModal()
-    {
-        ShowDialog = !ShowDialog;
-    }
+	private void ToggleModal()
+	{
+		ShowDialog = !ShowDialog;
+	}
 }

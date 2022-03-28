@@ -16,5 +16,7 @@ namespace RevXApi.Library.Models
 		public List<int> SessionIds { get; set; }
 		public int ProviderId { get; set; }
 		public string Signature { get; set; }
+		public string SentTo { get; set; }
+		public string CC { get; set; }
 	}
 }
