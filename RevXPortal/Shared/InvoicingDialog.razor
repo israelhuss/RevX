@@ -361,7 +361,7 @@
 					invoiceModel.SessionIds.Add(item.Id);
 				}
 				SavingInProgress = true;
-				await Task.Delay(3000);
+				//await Task.Delay(3000);
 				await _invoiceEndpoint.SaveInvoice(invoiceModel);
 
 				ShowDialog = false;
@@ -369,13 +369,13 @@
 				await InvoicingItemsChanged.InvokeAsync();
 				StateHasChanged();
 
-				toastService.ShowToast("The invoice was successfully submitted.", ToastLevel.Success);
+				toastService.ShowSuccess("The invoice was successfully submitted.");
 			}
 			catch (Exception)
 			{
 				ShowDialog = false;
 				SavingInProgress = false;
-				toastService.ShowToast("There was a error proccessing your invoice.", ToastLevel.Error);
+				toastService.ShowError("There was a error proccessing your invoice.");
 			}
 		}
 	}

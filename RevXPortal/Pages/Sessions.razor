@@ -202,7 +202,7 @@
 		catch (HttpRequestException e)
 		{
 			Error.ProcessError(e);
-			toastService.ShowToast("The API seems to be offline.", ToastLevel.Error);
+			toastService.ShowError("The API seems to be offline.");
 			Console.WriteLine(e.Message);
 		}
 		//catch (Exception e)
@@ -222,18 +222,18 @@
 			try
 			{
 				await _sessionEndpoint.SaveSession(ManageSession);
-				toastService.ShowToast("Changes saved successfully.", ToastLevel.Success);
+				toastService.ShowSuccess("Changes saved successfully.");
 			}
 			catch (Exception)
 			{
-				toastService.ShowToast("Looks like there is already a session for this slot.", ToastLevel.Error);
+				toastService.ShowError("Looks like there is already a session for this slot.");
 			}
 			await RefreshSessionsList();
 		}
 		else if (formState == "edit")
 		{
 			await _sessionEndpoint.EditSession(ManageSession);
-			toastService.ShowToast("Changes saved successfully.", ToastLevel.Success);
+			toastService.ShowSuccess("Changes saved successfully.");
 			await RefreshSessionsList();
 		}
 		StateHasChanged();
@@ -274,7 +274,7 @@
 			try
 			{
 				await _sessionEndpoint.DeleteSession(DeleteConfirmation.IdToDelete);
-				toastService.ShowToast("Session was successfully deleted.", ToastLevel.Success);
+				toastService.ShowSuccess("Session was successfully deleted.");
 				await RefreshSessionsList();
 
 
@@ -282,7 +282,7 @@
 			}
 			catch (Exception)
 			{
-				toastService.ShowToast("Sorry. We are having some trouble deleting the session :(", ToastLevel.Error);
+				toastService.ShowError("Sorry. We are having some trouble deleting the session :(");
 			}
 		}
 		else

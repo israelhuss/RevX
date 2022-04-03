@@ -108,7 +108,7 @@
 		{
 			if (e.Message != "Unauthorized")
 			{
-				toastService.ShowToast($"Unhandled exeption. {e.Message}", ToastLevel.Error);
+				toastService.ShowError($"Unhandled exeption. {e.Message}");
 			}
 		}
 	}

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Web;
 using RevXPortal.Authentication;
 using RevXPortal.Services;
 using Microsoft.Extensions.Logging;
+using Blazored.Toast;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -13,7 +14,9 @@ builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
-builder.Services.AddScoped<IToastService, ToastService>();
+//builder.Services.AddScoped<IToastService, ToastService>();
+builder.Services.AddBlazoredToast();
+
 
 builder.Logging.SetMinimumLevel(LogLevel.Warning);
 

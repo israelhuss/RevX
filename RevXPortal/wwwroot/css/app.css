@@ -58,6 +58,10 @@ a, .btn-link {
     display: none;
 }
 
+.blazored-toast-container {
+    z-index: 999999;
+}
+
 .error-icon {
     border-radius: 50%;
     transform: translate(-50%, -50%);

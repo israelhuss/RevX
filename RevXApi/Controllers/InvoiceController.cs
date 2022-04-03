@@ -20,13 +20,11 @@ namespace RevXApi.Controllers
 	{
 		private readonly IEmailService _emailService;
 		private readonly IInvoiceData _invoiceData;
-		private readonly IConfiguration _config;
 
 		public InvoiceController(IEmailService emailService, IInvoiceData invoiceData, IConfiguration config)
 		{
 			_emailService = emailService;
 			_invoiceData = invoiceData;
-			_config = config;
 		}
 
 		[HttpGet]

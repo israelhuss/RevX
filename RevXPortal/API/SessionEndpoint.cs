@@ -54,7 +54,7 @@ namespace RevXPortal.API
 			{
 				if (ex.Message == "TypeError: Failed to fetch")
 				{
-					_toastService.ShowToast("Looks like the API is offline.", ToastLevel.Error);
+					_toastService.ShowError("Looks like the API is offline.");
 					throw;
 				}
 				else
@@ -64,7 +64,7 @@ namespace RevXPortal.API
 			}
 			catch (Exception)
 			{
-				_toastService.ShowToast("An unexpected error ocurred.", ToastLevel.Error);
+				_toastService.ShowError("An unexpected error ocurred.");
 			}
 			return new List<ManageSessionModel>();
 		}

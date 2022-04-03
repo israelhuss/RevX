@@ -3,6 +3,7 @@
 @inject ISessionEndpoint _sessionEndpoint
 @inject IProviderEndpoint _providerEndpoint
 @inject IJSRuntime jsRuntime
+@inject IToastService toastService
 
 @*<ChartBase RowCount="5" Lables="LablesList" FooterLabelStyle="FooterStyles.UnderLine" Values="Values" SkipFirstFooterLabel="true">
 	<ChartContent>
@@ -11,6 +12,8 @@
 	</ChartBase>
 *@
 @*<PieChart Data="Values" TootlipData="Values.Select(v => v.ToString()).ToList()" NoText="true"></PieChart>*@
+
+
 
 <div style="padding: 2rem;">
 	<ChartBase RowCount="5" Lables="LablesList" FooterLabelStyle="FooterStyles.Centered" Values="Values" SkipFirstFooterLabel="false">

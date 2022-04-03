@@ -164,7 +164,12 @@
 				</div>
 			</div>
 			<div class="main-page">
-				<ToastNotification />
+				<BlazoredToasts ShowProgressBar="true" Timeout="10"
+								IconType="IconType.FontAwesome"
+								SuccessClass="success-toast-override"
+								SuccessIcon="fa fa-thumbs-up"
+								ErrorIcon="fa fa-bug"
+								RemoveToastsOnNavigation="true" />
 				<div class="revx-sidebar @(showSidebar ? "force" : "")">
 					<NavMenu />
 				</div>

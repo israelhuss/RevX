@@ -151,7 +151,7 @@ namespace RevXApi.Library.DataAccess
 			InvoiceEmailModel model = _sql.LoadData<InvoiceEmailModel, dynamic>("spInvoice_Lookup", new { InvoiceId = id, UserId = userId }, "RevXData").FirstOrDefault();
 			if (model == null)
 			{
-				return new byte[ 0 ];
+				return Array.Empty<byte>();
 			}
 			model.InvoiceSessions = _sql.Query<SessionEmailModel>($"SELECT se.Id, CONCAT(cl.FirstName, ' ', cl.LastName) as Client, se.[Date], se.StartTime, se.EndTime, se.Notes FROM Session se JOIN Client cl ON se.ClientId = cl.Id WHERE se.InvoiceId = {id} AND se.UserId = '{userId}'", "RevXData");
 			UserModel user = _userData.GetUserById(userId);
