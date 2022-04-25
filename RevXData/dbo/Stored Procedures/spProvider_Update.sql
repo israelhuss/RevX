@@ -2,8 +2,9 @@
 	@Id int = 0,
 	@UserId nvarchar(128),
 	@Name nvarchar(50),
-	@Enabled bit
+	@Enabled bit,
+	@IsDefault bit = 0
 AS
 BEGIN
-	UPDATE Provider SET [Name] = @Name, [Enabled] = @Enabled Where Id = @Id AND UserId = @UserId
+	UPDATE Provider SET [Name] = @Name, [Enabled] = @Enabled, IsDefault = @IsDefault Where Id = @Id AND UserId = @UserId
 END

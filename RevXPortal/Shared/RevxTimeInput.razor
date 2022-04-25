@@ -1,0 +1,41 @@
+﻿@inject IJSRuntime jsRuntime
+
+<div class="revx-input @(PlaceHolder is not null ? "has-placeholder" : "")">
+	<div class="revx-input-icon">
+		<i class="fas fa-clock"></i>
+	</div>
+	<input class="form-control revx-input-box @(ValidationMessage is not null ? "validate" : "")" type="time" @onchange="InputChanged" />
+	@if (PlaceHolder is not null)
+	{
+		<div class="revx-input-label fixed">
+			@PlaceHolder
+			@*@if (Required)
+				{
+				<span style="color: red;">*</span>
+				}*@
+		</div>
+	}
+	@if (ValidationMessage is not null)
+	{
+		<small class="revx-validate" style="color: red; margin-left: 3px;">@ValidationMessage</small>
+	}
+</div>
+
+
+@code {
+	[Parameter]
+	public TimeOnly Value { get; set; }
+	[Parameter]
+	public EventCallback<TimeOnly> ValueChanged { get; set; }
+	[Parameter]
+	public string PlaceHolder { get; set; }
+	[Parameter]
+	public string ValidationMessage { get; set; }
+
+	private void InputChanged(ChangeEventArgs e)
+	{
+		jsRuntime.InvokeVoidAsync("log", e.Value);
+		Value = TimeOnly.Parse(e.Value.ToString());
+		ValueChanged.InvokeAsync(Value);
+	}
+}

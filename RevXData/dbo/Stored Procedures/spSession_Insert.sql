@@ -8,17 +8,25 @@
 	@ProviderId int,
 	@BillingStatusId int,
 	@Notes nvarchar(250),
-	@InvoiceId int
+	@InvoiceId int = 0
 AS
-IF NOT EXISTS(SELECT Id FROM dbo.Session 
+
+IF EXISTS(SELECT Id FROM dbo.Session 
+						WHERE @ClientId = ClientId
+						AND @UserId = UserId
+						AND @Date = [Date]
+						AND @StartTime = StartTime
+						AND @EndTime = EndTime)
+	SELECT -100
+ELSE IF EXISTS(SELECT Id FROM dbo.Session 
 						WHERE @ClientId = ClientId
 						AND @UserId = UserId
 						AND @Date = [Date]
 						AND ((@StartTime >= StartTime AND @StartTime < EndTime) OR (@EndTime <= EndTime AND @EndTime > StartTime)))
-BEGIN
-	INSERT INTO dbo.Session (UserId, ClientId, [Date], StartTime, EndTime, ProviderId, BillingStatusId, Notes)
-	VALUES (@UserId, @ClientId, @Date, @StartTime, @EndTime, @ProviderId, @BillingStatusId, @Notes)
-	SELECT SCOPE_IDENTITY();
-END
-ELSE 
 	SELECT -128
+ELSE
+	BEGIN
+		INSERT INTO dbo.Session (UserId, ClientId, [Date], StartTime, EndTime, ProviderId, BillingStatusId, Notes)
+		VALUES (@UserId, @ClientId, @Date, @StartTime, @EndTime, @ProviderId, @BillingStatusId, @Notes)
+		SELECT SCOPE_IDENTITY();
+	END

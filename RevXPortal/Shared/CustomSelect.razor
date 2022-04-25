@@ -3,43 +3,62 @@
 @typeparam TValue
 
 
-<select class="custom-select form-control" @onchange="OnSelectionChanged" id="@typeof(TValue).Name-SelectId">
-    <option selected disabled>Please Select...</option>
-    @foreach (var item in Items)
-    {
-        <option label="@item.DisplayName" />
-    }
+<select class="custom-select form-control" @onchange="OnSelectionChanged" id="@inputId">
+	<option selected disabled>Please Select...</option>
+	@foreach (var item in Items)
+	{
+		<option label="@item.DisplayName" />
+	}
 </select>
 
 
-
 @code {
-    [Parameter]
-    public ISelectionFriendly Value { get; set; }
+	[Parameter]
+	public ISelectionFriendly Value { get; set; }
 
-    [Parameter]
-    public EventCallback<TValue> ValueChanged { get; set; }
+	[Parameter]
+	public EventCallback<TValue> ValueChanged { get; set; }
 
-    [Parameter]
-    public IEnumerable<ISelectionFriendly> Items { get; set; }
+	[Parameter]
+	public IEnumerable<ISelectionFriendly> Items { get; set; }
 
-    protected override async void OnAfterRender(bool firstRender)
-    {
-        if (firstRender)
-        {
-            if (Value is not null)
-            {
-                int index = Items.ToList().FindIndex(i => i.Id == Value.Id);
-                await jsRuntime.InvokeVoidAsync("SetSelectOption", $"{typeof(TValue).Name}-SelectId", (index + 1));
-            }
-        }
-    }
+	private string inputId { get; set; } = Guid.NewGuid().ToString();
 
-    private async void OnSelectionChanged(ChangeEventArgs e)
-    {
-        int CurrentSelection = await jsRuntime.InvokeAsync<int>("GetSelectOption", $"{typeof(TValue).Name}-SelectId");
-        Value = Items.ElementAt(CurrentSelection - 1);
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			await initializeInput();
+		}
+	}
 
-        await ValueChanged.InvokeAsync((TValue)Value);
-    }
+	private async Task initializeInput()
+	{
+		if (Items is not null)
+		{
+			if (Value is not null)
+			{
+				int index = Items.ToList().FindIndex(i => i.Id == Value.Id);
+				await jsRuntime.InvokeVoidAsync("SetSelectOption", inputId, ( index + 1 ));
+			}
+			else
+			{
+				int defaultSelect = Items.ToList().FindIndex(i => i.IsDefault);
+				await jsRuntime.InvokeVoidAsync("log", defaultSelect);
+				if (defaultSelect > -1)
+				{
+					await jsRuntime.InvokeVoidAsync("SetSelectOption", inputId, ( defaultSelect + 1 ));
+					OnSelectionChanged();
+				}
+			}
+		}
+	}
+
+	private async void OnSelectionChanged()
+	{
+		int CurrentSelection = await jsRuntime.InvokeAsync<int>("GetSelectOption", inputId);
+		await jsRuntime.InvokeVoidAsync("log", CurrentSelection);
+		Value = Items.ElementAt(CurrentSelection - 1);
+		await ValueChanged.InvokeAsync((TValue)Value);
+	}
 }

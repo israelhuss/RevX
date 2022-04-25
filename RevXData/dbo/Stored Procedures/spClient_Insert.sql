@@ -3,11 +3,12 @@
 	@UserId nvarchar(128),
 	@FirstName nvarchar(50),
 	@LastName nvarchar(50),
-	@Enabled bit = 1
+	@Enabled bit = 1,
+	@IsDefault bit = 0
 AS
 BEGIN
-	INSERT INTO dbo.Client (UserId, FirstName, LastName)
-	VALUES (@UserId, @FirstName, @LastName)
+	INSERT INTO dbo.Client (UserId, FirstName, LastName, [Enabled], IsDefault)
+	VALUES (@UserId, @FirstName, @LastName, @Enabled, @IsDefault)
 
 	SELECT SCOPE_IDENTITY()
 END

@@ -4,5 +4,6 @@
 	{
 		int Id { get; set; }
 		string DisplayName { get; }
+		bool IsDefault { get; set; }
 	}
 }

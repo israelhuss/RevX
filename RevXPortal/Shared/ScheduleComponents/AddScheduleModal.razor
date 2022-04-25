@@ -1,0 +1,204 @@
+﻿@inject IJSRuntime jsRuntime
+@inject IPendingSessionEndpoint _pendingEndpoint
+
+<style>
+	.revx-form-row {
+		padding: 1.25rem 0.75rem;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.revx-form-col {
+		width: 45%;
+	}
+
+	.not-flex {
+		display: block !important;
+	}
+</style>
+
+@if (ShowModal)
+{
+	<div class="modal show d-block" tabindex="-1" role="dialog">
+		<div class="modal-dialog modal-dialog-centered fade-in-and-grow" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">@Title</h5>
+					<button type="button" class="close btn" @onclick="Hide">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="revx-form-row">
+						<div class="revx-form-col">
+							<RevxSelect Items="Clients" TValue="ClientModel" ValueChanged="@(e => { Schedule.ClientId = e.Id; jsRuntime.InvokeVoidAsync("log", "Changed ClientId to: " + Schedule.ClientId);})" PlaceHolder="Client" ValidationMessage="@ClientValidateMessage"></RevxSelect>
+						</div>
+						<div class="revx-form-col">
+							<RevxSelect Items="Providers" TValue="ProviderModel" ValueChanged="@(e => { Schedule.ProviderId = e.Id; jsRuntime.InvokeVoidAsync("log", "Changed ClientId to: " + Schedule.ProviderId);})" PlaceHolder="Provider" ValidationMessage="@ProviderValidateMessage"></RevxSelect>
+						</div>
+					</div>
+					<div class="revx-form-row not-flex">
+						<DaysOfWeek @bind-Value="Schedule.DaysOfWeek" PlaceHolder="Days of Week" ValidationMessage="@DaysOfWeekValidateMessage"></DaysOfWeek>
+					</div>
+					<div class="revx-form-row">
+						<div class="revx-form-col">
+							<RevxDateInput Min="2021-01-01" @bind-Value="@Schedule.DateFrom" PlaceHolder="Start Date" ValidationMessage="@DateFromValidateMessage" />
+						</div>
+						<div class="revx-form-col">
+							<RevxDateInput Min="2021-01-01" @bind-Value="@Schedule.DateTo" PlaceHolder="End Date" ValidationMessage="@DateToValidateMessage" />
+						</div>
+					</div>
+					<div class="revx-form-row">
+						<div class="revx-form-col">
+							<RevxTimeInput @bind-Value="@Schedule.StartTime" PlaceHolder="Start Time" ValidationMessage="@StartTimeValidateMessage" />
+						</div>
+						<div class="revx-form-col">
+							<RevxTimeInput @bind-Value="@Schedule.EndTime" PlaceHolder="End Time" ValidationMessage="@EndTimeValidateMessage" />
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" @onclick="Hide">Cancel</button>
+					<button type="submit" class="btn btn-primary" @onclick="SaveSchedule">Save Schedule</button>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+@code {
+	private bool ShowModal { get; set; }
+
+	[Parameter]
+	public ScheduleModel Schedule { get; set; } = new();
+	[CascadingParameter]
+	public List<ClientModel> Clients { get; set; }
+	[CascadingParameter]
+	public List<ProviderModel> Providers { get; set; }
+	[Parameter]
+	public string Title { get; set; } = "Add a Schedule";
+	[Parameter]
+	public Action Saved { get; set; }
+	[Parameter]
+	public Func<Task> SavedAsync { get; set; }
+
+
+	public string ClientValidateMessage { get; set; }
+	public string ProviderValidateMessage { get; set; }
+	public string DaysOfWeekValidateMessage { get; set; }
+	public string DateFromValidateMessage { get; set; }
+	public string DateToValidateMessage { get; set; }
+	public string StartTimeValidateMessage { get; set; }
+	public string EndTimeValidateMessage { get; set; }
+
+	public void Show()
+	{
+		ShowModal = true;
+		jsRuntime.InvokeVoidAsync("log", "Showing");
+		StateHasChanged();
+	}
+
+	public void Hide()
+	{
+		ShowModal = false;
+		Schedule = new();
+		ResetValidation();
+		jsRuntime.InvokeVoidAsync("log", "Hiding");
+		StateHasChanged();
+	}
+
+	private void ResetValidation()
+	{
+		ClientValidateMessage = null;
+		ProviderValidateMessage = null;
+		DaysOfWeekValidateMessage = null;
+		DateFromValidateMessage = null;
+		DateToValidateMessage = null;
+		StartTimeValidateMessage = null;
+		EndTimeValidateMessage = null;
+		StateHasChanged();
+	}
+
+	private async Task<bool> Validate()
+	{
+		await jsRuntime.InvokeVoidAsync("log", "Schedule");
+		await jsRuntime.InvokeVoidAsync("log", "Client: " + Schedule.ClientId);
+		await jsRuntime.InvokeVoidAsync("log", "Provider: " + Schedule.ProviderId);
+		await jsRuntime.InvokeVoidAsync("log", "Days of Week: " + Schedule.DaysOfWeek);
+		await jsRuntime.InvokeVoidAsync("log", "Start Date: " + Schedule.DateFrom.ToShortDateString());
+		await jsRuntime.InvokeVoidAsync("log", "End Date: " + Schedule.DateTo.ToShortDateString());
+		await jsRuntime.InvokeVoidAsync("log", "Start Time: " + Schedule.StartTime.ToShortTimeString());
+		await jsRuntime.InvokeVoidAsync("log", "EndT Time: " + Schedule.EndTime.ToShortTimeString());
+
+		ResetValidation();
+		await jsRuntime.InvokeVoidAsync("log", DaysOfWeekValidateMessage);
+		//await Task.Delay(1000);
+		await jsRuntime.InvokeVoidAsync("log", DaysOfWeekValidateMessage);
+		if (Schedule.ClientId == 0)
+		{
+			ClientValidateMessage = "Client is Required.";
+			return false;
+		}
+
+		if (Schedule.ProviderId == 0)
+		{
+			ProviderValidateMessage = "Provider is Required.";
+			return false;
+		}
+
+		if (Schedule.DaysOfWeek is null || Schedule.DaysOfWeek.Count == 0)
+		{
+			DaysOfWeekValidateMessage = "Please choose at least one day.";
+			return false;
+		}
+
+		if (Schedule.DateFrom == new DateOnly())
+		{
+			DateFromValidateMessage = "Please select a Start Date";
+			return false;
+		}
+
+		if (Schedule.DateTo == new DateOnly())
+		{
+			DateToValidateMessage = "Please select a End Date";
+			return false;
+		}
+
+		if (Schedule.StartTime == new TimeOnly())
+		{
+			StartTimeValidateMessage = "A Start Time is required";
+			return false;
+		}
+
+		if (Schedule.EndTime == new TimeOnly())
+		{
+			EndTimeValidateMessage = "A End Time is required";
+			return false;
+		}
+		return true;
+	}
+
+	private async void SaveSchedule()
+	{
+		if (await Validate())
+		{
+			await jsRuntime.InvokeVoidAsync("log", JsonSerializer.Serialize(Schedule));
+			await _pendingEndpoint.AddSchedule(Schedule);
+			Hide();
+			if (Saved is not null)
+			{
+				Saved();
+			}
+			if (SavedAsync is not null)
+			{
+				await SavedAsync();
+			}
+		}
+		else
+		{
+			await jsRuntime.InvokeVoidAsync("log", "Not Ready");
+		}
+		StateHasChanged();
+	}
+}

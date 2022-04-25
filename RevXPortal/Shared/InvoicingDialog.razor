@@ -261,7 +261,15 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		UserInfo = await _userEndpoint.GetCurrentUser();
+		try
+		{
+			UserInfo = await _userEndpoint.GetCurrentUser();
+		}
+		catch (ApiException ex)
+		{
+			toastService.ShowError(ex.Message);
+		}
+
 		if (UserInfo.EmailAddress is not null)
 		{
 			EmailCCAddresses = UserInfo.EmailAddress.Split(";").ToList();

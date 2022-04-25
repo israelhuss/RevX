@@ -6,6 +6,7 @@ using RevXPortal.Authentication;
 using RevXPortal.Services;
 using Microsoft.Extensions.Logging;
 using Blazored.Toast;
+using System.Text.Json;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -16,12 +17,16 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
 //builder.Services.AddScoped<IToastService, ToastService>();
 builder.Services.AddBlazoredToast();
-
+builder.Services.Configure<JsonSerializerOptions>(opt =>
+{
+	opt.Converters.Add(new DateOnlyConverter());
+	opt.Converters.Add(new TimeOnlyConverter());
+});
 
 builder.Logging.SetMinimumLevel(LogLevel.Warning);
 
 var baseAddress = builder.Configuration.GetValue<string>("apiLocation");
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseAddress) });
+builder.Services.AddScoped<HttpClient, HttpClient>(sp => new HttpClient { BaseAddress = new Uri(baseAddress) });
 
 
 //Endpoints
@@ -34,6 +39,10 @@ builder.Services.AddTransient<IReportEndpoint, ReportEndpoint>();
 builder.Services.AddTransient<IHourlyRateEndpoint, HourlyRateEndpoint>();
 builder.Services.AddTransient<IUserEndpoint, UserEndpoint>();
 builder.Services.AddTransient<IWorkplaceEndpoint, WorkplaceEndpoint>();
+builder.Services.AddTransient<IHebcalEndpoint, HebcalEndpoint>();
+builder.Services.AddTransient<IPendingSessionEndpoint, PendingSessionEndpoint>();
+
+
 
 await builder.Build().RunAsync();
 

@@ -74,6 +74,7 @@
 			box-shadow: none;
 		}
 </style>
+
 <AuthorizeView>
 	<Authorized>
 		<CascadingValue Value="WorkplaceInfo">
@@ -145,10 +146,10 @@
 					</div>
 				}
 			</div>
-
 			<ManageSessionDialog @ref="ManageDialogRef" FormSession="ManageSession" SaveForm="SaveForm" Title="@formTitle" />
 			<ConfirmationDialog @ref="DeleteConfirmation" IdToDelete="ManageSession.Id" ConfirmationChanged="OnConfirmClicked" />
 			<InvoicingDialog @ref="InvoicingRef" InvoicingItems="OpenSessions" InvoicingItemsChanged="RefreshSessionsList" />
+
 		</CascadingValue>
 	</Authorized>
 	<NotAuthorized>
@@ -161,9 +162,6 @@
 
 
 @code {
-	[CascadingParameter]
-	public Error Error { get; set; }
-
 	// Dialog references
 	private ManageSessionDialog ManageDialogRef { get; set; }
 	private InvoicingDialog InvoicingRef { get; set; }
@@ -181,9 +179,16 @@
 
 	protected async override Task OnInitializedAsync()
 	{
-		await RefreshSessionsList();
-		Providers = await _providerEndpoint.GetAll();
-		WorkplaceInfo = await _workplaceEndpoint.GetMyWorkplaceInfo();
+		try
+		{
+			await RefreshSessionsList();
+			Providers = await _providerEndpoint.GetAll();
+			WorkplaceInfo = await _workplaceEndpoint.GetMyWorkplaceInfo();
+		}
+		catch (ApiException ex)
+		{
+			toastService.ShowError(ex.Message);
+		}
 	}
 
 	private async Task RefreshSessionsList()
@@ -199,11 +204,11 @@
 
 			StateHasChanged();
 		}
-		catch (HttpRequestException e)
+		catch (ApiException ex)
 		{
-			Error.ProcessError(e);
-			toastService.ShowError("The API seems to be offline.");
-			Console.WriteLine(e.Message);
+			toastService.ShowError(ex.Message);
+			Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
+			throw;
 		}
 		//catch (Exception e)
 		//{
@@ -245,9 +250,6 @@
 	{
 		formState = "add";
 		ManageSession = new();
-		// Make sure the database id match ---- BAD PRACTICE!!!
-		Regex secondaryProviderMatch = new(@"[l|L]egade?i?l|[m|M]e?nah?e?l");
-		ManageSession.Provider = Providers.Where(p => secondaryProviderMatch.IsMatch(p.Name)).FirstOrDefault();
 		ManageSession.BillingStatus = new BillingStatusModel() { Id = 1, BillingStatus = "Open" };
 		formTitle = "Add A Session";
 		ManageDialogRef.Show();

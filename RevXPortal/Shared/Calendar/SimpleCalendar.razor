@@ -6,7 +6,6 @@
 		grid-template-columns: repeat(7, 1fr);
 		/*border-left: solid 1px #a2a2a2;*/
 		border: solid 1px #a2a2a2;
-		margin: 1rem;
 		border-radius: 5px;
 		overflow: hidden !important;
 	}
@@ -18,12 +17,17 @@
 		min-height: 4rem;
 	}
 
-	.calendar-day.top-row {
-		border-top: none;
-	}
-	.calendar-day.right-col {
-		border-right: none;
-	}
+		.calendar-day.top-row {
+			border-top: none;
+		}
+
+		.calendar-day.right-col {
+			border-right: none;
+		}
+
+		.calendar-day.bottom-row {
+			margin-bottom: -1px;
+		}
 
 	.not-active {
 		color: #cdcdcd;
@@ -36,23 +40,20 @@
 	.not-active > .calendar-day-events {
 		display: none;
 	}
-
-	.calendar-day-event {
-		background-color: #006fb7;
-		color: #e4e4e4;
-		border-radius: 2px;
-		margin: 2px;
-		padding: 2px;
-	}
 </style>
 
 
-<div class="calendar-container"> 
-	@{int i = 1;}
-	@foreach (var day in AllDates)
+<div class="calendar-container">
+	@{
+		int i = 1;
+	}
+	@if (AllDates is not null)
 	{
-		<CalendarDay DayInMonth="day" Events="@GetEventsForDay(day.Value)" TopRow="i < 8" RightCol="i % 7 == 0"></CalendarDay>
-		i++;
+		foreach (var day in AllDates)
+		{
+			<CalendarDay DayInMonth="day" Events="@(Events.Where(e => e.Date == day.Value).ToList())" TopRow="i < 8" RightCol="i % 7 == 0" BottomRow="(AllDates.Count - i) < 7" EventType="EventType"></CalendarDay>
+			i++;
+		}
 	}
 </div>
 
@@ -60,7 +61,9 @@
 	[Parameter]
 	public DateOnly FirstDayOfMonth { get; set; }
 	[Parameter]
-	public List<ManageSessionModel> Events { get; set; }
+	public List<ICalendarEvent> Events { get; set; }
+	[Parameter]
+	public Type EventType { get; set; } = typeof(SimpleEvent);
 
 	public int LastDay { get; set; }
 	List<KeyValuePair<bool, DateOnly>> AllDates { get; set; }
@@ -70,55 +73,73 @@
 	{
 		LastDay = DateTime.DaysInMonth(FirstDayOfMonth.Year, FirstDayOfMonth.Month);
 		AllDates = GetAllDatesForCalendar(LastDay);
+		jsRuntime.InvokeVoidAsync("log", "AllDate Length: " + AllDates.Count);
 		base.OnInitialized();
 	}
 
 	private List<KeyValuePair<bool, DateOnly>> GetAllDatesForCalendar(int lastDay)
 	{
 		List<KeyValuePair<bool, DateOnly>> output = new();
-		DateOnly LastDate = new DateOnly(FirstDayOfMonth.Year, FirstDayOfMonth.Month, lastDay);
-
-		int fromLastMonth = (int)FirstDayOfMonth.DayOfWeek;
-		int fromNextMonth = 6 - (int)LastDate.DayOfWeek;
-		if (fromLastMonth > 0)
+		try
 		{
-			int lastMonth = FirstDayOfMonth.Month == 1 ? 12 : FirstDayOfMonth.Month - 1;
-			int lastMonthYear = FirstDayOfMonth.Month == 1 ? FirstDayOfMonth.Year - 1 : FirstDayOfMonth.Year;
-			int lastMonthDays = DateTime.DaysInMonth(lastMonthYear, lastMonth) - (fromLastMonth - 1);
-			for (var i = 0; i < fromLastMonth; i++ )
+			DateOnly LastDate = new DateOnly(FirstDayOfMonth.Year, FirstDayOfMonth.Month, lastDay);
+
+			int fromLastMonth = (int)FirstDayOfMonth.DayOfWeek;
+			int fromNextMonth = 6 - (int)LastDate.DayOfWeek;
+			jsRuntime.InvokeVoidAsync("log", "Next month needs: " + fromNextMonth);
+			if (fromLastMonth > 0)
 			{
-				output.Add(new KeyValuePair<bool, DateOnly>(false, new DateOnly(lastMonthYear, lastMonth, lastMonthDays)));
-				lastMonthDays++;
+				int lastMonth = FirstDayOfMonth.Month == 1 ? 12 : FirstDayOfMonth.Month - 1;
+				int lastMonthYear = FirstDayOfMonth.Month == 1 ? FirstDayOfMonth.Year - 1 : FirstDayOfMonth.Year;
+				int lastMonthDays = DateTime.DaysInMonth(lastMonthYear, lastMonth) - ( fromLastMonth - 1 );
+				for (var i = 0; i < fromLastMonth; i++)
+				{
+					output.Add(new KeyValuePair<bool, DateOnly>(false, new DateOnly(lastMonthYear, lastMonth, lastMonthDays)));
+					lastMonthDays++;
+				}
 			}
-		}
 
-		for (var i = 0; i < LastDay; i++)
-		{
-			output.Add(new KeyValuePair<bool, DateOnly>(true, new DateOnly(FirstDayOfMonth.Year, FirstDayOfMonth.Month, i + 1)));
-		}
-
-		if (fromNextMonth > 0)
-		{
-			int nextMonth = FirstDayOfMonth.Month == 12 ? 1 : FirstDayOfMonth.Month + 1;
-			int nextMonthYear = FirstDayOfMonth.Month == 12 ? FirstDayOfMonth.Year + 1 : FirstDayOfMonth.Year;
-			for  (var i = 0; i < fromNextMonth; i++)
+			for (var i = 0; i < LastDay; i++)
 			{
-				output.Add(new KeyValuePair<bool, DateOnly>(false, new DateOnly(nextMonthYear, nextMonth, i + 1)));
+				output.Add(new KeyValuePair<bool, DateOnly>(true, new DateOnly(FirstDayOfMonth.Year, FirstDayOfMonth.Month, i + 1)));
 			}
-		}
-		return output;
-	}
 
-	private List<ManageSessionModel> GetEventsForDay(DateOnly date)
-	{
-		if (Events is not null)
-		{
-			var output = Events.Where(e => DateOnly.FromDateTime(e.Date) == date).ToList();
+			if (fromNextMonth > 0)
+			{
+				int nextMonth = FirstDayOfMonth.Month == 12 ? 1 : FirstDayOfMonth.Month + 1;
+				int nextMonthYear = FirstDayOfMonth.Month == 12 ? FirstDayOfMonth.Year + 1 : FirstDayOfMonth.Year;
+				for (var i = 0; i < fromNextMonth; i++)
+				{
+					output.Add(new KeyValuePair<bool, DateOnly>(false, new DateOnly(nextMonthYear, nextMonth, i + 1)));
+				}
+			}
 			return output;
 		}
-		else
+		catch (Exception ex)
 		{
-			return new List<ManageSessionModel>();
+			jsRuntime.InvokeVoidAsync("log", ex.Message);
+			return output;
 		}
 	}
+
+	private List<ICalendarEvent> GetEventsForDay(DateOnly date)
+	{
+		try
+		{
+			if (Events is not null)
+			{
+				var output = Events.Where(e => e.Date == date).ToList();
+				return output;
+			}
+			else
+			{
+				return new List<ICalendarEvent>();
+			}
+		}
+		catch
+		{
+			return new List<ICalendarEvent>();
+		}
+	}
+
 }

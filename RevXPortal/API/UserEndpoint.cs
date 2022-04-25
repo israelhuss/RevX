@@ -1,4 +1,5 @@
-﻿using RevXPortal.Models;
+﻿using RevXPortal.Exceptions;
+using RevXPortal.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,16 +35,30 @@ namespace RevXPortal.API
 
 		public async Task<UserModel> GetCurrentUser()
 		{
-			using (HttpResponseMessage response = await _client.GetAsync($"/api/User"))
+			try
 			{
-				if (response.IsSuccessStatusCode)
+				using (HttpResponseMessage response = await _client.GetAsync($"/api/User"))
 				{
-					var result = await response.Content.ReadAsAsync<UserModel>();
-					return result;
+					if (response.IsSuccessStatusCode)
+					{
+						var result = await response.Content.ReadAsAsync<UserModel>();
+						return result;
+					}
+					else
+					{
+						throw new Exception(response.ReasonPhrase);
+					}
+				}
+			}
+			catch (HttpRequestException ex)
+			{
+				if (ex.Message == "TypeError: Failed to fetch")
+				{
+					throw new ApiException("The API cannot be reached");
 				}
 				else
 				{
-					throw new Exception(response.ReasonPhrase);
+					throw;
 				}
 			}
 		}

@@ -1,4 +1,5 @@
-﻿using RevXPortal.Models;
+﻿using RevXPortal.Exceptions;
+using RevXPortal.Models;
 using RevXPortal.Services;
 using System;
 using System.Collections.Generic;
@@ -37,7 +38,7 @@ namespace RevXPortal.API
 			{
 				if (ex.Message == "TypeError: Failed to fetch")
 				{
-					_toastService.ShowError("Looks like the API is offline.");
+					throw new ApiException("The API cannot be reached");
 				}
 				else
 				{
@@ -46,24 +47,42 @@ namespace RevXPortal.API
 			}
 			catch (Exception)
 			{
-				_toastService.ShowError("An unexpected error ocurred.");
+				throw;
 			}
-			return new List<ClientModel>();
+			// return new List<ClientModel>();
 		}
 
 		public async Task<List<ClientModel>> GetEnabled()
 		{
-			using (HttpResponseMessage response = await _client.GetAsync($"/api/Client/enabled"))
+			try
 			{
-				if (response.IsSuccessStatusCode)
+				using (HttpResponseMessage response = await _client.GetAsync($"/api/Client/enabled"))
 				{
-					var result = await response.Content.ReadAsAsync<List<ClientModel>>();
-					return result;
+					if (response.IsSuccessStatusCode)
+					{
+						var result = await response.Content.ReadAsAsync<List<ClientModel>>();
+						return result;
+					}
+					else
+					{
+						throw new Exception(response.ReasonPhrase);
+					}
+				}
+			}
+			catch (HttpRequestException ex)
+			{
+				if (ex.Message == "TypeError: Failed to fetch")
+				{
+					throw new ApiException("The API cannot be reached");
 				}
 				else
 				{
-					throw new Exception(response.ReasonPhrase);
+					throw;
 				}
+			}
+			catch (Exception)
+			{
+				throw;
 			}
 		}
 
@@ -78,7 +97,14 @@ namespace RevXPortal.API
 				}
 				else
 				{
-					throw new Exception(response.ReasonPhrase);
+					if (response.ReasonPhrase == "TypeError: Failed to fetch")
+					{
+						throw new ApiException("The API cannot be reached");
+					}
+					else
+					{
+						throw new Exception(response.ReasonPhrase);
+					}
 				}
 			}
 		}
@@ -93,7 +119,14 @@ namespace RevXPortal.API
 				}
 				else
 				{
-					throw new Exception(response.ReasonPhrase);
+					if (response.ReasonPhrase == "TypeError: Failed to fetch")
+					{
+						throw new ApiException("The API cannot be reached");
+					}
+					else
+					{
+						throw new Exception(response.ReasonPhrase);
+					}
 				}
 			}
 		}

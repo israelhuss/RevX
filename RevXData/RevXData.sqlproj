@@ -111,6 +111,13 @@
     <Build Include="dbo\Stored Procedures\spWorkplace_getAll.sql" />
     <Build Include="dbo\Stored Procedures\spWorkplace_GetByUserId.sql" />
     <Build Include="dbo\Tables\BillingCycle.sql" />
+    <Build Include="dbo\Tables\PendingSession.sql" />
+    <Build Include="dbo\Stored Procedures\spPendingSession_GetAll.sql" />
+    <Build Include="dbo\Stored Procedures\spPendingSession_GetByMonth_old.sql" />
+    <Build Include="dbo\Stored Procedures\spPendingSession_GetByMonth.sql" />
+    <Build Include="dbo\Stored Procedures\spSessionPlan_Insert.sql" />
+    <Build Include="dbo\Stored Procedures\spPendingSession_Insert.sql" />
+    <Build Include="dbo\Stored Procedures\spPendingSession_Delete.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="RevXData.refactorlog" />

@@ -8,7 +8,7 @@
 <style>
 	.revx-sidebar {
 		background-image: linear-gradient(to bottom right, #334c66, #3e6581) !important;
-		width: 14rem;
+		width: 12rem;
 		height: calc(100vh - 3.5rem);
 		position: sticky;
 		top: 0;
@@ -92,7 +92,7 @@
 		padding: 40px 80px;
 	}
 
-	.revx-input {
+	.revx-input1 {
 		width: 100%;
 		border: 1px solid #d1d7de;
 		height: 3.3rem;
@@ -103,15 +103,15 @@
 		font-size: 1.2rem;
 	}
 
-		.revx-input.error {
+		.revx-input1.error {
 			border: 2px solid red;
 		}
 
-		.revx-input.valid {
+		.revx-input1.valid {
 			border: 2px solid #00dd00;
 		}
 
-		.revx-input:focus {
+		.revx-input1:focus {
 			border: 1px solid #000;
 		}
 
@@ -176,15 +176,15 @@
 
 				<div class="content px-4">
 					<CascadingAuthenticationState>
-						@*                        <ErrorBoundary>
+						@*<CustomErrorBoundary >
 							<ChildContent>*@
-						@Body
-						@*                            </ChildContent>
+								@Body
+							@*</ChildContent>
 							<ErrorContent Context="errorContext">
-							<p class="errorUI">Nothing to see here right now. Sorry!</p>
-							@errorContext.Message
+								<p class="errorUI">Nothing to see here right now. Sorry!</p>
+								@errorContext.Message
 							</ErrorContent>
-							</ErrorBoundary>*@
+						</CustomErrorBoundary>*@
 					</CascadingAuthenticationState>
 				</div>
 			</div>
@@ -198,14 +198,14 @@
 			<div class="revx-card">
 				<h1 style="font-weight: 100; text-align: center; padding: 2rem 0;">Welcome to the RevX Portal</h1>
 				<div style="margin-bottom: 1rem">
-					<input class="revx-input @(model.Email == string.Empty ? "error" : model.Email is null ? "" : "valid")" type="email" placeholder="Email" @onkeyup="@(async (e) => { if (e.Key == "Enter") { await ExecuteLogin(); }; })" @oninput="@((e) => InputChanged(e, "email"))" />
+					<input class="revx-input1 @(model.Email == string.Empty ? "error" : model.Email is null ? "" : "valid")" type="email" placeholder="Email" @onkeyup="@(async (e) => { if (e.Key == "Enter") { await ExecuteLogin(); }; })" @oninput="@((e) => InputChanged(e, "email"))" />
 					@if (model.Email == string.Empty || ( model.Email is not null && !emailRegex.IsMatch(model.Email) ))
 					{
 						<small style="color: red;">@emailErrorText</small>
 					}
 				</div>
 				<div style="margin-bottom: 1rem">
-					<input class="revx-input @(model.Password == string.Empty ? "error" : model.Password is null ? "" : "valid")" type="password" placeholder="Password" @onkeyup="@(async (e) => { if (e.Key == "Enter") { await ExecuteLogin(); }; })" @oninput="@((e) => InputChanged(e, "password"))" />
+					<input class="revx-input1 @(model.Password == string.Empty ? "error" : model.Password is null ? "" : "valid")" type="password" placeholder="Password" @onkeyup="@(async (e) => { if (e.Key == "Enter") { await ExecuteLogin(); }; })" @oninput="@((e) => InputChanged(e, "password"))" />
 					@if (model.Password == string.Empty)
 					{
 						<small style="color: red;">@passwordErrorText</small>
@@ -235,7 +235,12 @@
 	private string btnText { get; set; } = "Sign In";
 	private bool showSidebar { get; set; } = false;
 	private Regex emailRegex { get; set; } = new Regex(@"^[a-zA-Z0-9.!#$%&'*+=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$");
+	//ErrorBoundary errorBoundary { get; set; }
 
+ //   protected override void OnParametersSet()
+ //   {
+ //       errorBoundary?.Recover();
+ //   }
 
 	//private void OnLogin()
 	//{

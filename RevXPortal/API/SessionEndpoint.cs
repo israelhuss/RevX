@@ -1,4 +1,5 @@
-﻿using RevXPortal.Services;
+﻿using RevXPortal.Exceptions;
+using RevXPortal.Services;
 
 namespace RevXPortal.API
 {
@@ -54,7 +55,7 @@ namespace RevXPortal.API
 			{
 				if (ex.Message == "TypeError: Failed to fetch")
 				{
-					_toastService.ShowError("Looks like the API is offline.");
+					throw new ApiException("The API cannot be reached");
 					throw;
 				}
 				else
@@ -64,9 +65,9 @@ namespace RevXPortal.API
 			}
 			catch (Exception)
 			{
-				_toastService.ShowError("An unexpected error ocurred.");
+				throw;
 			}
-			return new List<ManageSessionModel>();
+			//return new List<ManageSessionModel>();
 		}
 
 		public async Task SaveSession(ManageSessionModel model)

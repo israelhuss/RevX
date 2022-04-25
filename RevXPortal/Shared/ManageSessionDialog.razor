@@ -60,11 +60,9 @@
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" @onclick="Hide">Cancel</button>
-						<button type="submit" class="btn btn-primary">Save changes</button>
+						<button type="submit" class="btn btn-primary" @ref="SaveButton">Save changes</button>
 					</div>
 				</div>
-
-
 			</EditForm>
 		</div>
 	</div>
@@ -92,6 +90,8 @@
 	private List<ProviderModel> providers { get; set; }
 	private List<BillingStatusModel> billingStatus { get; set; }
 
+	private ElementReference SaveButton { get; set; }
+
 	protected override async Task OnInitializedAsync()
 	{
 		try
@@ -100,7 +100,7 @@
 			providers = await _provider.GetEnabled();
 			billingStatus = await _billingStatus.GetEnabled();
 		}
-		catch (HttpRequestException e)
+		catch (ApiException e)
 		{
 			Console.WriteLine(e.Message);
 		}
@@ -116,6 +116,11 @@
 	public void Show()
 	{
 		ShowDialog = true;
+		StateHasChanged();
+		Task.Delay(100).ContinueWith(t =>
+		{
+			SaveButton.FocusAsync();
+		});
 	}
 
 	public void Hide()

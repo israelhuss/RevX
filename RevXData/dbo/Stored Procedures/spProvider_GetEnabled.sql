@@ -4,7 +4,7 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT [Id], [UserId], [Name], [Enabled]
+	SELECT *
 	FROM dbo.[Provider]
 	WHERE [Enabled] = 1 AND UserId = @UserId
 END

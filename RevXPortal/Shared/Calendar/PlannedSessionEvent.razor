@@ -1,0 +1,202 @@
+﻿@inject IJSRuntime jsRuntime
+
+<style>
+	.planned-session-event {
+		/*background-color: #00ae0d;*/
+		color: #e4e4e4;
+		border-radius: 2px;
+		overflow: hidden;
+		margin: 2px;
+		cursor: pointer;
+		position: relative;
+		height: calc(1rem + 8px);
+		z-index: 3;
+	}
+
+	.event-container {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		display: flex;
+		font-size: .7rem;
+		z-index: 1;
+	}
+
+		.event-container.top {
+			z-index: 2;
+		}
+
+	.evt {
+		background-color: #3e6581;
+	}
+
+	.event-btn {
+		width: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.event-time {
+		width: 50%;
+		padding: 4px 0 4px 2px;
+	}
+
+	.event-title {
+		width: 50%;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		overflow: hidden;
+		padding: 4px 2px 4px 0;
+	}
+
+	.delete-event {
+		background-color: red;
+		transition: background-color .4s;
+	}
+	.delete-event:hover {
+		background-color: #e24949;
+	}
+
+	.confirm-event {
+		background-color: #00ae0d;
+		transition: background-color .4s;
+	}
+	.confirm-event:hover {
+		background-color: #16c022;
+	}
+
+	.trans-in.delete-event {
+		transform-origin: left;
+		animation: roll-from-left .5s cubic-bezier(0,.8,1,1);
+	}
+
+	.trans-in.confirm-event {
+		transform-origin: right;
+		animation: roll-from-right .5s cubic-bezier(0,.8,1,1);
+	}
+
+	.trans-out.delete-event {
+		transform-origin: left;
+		animation: roll-to-left .5s cubic-bezier(0,.8,1,1);
+	}
+
+	.trans-out.confirm-event {
+		transform-origin: right;
+		animation: roll-to-right .5s cubic-bezier(0,.8,1,1);
+	}
+</style>
+
+<div class="planned-session-event @(EventStatus == eventStatus.TransitionIn ? "trans-in" : "")" @onmouseenter="EventHovered" @onmouseleave="EventNotHovered">
+	<div class="event-container @(EventStatus == eventStatus.NotHovered ? "top" : "") evt">
+		<div class="event-time">
+			@(GetShortHourString(StartTime)) - @(GetShortHourString(EndTime))
+		</div>
+		<div class="event-title">
+			@Title
+		</div>
+	</div>
+	<div class="event-container @(EventStatus != eventStatus.NotHovered ? "top" : "")">
+		<div class="delete-event event-btn @(EventStatus == eventStatus.TransitionIn ? "trans-in" : "") @(EventStatus == eventStatus.TransitionOut ? "trans-out" : "")" @onclick="() => OnEventRejected?.Invoke(Id)"><i class="fas fa-times"></i></div>
+		<div class="confirm-event event-btn @(EventStatus == eventStatus.TransitionIn ? "trans-in" : "") @(EventStatus == eventStatus.TransitionOut ? "trans-out" : "")" @onclick="() => OnEventConfirmed?.Invoke(Id)"><i class="fas fa-check"></i></div>
+	</div>
+</div>
+
+
+
+@code {
+	private enum eventStatus
+	{
+		NotHovered,
+		Hovered,
+		TransitionIn,
+		TransitionOut
+	}
+
+	private bool isMouseOnEvent { get; set; }
+
+	[Parameter]
+	public int Id { get; set; }
+	[Parameter]
+	public string Time { get; set; }
+	[Parameter]
+	public TimeOnly StartTime { get; set; }
+	[Parameter]
+	public TimeOnly EndTime { get; set; }
+	[Parameter]
+	public string Title { get; set; }
+	[Parameter]
+	public Language Language { get; set; }
+
+	private eventStatus EventStatus { get; set; }
+
+	[CascadingParameter(Name = "OnEventConfirmed")]
+	public Action<int> OnEventConfirmed { get; set; }
+	[CascadingParameter(Name = "OnEventRejected")]
+	public Action<int> OnEventRejected { get; set; }
+
+	protected override void OnParametersSet()
+	{
+		//jsRuntime.InvokeVoidAsync("log", "hello");
+	}
+
+	private string GetShortHourString(TimeOnly time)
+	{
+		var hours = time.Hour;
+		var minutes = time.Minute;
+		var t = hours >= 12 ? "p" : "a";
+		if (hours > 12)
+		{
+			hours = hours - 12;
+		}
+		return $"{hours}{( minutes > 0 ? ":" + minutes.ToString("00") : "" )}{t}";
+	}
+
+	private void EventHovered()
+	{
+		isMouseOnEvent = true;
+		jsRuntime.InvokeVoidAsync("log", "Event Hovered");
+		Task.Delay(200).ContinueWith((task) =>
+		{
+			if (isMouseOnEvent)
+			{
+				EventStatus = eventStatus.TransitionIn;
+				StateHasChanged();
+				Task.Delay(500).ContinueWith((t) =>
+				{
+					if (EventStatus == eventStatus.TransitionIn)
+					{
+						EventStatus = eventStatus.Hovered;
+						StateHasChanged();
+					}
+				});
+			}
+		});
+	}
+
+	private void EventNotHovered(MouseEventArgs eventArgs)
+	{
+		isMouseOnEvent = false;
+		jsRuntime.InvokeVoidAsync("log", "Mouse Left" + eventArgs.Type);
+		if (EventStatus == eventStatus.Hovered)
+		{
+			EventStatus = eventStatus.TransitionOut;
+			StateHasChanged();
+			Task.Delay(450).ContinueWith((task) =>
+			{
+				if (true || EventStatus == eventStatus.TransitionOut)
+				{
+					EventStatus = eventStatus.NotHovered;
+					StateHasChanged();
+				}
+			});
+		}
+		else
+		{
+			EventStatus = eventStatus.NotHovered;
+			StateHasChanged();
+		}
+	}
+}

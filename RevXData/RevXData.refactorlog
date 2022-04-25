@@ -42,4 +42,25 @@
     <Property Name="ParentElementType" Value="SqlTable" />
     <Property Name="NewName" Value="BillingCycleId" />
   </Operation>
+  <Operation Name="Rename Refactor" Key="c874c2bb-952e-4875-b8eb-b79a41e14514" ChangeDateTime="04/03/2022 02:57:01">
+    <Property Name="ElementName" Value="[dbo].[PendingSession].[StartDate`]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[PendingSession]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="StartDate" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="192c3122-9f3d-405b-a0ae-49c8089f8587" ChangeDateTime="04/08/2022 02:56:43">
+    <Property Name="ElementName" Value="[dbo].[PendingSession].[StartDate]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[PendingSession]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="Date" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="cfaa40a3-454a-45d0-a224-a87a104c4d49" ChangeDateTime="04/08/2022 03:15:44">
+    <Property Name="ElementName" Value="[dbo].[Client].[Default]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Client]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="IsDefault" />
+  </Operation>
 </Operations>

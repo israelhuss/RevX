@@ -3,7 +3,7 @@
 	@UserId nvarchar(128)
 AS
 BEGIN
-	SELECT [Id], [UserId], [Name], [Enabled]
+	SELECT *
 	FROM dbo.Provider
 	WHERE Id = @Id AND UserId = @UserId;
 END

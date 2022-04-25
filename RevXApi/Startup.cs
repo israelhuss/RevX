@@ -1,6 +1,7 @@
 using FluentEmail.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -12,6 +13,7 @@ using Microsoft.OpenApi.Models;
 using NLog;
 using NLog.Common;
 using RevXApi.Data;
+using RevXApi.Library.Converters;
 using RevXApi.Library.DataAccess;
 using RevXApi.Library.Services;
 using System;
@@ -51,8 +53,8 @@ namespace RevXApi
 
 			services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
 				.AddEntityFrameworkStores<ApplicationDbContext>();
-			services.AddControllersWithViews();
-
+			services.AddControllersWithViews().AddJsonOptions(opt => opt.JsonSerializerOptions.AddDateOnlyConverters()).AddJsonOptions(opt => opt.JsonSerializerOptions.AddTimeOnlyConverters());
+			
 
 
 			//Personal Services
@@ -68,6 +70,7 @@ namespace RevXApi
 			services.AddTransient<IUserData, UserData>();
 			services.AddTransient<IWorkplaceData, WorkplaceData>();
 			services.AddTransient<IPlayground, Playground>();
+			services.AddTransient<IPendingSessionData, PendingSessionData>();
 
 			// FluentEmail Configuration
 			services.AddTransient<IEmailService, EmailService>();

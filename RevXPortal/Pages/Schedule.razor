@@ -1,0 +1,199 @@
+﻿@page "/Schedule"
+@inject IJSRuntime jsRuntime
+@inject IHebcalEndpoint _hebcalEndpoint
+@inject ISessionEndpoint _sessionEndpoint
+@inject IPendingSessionEndpoint _pendingEndpoint
+@inject IProviderEndpoint _providerEndpiont
+@inject IClientEndpoint _clientEndpoint
+@inject IWorkplaceEndpoint _workplaceEndpoint
+@inject IToastService toastService
+
+
+<div style="height: 100%; padding: 2rem;">
+	<div style="height: 92%;">
+		<CascadingValue Name="OnEventConfirmed" Value="OnEventConfirmed">
+			<CascadingValue Name="OnEventRejected" Value="OnEventRejected">
+				<Calendar EventType="typeof(PlannedSessionEvent)" FirstDayOfMonth="CurrentDate" Events="CalendarEvents" OnMonthChanged="MonthChanged"></Calendar>
+			</CascadingValue>
+		</CascadingValue>
+	</div>
+	<div style="height: 8%; display: flex; justify-content: center; align-items: flex-end;">
+		<button class="btn btn-primary" @onclick="AddSchedule">Add Schedule</button>
+	</div>
+</div>
+
+<CascadingValue Value="Clients">
+	<CascadingValue Value="Providers">
+		<AddScheduleModal @ref="addScheduleRef" SavedAsync="InitializeCalendar"></AddScheduleModal>
+	</CascadingValue>
+</CascadingValue>
+
+<ManageSessionDialog @ref="ManageDialogRef" FormSession="NewSession" SaveForm="ConfirmPending" Title="@formTitle" />
+<ConfirmationDialog @ref="DeleteConfirmation" ConfirmationChanged="@((bool confirm) => { if (confirm) {DeletePending();};})" />
+
+@code {
+	public int Month { get; set; } = DateTime.Now.Month;
+	public int Year { get; set; } = DateTime.Now.Year;
+	public DateOnly CurrentDate { get; set; }
+	public List<ICalendarEvent> CalendarEvents { get; set; }
+	public List<SessionApiModel> PendingSessions { get; set; }
+
+	public List<ClientModel> Clients { get; set; }
+	public List<ProviderModel> Providers { get; set; }
+
+	private ConfirmationDialog DeleteConfirmation { get; set; }
+	private int PendingDeletion { get; set; }
+
+	private ManageSessionDialog ManageDialogRef { get; set; }
+	public string formTitle { get; set; }
+	public ManageSessionModel NewSession { get; set; } = new();
+
+	private AddScheduleModal addScheduleRef { get; set; }
+	private ScheduleModel NewSchedule { get; set; } = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		await InitializeCalendar();
+		await jsRuntime.InvokeVoidAsync("log", CurrentDate.ToLongDateString());
+	}
+
+	private async Task InitializeCalendar()
+	{
+		try
+		{
+			CurrentDate = new(Year, Month, 1);
+			PendingSessions = await GetPendingSessions();
+			Clients = await _clientEndpoint.GetEnabled();
+			Providers = await _providerEndpiont.GetEnabled();
+			List<ICalendarEvent> hebcalEvent = await GetHebcalHolidays();
+			List<ICalendarEvent> calendarEvents = GetPendingEvents();
+			CalendarEvents = new();
+			foreach (var ev in hebcalEvent)
+			{
+				CalendarEvents.Add(ev);
+			}
+			foreach (var ev in calendarEvents)
+			{
+				CalendarEvents.Add(ev);
+			}
+			StateHasChanged();
+		}
+		catch (ApiException ex)
+		{
+			toastService.ShowError(ex.Message);
+		}
+		catch (Exception ex)
+		{
+			toastService.ShowError("Error :(");
+			await jsRuntime.InvokeVoidAsync("log", ex.Message + "\n" + ex.StackTrace);
+		}
+	}
+
+	private async Task MonthChanged(DateOnly newDate)
+	{
+		Month = newDate.Month;
+		Year = newDate.Year;
+		await InitializeCalendar();
+	}
+
+	private async Task<List<ICalendarEvent>> GetHebcalHolidays()
+	{
+		var output = ( await _hebcalEndpoint.GetHebcalEvents(Month, Year) ).ToList<ICalendarEvent>();
+		return output;
+	}
+
+	private async Task<List<SessionApiModel>> GetPendingSessions()
+	{
+		var result = await _pendingEndpoint.GetByMonth(Month, Year);
+		return result;
+	}
+
+	private void OnEventConfirmed(int id)
+	{
+		jsRuntime.InvokeVoidAsync("log", "Event Confirmed " + id);
+		var evt = PendingSessions.Where(p => p.Id == id).FirstOrDefault();
+		jsRuntime.InvokeVoidAsync("log", "Found Event " + evt.Id);
+		NewSession = new()
+			{
+				Id = evt.Id,
+				Client = evt.Client,
+				Provider = evt.Provider,
+				BillingStatus = new BillingStatusModel() { Id = 1, BillingStatus = "Open" },
+				Date = evt.Date,
+				StartTime = TimeSpan.Parse(evt.StartTime),
+				EndTime = TimeSpan.Parse(evt.EndTime)
+			};
+		StateHasChanged();
+		formTitle = "Confirm Planned Session";
+		jsRuntime.InvokeVoidAsync("log", evt.Date.ToShortDateString());
+		ManageDialogRef.Show();
+	}
+
+	private void OnEventRejected(int id)
+	{
+		jsRuntime.InvokeVoidAsync("log", "Event Rejected " + id);
+		PendingDeletion = id;
+		DeleteConfirmation.Show();
+	}
+
+	private void AddSchedule()
+	{
+		addScheduleRef.Show();
+	}
+
+	private List<ICalendarEvent> GetPendingEvents()
+	{
+		List<ICalendarEvent> output = new();
+		foreach (var session in PendingSessions)
+		{
+			PendingSessionEventModel pending = new()
+				{
+					Id = session.Id,
+					Date = DateOnly.FromDateTime(session.Date),
+					StartTime = TimeOnly.Parse(session.EndTime),
+					EndTime = TimeOnly.Parse(session.EndTime),
+					Title = session.Client.DisplayName,
+					Parameters = new Dictionary<string, object>()
+					{
+						{
+							"Id",
+							session.Id
+						},
+						{
+							"StartTime",
+							TimeOnly.Parse(session.StartTime)
+						},
+						{
+							"EndTime",
+							TimeOnly.Parse(session.EndTime)
+						}
+					}
+				};
+			output.Add(pending);
+		}
+		return output;
+	}
+
+	private async void ConfirmPending()
+	{
+		ManageDialogRef.Hide();
+		try
+		{
+			await _sessionEndpoint.SaveSession(NewSession);
+			await _pendingEndpoint.Delete(NewSession.Id);
+			await InitializeCalendar();
+			toastService.ShowSuccess("Changes saved successfully.");
+		}
+		catch (Exception)
+		{
+			toastService.ShowError("Error saving session.");
+		}
+
+		NewSession = new();
+	}
+
+	public void DeletePending()
+	{
+		jsRuntime.InvokeVoidAsync("log", "Delete function got: " + PendingDeletion);
+	}
+}

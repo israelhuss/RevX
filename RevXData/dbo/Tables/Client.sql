@@ -5,5 +5,6 @@
 	[FirstName] NVARCHAR(50) NOT NULL, 
 	[LastName] NVARCHAR(50) NOT NULL, 
 	[Enabled] BIT NOT NULL DEFAULT 1,
-	CONSTRAINT [FK_Client_ToUser] FOREIGN KEY ([UserId]) REFERENCES [User]([Id])
+	[IsDefault] BIT NOT NULL DEFAULT 0, 
+    CONSTRAINT [FK_Client_ToUser] FOREIGN KEY ([UserId]) REFERENCES [User]([Id])
 )

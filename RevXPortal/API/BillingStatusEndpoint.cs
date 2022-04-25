@@ -1,4 +1,5 @@
-﻿using RevXPortal.Models;
+﻿using RevXPortal.Exceptions;
+using RevXPortal.Models;
 using RevXPortal.Services;
 using System;
 using System.Collections.Generic;
@@ -47,7 +48,7 @@ namespace RevXPortal.API
 			{
 				if (ex.Message == "TypeError: Failed to fetch")
 				{
-					_toastService.ShowError("Looks like the API is offline.");
+					throw new ApiException("The API cannot be reached");
 				}
 				else
 				{
@@ -56,9 +57,9 @@ namespace RevXPortal.API
 			}
 			catch (Exception)
 			{
-				_toastService.ShowError("An unexpected error ocurred.");
+				throw;
 			}
-			return new List<BillingStatusModel>();
+			// return new List<BillingStatusModel>();
 		}
 
 		public async Task<List<BillingStatusModel>> GetEnabled()

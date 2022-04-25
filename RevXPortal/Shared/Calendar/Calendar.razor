@@ -1,0 +1,270 @@
+﻿@inject IJSRuntime jsRuntime
+
+<style>
+	.grand-container {
+		height: 100%;
+	}
+
+	.header {
+		height: 10%;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.back-btn,
+	.fwd-btn {
+		display: flex;
+		padding: 0.375rem 0.75rem;
+		border: 1px solid #cfcfcf;
+		border-radius: 4px;
+		line-height: 1.3;
+		cursor: pointer;
+		align-items: baseline;
+		transition: all .5s ease-in-out;
+	}
+
+		.back-btn > .arrow {
+			padding-right: .5rem;
+		}
+
+		.fwd-btn > .arrow {
+			padding-left: .5rem;
+		}
+
+		.back-btn:hover,
+		.fwd-btn:hover {
+			padding: 0.375rem .5rem;
+		}
+
+			.back-btn:hover > .expander,
+			.fwd-btn:hover > .expander {
+				width: 0.5rem;
+			}
+
+
+	.arrow {
+		font-size: .9rem;
+	}
+
+	.expander {
+		width: 0;
+		transition: all .5s ease-in-out;
+	}
+
+
+	.title {
+		flex: 1;
+		font-size: 1.8rem;
+		font-weight: bold;
+		text-align: center;
+	}
+
+	.body {
+		height: 90%;
+	}
+
+	.calendar-container {
+		display: grid;
+		grid-template-columns: repeat(7, 1fr);
+		/*border-left: solid 1px #a2a2a2;*/
+		border: solid 1px #a2a2a2;
+		border-radius: 5px;
+		overflow: hidden !important;
+		height: 100%;
+	}
+
+	.calendar-day {
+		text-align: left;
+		border-right: solid 1px #a2a2a2;
+		border-top: solid 1px #a2a2a2;
+		min-height: 4rem;
+	}
+
+		.calendar-day.top-row {
+			border-top: none;
+		}
+
+		.calendar-day.right-col {
+			border-right: none;
+		}
+
+		.calendar-day.bottom-row {
+			margin-bottom: -1px;
+		}
+
+	.not-active {
+		color: #cdcdcd;
+	}
+
+	.calendar-day-number {
+		padding: 2px;
+	}
+
+	.not-active > .calendar-day-events {
+		display: none;
+	}
+
+	.calendar-day-event {
+		background-color: #006fb7;
+		color: #e4e4e4;
+		border-radius: 2px;
+		margin: 2px;
+		padding: 2px;
+	}
+</style>
+
+<div class="grand-container">
+	<div class="header">
+		<div class="back-btn" @onclick="PreviousMonth">
+			<div class="arrow"><i class="fas fa-chevron-left"></i></div>
+			<div class="expander"></div>
+			<div>Back</div>
+		</div>
+		<div class="title">
+			@Title
+		</div>
+		<div class="fwd-btn" @onclick="NextMonth">
+			<div>Next</div>
+			<div class="expander"></div>
+			<div class="arrow"><i class="fas fa-chevron-right"></i></div>
+		</div>
+	</div>
+	<div class="body">
+		<div class="calendar-container">
+			@*@for (var j = 0; j < 7; j++)
+			{
+				<div>@DayOfWeek.Sunday</div>
+			}*@
+			@{
+				int i = 1;
+			}
+			@if (AllDates is not null)
+			{
+				foreach (var day in AllDates)
+				{
+					<CalendarDay DayInMonth="day" Events="@GetEventsForDay(day.Value)" TopRow="i < 8" RightCol="i % 7 == 0" BottomRow="(AllDates.Count - i) < 7" EventType="EventType"></CalendarDay>
+					i++;
+				}
+			}
+		</div>
+	</div>
+</div>
+
+@code {
+	[Parameter]
+	public DateOnly FirstDayOfMonth { get; set; }
+	[Parameter]
+	public List<ICalendarEvent> Events { get; set; } = new();
+	[Parameter]
+	public Type EventType { get; set; }
+	[Parameter]
+	public EventCallback<DateOnly> OnMonthChanged { get; set; }
+
+	public int LastDay { get; set; }
+	List<KeyValuePair<bool, DateOnly>> AllDates { get; set; }
+
+	[Parameter]
+	public string Title { get; set; }
+
+	protected override void OnInitialized()
+	{
+		InitializeCalendar();
+		base.OnInitialized();
+	}
+
+	private void InitializeCalendar()
+	{
+		LastDay = DateTime.DaysInMonth(FirstDayOfMonth.Year, FirstDayOfMonth.Month);
+		AllDates = GetAllDatesForCalendar(LastDay);
+		Title = GetTitle();
+	}
+
+	public void NextMonth()
+	{
+		int nextMonth = FirstDayOfMonth.Month == 12 ? 1 : FirstDayOfMonth.Month + 1;
+		int nextMonthYear = FirstDayOfMonth.Month == 12 ? FirstDayOfMonth.Year + 1 : FirstDayOfMonth.Year;
+		FirstDayOfMonth = new(nextMonthYear, nextMonth, 1);
+		InitializeCalendar();
+		OnMonthChanged.InvokeAsync(FirstDayOfMonth);
+	}
+
+	public void PreviousMonth()
+	{
+		int lastMonth = FirstDayOfMonth.Month == 1 ? 12 : FirstDayOfMonth.Month - 1;
+		int lastMonthYear = FirstDayOfMonth.Month == 1 ? FirstDayOfMonth.Year - 1 : FirstDayOfMonth.Year;
+		FirstDayOfMonth = new(lastMonthYear, lastMonth, 1);
+		InitializeCalendar();
+		OnMonthChanged.InvokeAsync(FirstDayOfMonth);
+	}
+
+	private string GetTitle()
+	{
+		string output = FirstDayOfMonth.ToString("MMMM yyyy");
+		return output;
+	}
+
+	private List<KeyValuePair<bool, DateOnly>> GetAllDatesForCalendar(int lastDay)
+	{
+		List<KeyValuePair<bool, DateOnly>> output = new();
+		try
+		{
+			DateOnly LastDate = new DateOnly(FirstDayOfMonth.Year, FirstDayOfMonth.Month, lastDay);
+
+			int fromLastMonth = (int)FirstDayOfMonth.DayOfWeek;
+			int fromNextMonth = 6 - (int)LastDate.DayOfWeek;
+			if (fromLastMonth > 0)
+			{
+				int lastMonth = FirstDayOfMonth.Month == 1 ? 12 : FirstDayOfMonth.Month - 1;
+				int lastMonthYear = FirstDayOfMonth.Month == 1 ? FirstDayOfMonth.Year - 1 : FirstDayOfMonth.Year;
+				int lastMonthDays = DateTime.DaysInMonth(lastMonthYear, lastMonth) - ( fromLastMonth - 1 );
+				for (var i = 0; i < fromLastMonth; i++)
+				{
+					output.Add(new KeyValuePair<bool, DateOnly>(false, new DateOnly(lastMonthYear, lastMonth, lastMonthDays)));
+					lastMonthDays++;
+				}
+			}
+
+			for (var i = 0; i < LastDay; i++)
+			{
+				output.Add(new KeyValuePair<bool, DateOnly>(true, new DateOnly(FirstDayOfMonth.Year, FirstDayOfMonth.Month, i + 1)));
+			}
+
+			if (fromNextMonth > 0)
+			{
+				int nextMonth = FirstDayOfMonth.Month == 12 ? 1 : FirstDayOfMonth.Month + 1;
+				int nextMonthYear = FirstDayOfMonth.Month == 12 ? FirstDayOfMonth.Year + 1 : FirstDayOfMonth.Year;
+				for (var i = 0; i < fromNextMonth; i++)
+				{
+					output.Add(new KeyValuePair<bool, DateOnly>(false, new DateOnly(nextMonthYear, nextMonth, i + 1)));
+				}
+			}
+			return output;
+		}
+		catch (Exception ex)
+		{
+			jsRuntime.InvokeVoidAsync("log", ex.Message);
+			return output;
+		}
+	}
+
+	private List<ICalendarEvent> GetEventsForDay(DateOnly date)
+	{
+		try
+		{
+			if (Events is not null)
+			{
+				var output = Events?.Where(e => e.Date == date).ToList();
+				return output;
+			}
+			else
+			{
+				return new List<ICalendarEvent>();
+			}
+		}
+		catch
+		{
+			return new List<ICalendarEvent>();
+		}
+	}
+}

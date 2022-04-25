@@ -1,0 +1,39 @@
+﻿<style>
+	.calendar-day-event {
+		background-color: #39a941;
+		color: #e4e4e4;
+		border-radius: 2px;
+		margin: 2px;
+		padding: 2px;
+		display: flex;
+	}
+
+	.calendar-day-event.heb {
+		flex-direction: row-reverse;
+	}
+</style>
+
+<div class="calendar-day-event @(Language == Language.Hebrew ? "heb" : "")">
+	<span style="font-size: .9rem;">@Time</span>
+	<span style="font-size: .6rem;">@Title</span>
+</div>
+
+@code {
+	[Parameter]
+	public string Time { get; set; }
+	[Parameter]
+	public string Title { get; set; }
+	[Parameter]
+	public Language Language { get; set; }
+
+	private string GetShortHourString(TimeSpan time)
+	{
+		var hours = time.Hours;
+		var t = hours >= 12 ? "p" : "a";
+		if (hours > 12)
+		{
+			hours = hours - 12;
+		}
+		return $"{hours}{t}";
+	}
+}

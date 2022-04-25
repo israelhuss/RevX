@@ -1,0 +1,211 @@
+﻿@inject IJSRuntime jsRuntime
+
+<style>
+	.revx-input {
+		width: 100%;
+		position: relative;
+	}
+
+		.revx-input.has-placeholder {
+			margin-top: 15px;
+		}
+
+	.revx-input-box {
+		border: none !important;
+		border-bottom: 1px solid #ced4da !important;
+		border-radius: 0 !important;
+		padding: 0 0.25rem !important;
+		height: calc(1.2em + 0.75rem + 2px) !important;
+	}
+
+	.revx-input-container {
+		position: relative;
+		width: 100%;
+	}
+
+	.revx-input-label {
+		position: absolute;
+		top: 50%;
+		left: 10px;
+		transform: translate(0, -50%);
+		font-size: 14px;
+		color: #9d9d9d;
+		z-index: 1;
+		pointer-events: none;
+		transition: all 0.3s ease-in-out;
+	}
+
+	.revx-input-box:focus {
+		outline: none !important;
+		box-shadow: none !important;
+	}
+
+		.revx-input-box:focus ~ .revx-input-label,
+		.revx-input-label.fixed {
+			top: -10px;
+			left: 3px;
+			color: #9d9d9d;
+			z-index: 1;
+		}
+
+	.revx-input-img {
+		position: absolute;
+		top: 0;
+		right: 0;
+		max-width: 50px;
+		height: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding-right: 10px;
+		animation: fadeIn .6s;
+	}
+
+	.revx-input-save {
+		position: absolute;
+		top: 0;
+		right: 0;
+		max-width: 50px;
+		height: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		font-size: 25px;
+		color: #3cb53c;
+		z-index: 100;
+		cursor: pointer;
+		animation: fade-in .6s;
+	}
+
+		.revx-input-save:hover {
+			color: #3d9c3d;
+		}
+
+	.revx-input-img > img {
+		max-width: 100%;
+		height: auto;
+	}
+
+	.invalid {
+		border-bottom: 2px solid #e74c3c !important;
+	}
+
+	.valid {
+		border-bottom: 1px solid #4bb543 !important;
+	}
+	/* Chrome, Safari, Edge, Opera */
+	input::-webkit-outer-spin-button,
+	input::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	/* Firefox */
+	input[type=number] {
+		-moz-appearance: textfield;
+	}
+</style>
+
+
+
+<div class="revx-input @(PlaceHolder is not null ? "has-placeholder" : "")">
+	@if (ImgPlaceHolder is not null && !showSaveButton)
+	{
+		<div class="revx-input-img">
+			<img src="@ImgPlaceHolder" alt="">
+		</div>
+	}
+	@if (SaveSingle && showSaveButton)
+	{
+		<div class="revx-input-save" @onclick="SaveInput">
+			<span>&#10003;</span>
+		</div>
+	}
+	@if (InputType == "text")
+	{
+		<input ref="input" name="@InputName" type="@InputType" class="form-control revx-input-box @InputClass @(ValidationMessage is not null ? "validate" : "")" @oninput="InputChanged" value="@Value" @onblur="ValidateInput" autofocus="@AutoFocus" />
+	}
+	@if (PlaceHolder is not null)
+	{
+		<div class="revx-input-label @LabelClass @(String.IsNullOrWhiteSpace(Value) ? "" : "fixed")">
+			@PlaceHolder
+			@if (Required)
+			{
+				<span style="color: red;">*</span>
+			}
+		</div>
+	}
+	@if (ValidationMessage is not null)
+	{
+		<small class="revx-validate" style="color: red; margin-left: 3px;">@ValidationMessage</small>
+	}
+</div>
+
+
+@code {
+	[Parameter]
+	public string Value { get; set; }
+	[Parameter]
+	public EventCallback<string> ValueChanged { get; set; }
+	[Parameter]
+	public string PlaceHolder { get; set; }
+	[Parameter]
+	public string ImgPlaceHolder { get; set; }
+	[Parameter]
+	public bool SaveSingle { get; set; } = false;
+	[Parameter]
+	public EventCallback SaveInput { get; set; }
+	[Parameter]
+	public string InputType { get; set; } = "text";
+	[Parameter]
+	public string InputClass { get; set; }
+	[Parameter]
+	public string LabelClass { get; set; }
+	[Parameter]
+	public string InputName { get; set; }
+	[Parameter]
+	public string ValidationMessage { get; set; }
+	[Parameter]
+	public bool AutoFocus { get; set; } = false;
+	[Parameter]
+	public bool Required { get; set; } = false;
+	[Parameter]
+	public Action<string> Validate { get; set; }
+
+	private bool showSaveButton { get; set; } = false;
+	private string originalValue { get; set; }
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+		{
+			originalValue = Value;
+		}
+	}
+
+	private void InputChanged(ChangeEventArgs e)
+	{
+		Value = e.Value.ToString();
+		ValueChanged.InvokeAsync(Value);
+		if (Value != originalValue)
+		{
+			showSaveButton = true;
+		}
+		else
+		{
+			showSaveButton = false;
+		}
+	}
+
+	private void ValidateInput()
+	{
+		if (Validate is not null)
+		{
+			Validate(Value);
+		}
+		else
+		{
+
+		}
+	}
+}

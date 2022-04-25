@@ -1,0 +1,97 @@
+﻿@inject IJSRuntime jsRunntime
+
+<style>
+	.days-of-week-container {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding-top: 7px;
+	}
+
+	.days-of-week-item {
+		padding: 0.25rem 0.65rem;
+		border: 1px solid #e6e9ec;
+		cursor: pointer;
+		user-select: none;
+		transition: all .3s ease-in-out;
+		font-size: .9rem;
+	}
+
+		.days-of-week-item.selected {
+			background-color: var(--primary-dark-color);
+			color: var(--primary-white-color);
+			border-color: var(--primary-dark-color);
+		}
+</style>
+
+<div class="revx-input @(PlaceHolder is not null ? "has-placeholder" : "")">
+	<div class="days-of-week-container">
+		@for (var i = 0; i < days.Count(); i++)
+		{
+			int copy = i;
+			<div class="days-of-week-item @(days[i] == 1 ? "selected" : "")" @onclick="() => DayClicked(copy)">@dayNames[i]</div>
+		}
+	</div>
+	@if (PlaceHolder is not null)
+	{
+		<div class="revx-input-label fixed">
+			@PlaceHolder
+		</div>
+	}
+	@if (ValidationMessage is not null)
+	{
+		<small class="revx-validate" style="color: red; margin-left: 3px;">@ValidationMessage</small>
+	}
+</div>
+
+
+
+@code {
+	[Parameter]
+	public List<int> Value { get; set; }
+	[Parameter]
+	public EventCallback<List<int>> ValueChanged { get; set; }
+	[Parameter]
+	public string PlaceHolder { get; set; }
+	[Parameter]
+	public string ValidationMessage { get; set; }
+
+	private int[] days { get; set; } = new int[ 7 ];
+	private string[] dayNames { get; set; } = new string[]
+				{
+		"Sun",
+		"Mon",
+		"Tue",
+		"Wed",
+		"Thu",
+		"Fri",
+		"Sat"
+				};
+
+	protected override void OnParametersSet()
+	{
+		if (Value is null)
+		{
+			Value = new();
+		}
+		foreach (var val in Value)
+		{
+			days[ val ] = 1;
+		}
+	}
+
+	private void DayClicked(int index)
+	{
+		if (Value.IndexOf(index) > -1)
+		{
+			days[ index ] = 0;
+			Value.Remove(index);
+		}
+		else
+		{
+			days[ index ] = 1;
+			Value.Add(index);
+		}
+		ValueChanged.InvokeAsync(Value);
+	}
+}

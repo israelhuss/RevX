@@ -4,7 +4,7 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT [Id], [UserId], [FirstName], [LastName], [Enabled]
+	SELECT *
 	FROM dbo.Client
 	WHERE UserId = @UserId
 END

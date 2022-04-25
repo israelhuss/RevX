@@ -1,5 +1,20 @@
-﻿window.SetSelectOption = (elementId, index) => {
-    document.getElementById(elementId).selectedIndex = index;
+﻿window.closeErrorUi = () => {
+    var el = document.getElementById('blazor-error-ui');
+    if (el) {
+         el.style.display = 'none';
+    } else {
+        console.log("Not Found");
+    }
+}
+
+
+window.SetSelectOption = (elementId, index) => {
+    var el = document.getElementById(elementId);
+    if (el) {
+        el.selectedIndex = index;
+    } else {
+        console.log(`Didn't find ${elementId}`);
+    }
 };
 
 window.GetSelectOption = (elementId) => {
@@ -48,3 +63,17 @@ window.getActualValue = (id, prop) => {
         return 0;
     }
 };
+
+window.documentClick = {
+    registerClickCallback: function () {
+        window.addEventListener("click", documentClicked);
+    },
+    removeClickListener: function () {
+        window.removeEventListener("click", documentClicked);
+    }
+};
+
+function documentClicked(e) {
+    console.log(e);
+    DotNet.invokeMethodAsync("RevXPortal", 'OnDocumentClicked', { targetClassName: e.target.className });
+}

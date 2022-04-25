@@ -5,6 +5,7 @@
 @inject IUserEndpoint _userEndpoint
 @inject IWorkplaceEndpoint _workplaceEndpoint
 @inject IJSRuntime jsRuntime
+@inject IToastService toastService
 
 
 <style>
@@ -50,13 +51,20 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		AllInvoices = await _invoiceEndpiont.GetAll();
-		AllInvoices.Sort((a, b) => a.StartDate < b.StartDate ? 1 : -1);
-		InvoicesByMonth = GroupInvoicesByMonth(AllInvoices);
-		Providers = await _providerEndpiont.GetAll();
-		Sessions = await _sessionEndpiont.GetAll();
-		WorkplaceInfo = await _workplaceEndpoint.GetMyWorkplaceInfo();
-		await jsRuntime.InvokeVoidAsync("log", JsonSerializer.Serialize(InvoicesByMonth));
+		try
+		{
+			AllInvoices = await _invoiceEndpiont.GetAll();
+			AllInvoices.Sort((a, b) => a.StartDate < b.StartDate ? 1 : -1);
+			InvoicesByMonth = GroupInvoicesByMonth(AllInvoices);
+			Providers = await _providerEndpiont.GetAll();
+			Sessions = await _sessionEndpiont.GetAll();
+			WorkplaceInfo = await _workplaceEndpoint.GetMyWorkplaceInfo();
+			await jsRuntime.InvokeVoidAsync("log", JsonSerializer.Serialize(InvoicesByMonth));
+		}
+		catch (ApiException ex)
+		{
+			toastService.ShowError(ex.Message);
+		}
 	}
 
 	private Dictionary<string, List<InvoiceModel>> GroupInvoicesByMonth(List<InvoiceModel> invoices)

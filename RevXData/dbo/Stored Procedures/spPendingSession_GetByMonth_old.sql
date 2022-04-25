@@ -1,0 +1,37 @@
+﻿--CREATE PROCEDURE [dbo].[spPendingSession_GetByMonth]
+--	@UserId nvarchar(128),
+--	@Month int,
+--	@Year int
+--AS
+--BEGIN
+--	WITH E00(N) AS (SELECT 1 UNION ALL SELECT 1)
+--    ,E02(N) AS (SELECT 1 FROM E00 a, E00 b)
+--    ,E04(N) AS (SELECT 1 FROM E02 a, E02 b)
+--    ,E08(N) AS (SELECT 1 FROM E04 a, E04 b)
+--    ,E16(N) AS (SELECT 1 FROM E08 a, E08 b)
+--    ,E32(N) AS (SELECT 1 FROM E16 a, E16 b)
+--    ,cteTally(N) AS (SELECT ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) FROM E32)
+--    ,DateRange AS
+--    (
+--        SELECT ExplodedDate = DATEADD(DAY,N - 1,'2019-01-01')
+--        FROM cteTally
+--        WHERE N <= 100000
+--    )
+--    SELECT
+--       d.ExplodedDate AS Date,
+--       s.* 
+--    FROM
+--       dbo.PendingSession ps 
+--       JOIN
+--          DateRange d 
+--          ON d.ExplodedDate >= ps.[StartDate] 
+--          AND d.ExplodedDate <= ps.[EndDate] 
+--       Join
+--          SessionPlan s 
+--          ON ps.PlanId = s.Id 
+--          AND s.DayOfWeek = DATEPART(dw, d.ExplodedDate) 
+--    where
+--       s.UserId = @UserId 
+--       AND Month(d.ExplodedDate) = @Month 
+--       AND YEAR(d.ExplodedDate) = @Year
+--END

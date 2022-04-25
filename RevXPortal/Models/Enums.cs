@@ -27,4 +27,10 @@
 		Biweeky = 2,
 		Weekly = 3,
 	}
+
+	public enum Language
+	{
+		English,
+		Hebrew
+	}
 }

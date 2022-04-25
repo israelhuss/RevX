@@ -1,0 +1,220 @@
+﻿@inject IJSRuntime jsRuntime
+
+@typeparam TValue
+
+<style>
+	.pointer {
+		cursor: pointer;
+	}
+
+	.revx-input-options {
+		position: absolute;
+		top: 100%;
+		left: 0;
+		width: 100%;
+		z-index: 1000;
+		background: #fff;
+	}
+
+	.revx-input-option {
+		padding: 0.2rem 0.75rem;
+		border: 1px solid #ced4da;
+		border-top: none;
+		cursor: pointer;
+	}
+
+		.revx-input-option.selected {
+			background-color: #3e6581;
+			color: #e6e6e6;
+		}
+
+		.revx-input-option:hover {
+			background-color: #e2e2e2;
+			color: #474747;
+		}
+</style>
+
+<div class="revx-input @(PlaceHolder is not null ? "has-placeholder" : "")">
+	<div class="revx-input-icon pointer">
+		<i class="fas fa-chevron-down @(showOptions ? "flipped" : "")"></i>
+	</div>
+	@if (showOptions)
+	{
+		<input type="text" class="revx-input-box @InputClass" @bind-value="searchTerm" @oninput="InputChanged" @ref="inputRef" @onkeyup="InputKeyUp" />
+	}
+	else
+	{
+		<div class="revx-input-box pointer" @onclick="OpenOptions">@(Value is not null ? Value.DisplayName : "")</div>
+	}
+
+	@if (PlaceHolder is not null)
+	{
+		<div class="revx-input-label @(Value is null || (Value is not null && String.IsNullOrWhiteSpace(Value.DisplayName)) ? "" : "fixed")">
+			@PlaceHolder
+			@if (Required)
+			{
+				<span style="color: red;">*</span>
+			}
+		</div>
+	}
+	@if (showOptions)
+	{
+		<div class="revx-input-options">
+			@{
+				int i = 0;
+			}
+			@foreach (var item in Items)
+			{
+				int copy = i;
+				<div id="@i" class="revx-input-option @(currentSelection == i ? "selected" : "")" @onclick="() => OnSelectionChanged(copy)">@item.DisplayName</div>
+				i++;
+			}
+		</div>
+	}
+	@if (ValidationMessage is not null)
+	{
+		<small class="revx-validate" style="color: red; margin-left: 3px;">@ValidationMessage</small>
+	}
+</div>
+
+
+@code {
+	[Parameter]
+	public ISelectionFriendly Value { get; set; }
+	[Parameter]
+	public EventCallback<TValue> ValueChanged { get; set; }
+	[Parameter]
+	public IEnumerable<ISelectionFriendly> Items { get; set; }
+	[Parameter]
+	public string PlaceHolder { get; set; }
+	[Parameter]
+	public bool Required { get; set; }
+	[Parameter]
+	public string ValidationMessage { get; set; }
+	[Parameter]
+	public string InputClass { get; set; }
+
+
+	private string searchTerm { get; set; }
+	private string inputId { get; set; } = Guid.NewGuid().ToString();
+	private bool showOptions { get; set; }
+	ElementReference inputRef;
+	private int currentSelection { get; set; }
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			//await jsRuntime.InvokeVoidAsync("documentClick.registerClickCallback");
+			//DocumentClickService.OnClick += DocumentClicked;
+			await initializeInput();
+		}
+	}
+
+	private async Task initializeInput()
+	{
+		if (Items is not null)
+		{
+			if (Value is not null)
+			{
+				//int index = Items.ToList().FindIndex(i => i.Id == Value.Id);
+				//await jsRuntime.InvokeVoidAsync("SetSelectOption", inputId, ( index + 1 ));
+			}
+			else
+			{
+				currentSelection = Items.ToList().FindIndex(i => i.IsDefault);
+				ISelectionFriendly defaultSelect = Items.ElementAt(currentSelection);
+				await jsRuntime.InvokeVoidAsync("log", defaultSelect.Id);
+				await jsRuntime.InvokeVoidAsync("log", defaultSelect.DisplayName);
+				if (defaultSelect is not null)
+				{
+					// await jsRuntime.InvokeVoidAsync("SetSelectOption", inputId, ( defaultSelect + 1 ));
+					OnSelectionChanged(currentSelection);
+				}
+			}
+		}
+	}
+
+	private void DocumentClicked(MouseClickArgs e)
+	{
+		jsRuntime.InvokeVoidAsync("log", JsonSerializer.Serialize(e));
+		if (!e.TargetClassName.Contains("revx-input-option") && !e.TargetClassName.Contains("revx-input-box"))
+		{
+			showOptions = false;
+			searchTerm = "";
+			StateHasChanged();
+			jsRuntime.InvokeVoidAsync("documentClick.removeClickListener");
+		}
+	}
+
+	private async void OnSelectionChanged(int selected)
+	{
+		await jsRuntime.InvokeVoidAsync("log", selected);
+		await jsRuntime.InvokeVoidAsync("documentClick.removeClickListener");
+		Value = Items.ElementAt(selected);
+		currentSelection = selected;
+		await ValueChanged.InvokeAsync((TValue)Value);
+		showOptions = false;
+		StateHasChanged();
+	}
+
+	private void InputKeyUp(KeyboardEventArgs e)
+	{
+		if (e.Key == "ArrowDown")
+		{
+			if (currentSelection == Items.Count() - 1)
+			{
+				currentSelection = 0;
+			}
+			else
+			{
+				currentSelection += 1;
+			}
+		}
+		else if (e.Key == "ArrowUp")
+		{
+			if (currentSelection == 0)
+			{
+				currentSelection = Items.Count() - 1;
+			}
+			else
+			{
+				currentSelection -= 1;
+			}
+		}
+		else if (e.Key == "Enter")
+		{
+			OnSelectionChanged(currentSelection);
+		}
+	}
+
+	private void InputChanged(ChangeEventArgs e)
+	{
+		searchTerm = e.Value.ToString();
+		if (!String.IsNullOrWhiteSpace(searchTerm))
+		{
+			jsRuntime.InvokeVoidAsync("log", "Search Term: " + searchTerm);
+			Items = Items.Where((i) => i.DisplayName.Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase));
+		}
+		else
+		{
+			Items = Items;
+		}
+	}
+
+	private void OpenOptions()
+	{
+		showOptions = true;
+		if (Value is not null)
+		{
+			searchTerm = Value.DisplayName;
+		}
+		Task.Delay(100).ContinueWith((task) =>
+		{
+			jsRuntime.InvokeVoidAsync("documentClick.registerClickCallback");
+			DocumentClickService.OnClick += DocumentClicked;
+			inputRef.FocusAsync();
+			StateHasChanged();
+		});
+	}
+}

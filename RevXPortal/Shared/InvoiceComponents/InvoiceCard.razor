@@ -56,7 +56,7 @@
 <div class="invoice-card">
 	@if (Invoices is null)
 	{
-		<LoadingIndicator/>
+		<LoadingIndicator />
 	}
 	else if (Invoices.Count == 0)
 	{
@@ -65,7 +65,9 @@
 	else
 	{
 		<div class="invoice-card-header">
-			@{double total = Invoices.Sum(i => i.Total);}
+			@{
+				double total = Invoices.Sum(i => i.Total);
+			}
 			<h1 style="font-weight: 300; font-size: 3rem;">@total.ToString("C")</h1>
 			<h5>Gross Pay for @Month 01, @Year - @Month @LastDay, @Year</h5>
 		</div>
@@ -76,93 +78,95 @@
 				InvoiceModel invoice = Invoices?.Where(i => i.ProviderId == provider.Id).FirstOrDefault();
 				Regex secondaryProviderMatch = new(@"[l|L]egade?i?l|[m|M]e?nah?e?l");
 				<TabPage Text="@provider.Name">
-					<div class="invoice-card-body"  @ref="InvoiceCardRef">
+					<div class="invoice-card-body" @ref="InvoiceCardRef">
 						<AccordionContainer AllowMultiple="true">
-						@if (invoice is null)
-						{
-							if(false) 
+							@if (invoice is null)
 							{
-								
+								if (false)
+								{
+
+								}
+								else
+								{
+									<div style="height: 20rem; display: flex;" class="invoice-card-body-row">
+										<h4 style="margin: auto;">There is no invoice for @provider.Name in this month.</h4>
+									</div>
+								}
 							}
 							else
 							{
-								<div style="height: 20rem; display: flex;" class="invoice-card-body-row">
-									<h4 style="margin: auto;">There is no invoice for @provider.Name in this month.</h4>
-								</div>
-							}
-						}
-						else
-						{
 								@invoice.Id
 
-							if(false) 
-							{
-								
-							}
-							else
-							{
-								<AccordionItem>
-									<Header>
-										<div class="invoice-card-body-row">
-											<div style="display: flex;">
-												<div class="icon-container">
-													<i class="far fa-clock invoice-row-icon"></i>
+								if (false)
+								{
+
+								}
+								else
+								{
+									<AccordionItem>
+										<Header>
+											<div class="invoice-card-body-row">
+												<div style="display: flex;">
+													<div class="icon-container">
+														<i class="far fa-clock invoice-row-icon"></i>
+													</div>
+													<div>Total Hours</div>
 												</div>
-												<div>Total Hours</div>
+												<div>@invoice?.TotalHours</div>
 											</div>
-											<div>@invoice?.TotalHours</div>
-										</div>
-									</Header>
-									<Content>
-										<div class="d-flex" style="justify-content: center; align-items: center; padding: 1rem 0;">
-											<div class="custom-control custom-switch">
-												<input type="checkbox" checked="@CalendarView" class="custom-control-input" id="@invoice.Id-calendar-view-switch" @onchange="((e) => CalendarView = (bool)e.Value)">
-												<label class="custom-control-label" for="@invoice.Id-calendar-view-switch"></label>
+										</Header>
+										<Content>
+											<div class="d-flex" style="justify-content: center; align-items: center; padding: 1rem 0;">
+												<div class="custom-control custom-switch">
+													<input type="checkbox" checked="@CalendarView" class="custom-control-input" id="@invoice.Id-calendar-view-switch" @onchange="((e) => CalendarView = (bool)e.Value)">
+													<label class="custom-control-label" for="@invoice.Id-calendar-view-switch"></label>
+												</div>
+												<div>Calendar View</div>
 											</div>
-											<div>Calendar View</div>
-										</div>
-										@if (!CalendarView)
-										{
-											<SessionTable Sessions="FilterSessionsByMonthAndProvider(Sessions, provider.Id)" />
-										}
+											@if (!CalendarView)
+											{
+												<SessionTable Sessions="FilterSessionsByMonthAndProvider(Sessions, provider.Id)" />
+											}
 											@if (CalendarView)
+											{
+												<div style="margin: 1rem;">
+													<SimpleCalendar FirstDayOfMonth="new DateOnly(invoice.StartDate.Year, invoice.StartDate.Month, 1)" Events="GetSessionEvents(FilterSessionsByMonthAndProvider(Sessions, provider.Id))" />
+												</div>
+											}
+										</Content>
+									</AccordionItem>
+									<div class="invoice-card-body-row">
+										<div style="display: flex;">
+											<div class="icon-container">
+												<i class="fas fa-dollar-sign invoice-row-icon"></i>
+											</div>
+											<div>Hourly Rate</div>
+										</div>
+										<div>@invoice?.Rate.ToString("C")</div>
+									</div>
+									<div class="invoice-card-body-row">
+										<div style="display: flex;">
+											<div class="icon-container">
+												<i class="fas fa-money-check-alt invoice-row-icon"></i>
+											</div>
+											<div>Gross Total</div>
+										</div>
+										<div>@invoice?.Total.ToString("C")</div>
+									</div>
+									<div class="invoice-card-body-row" style="justify-content: center; color: #00ae0d;">
+										<div><i style="padding: 0 10px; font-size: 1.4rem;" class="fas fa-download"></i></div>
+										@if (!DownloadingInProgress)
 										{
-											<SimpleCalendar FirstDayOfMonth="new DateOnly(invoice.StartDate.Year, invoice.StartDate.Month, 1)" Events="FilterSessionsByMonthAndProvider(Sessions, provider.Id)" />
+											<div class="download-btn" @onclick="@(() => DownloadInvoice(invoice.Id, invoice.StartDate.ToString("MMMM yyyy")))">Download Invoice</div>
 										}
-									</Content>
-								</AccordionItem>
-								<div class="invoice-card-body-row">
-									<div style="display: flex;">
-										<div class="icon-container">
-											<i class="fas fa-dollar-sign invoice-row-icon"></i>
-										</div>
-										<div>Hourly Rate</div>
+										else
+										{
+											<div>Downloading...</div>
+										}
 									</div>
-									<div>@invoice?.Rate.ToString("C")</div>
-								</div>
-								<div class="invoice-card-body-row">
-									<div style="display: flex;">
-										<div class="icon-container">
-											<i class="fas fa-money-check-alt invoice-row-icon"></i>
-										</div>
-										<div>Gross Total</div>
-									</div>
-									<div>@invoice?.Total.ToString("C")</div>
-								</div>
-								<div class="invoice-card-body-row" style="justify-content: center; color: #00ae0d;">
-									<div><i style="padding: 0 10px; font-size: 1.4rem;" class="fas fa-download"></i></div>
-									@if (!DownloadingInProgress)
-									{
-										<div class="download-btn" @onclick="@(() => DownloadInvoice(invoice.Id, invoice.StartDate.ToString("MMMM yyyy")))">Download Invoice</div>
-									}
-									else
-									{
-										<div>Downloading...</div>
-									}
-									</div>
-							} 
-						}
-					</AccordionContainer>
+								}
+							}
+						</AccordionContainer>
 					</div>
 				</TabPage>
 			}
@@ -198,6 +202,23 @@
 	{
 		sessions = sessions.Where(s => s.Date.Month == Invoices.First().StartDate.Month && s.Date.Year == Invoices.First().StartDate.Year && s.Provider.Id == providerId).ToList();
 		return sessions;
+	}
+
+	private List<ICalendarEvent> GetSessionEvents(List<ManageSessionModel> sessions)
+	{
+		List<ICalendarEvent> output = new();
+		foreach (var session in sessions)
+		{
+			SessionEvent e = new()
+			{
+				Date = DateOnly.FromDateTime(session.Date),
+				StartTime = TimeOnly.FromTimeSpan(session.StartTime),
+				EndTime = TimeOnly.FromTimeSpan(session.EndTime),
+				Title = session.Client.DisplayName
+			};
+			output.Add(e);
+		}
+		return output;
 	}
 
 	private async void DownloadInvoice(int id, string filename)

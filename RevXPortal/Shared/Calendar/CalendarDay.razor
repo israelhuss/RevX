@@ -1,15 +1,12 @@
 ﻿
-<div class="calendar-day @(@DayInMonth.Key ? "active" : "not-active") @(TopRow ? "top-row": "") @(RightCol ? "right-col" : "")">
+<div class="calendar-day @(@DayInMonth.Key ? "active" : "not-active") @(TopRow ? "top-row": "") @(RightCol ? "right-col" : "") @(BottomRow ? "bottom-row" : "")">
 	<div class="calendar-day-number">
 		@DayInMonth.Value.Day
 	</div>
 	<div class="calendar-day-events">
 		@foreach (var ev in Events)
 		{
-						<div class="calendar-day-event">
-							<span style="font-size: .9rem;">@GetShortHourString(ev.StartTime)</span>
-							<span style="font-size: .6rem;">@ev.Client.DisplayName</span>
-						</div>
+			<DynamicComponent Type="ev.ComponentType is not null ? ev.ComponentType : EventType" Parameters="@(GetParameters(ev))"></DynamicComponent>
 		}
 	</div>
 </div>
@@ -17,15 +14,38 @@
 	[Parameter]
 	public KeyValuePair<bool, DateOnly> DayInMonth { get; set; }
 	[Parameter]
-	public List<ManageSessionModel> Events { get; set; }
+	public List<ICalendarEvent> Events { get; set; }
 	[Parameter]
 	public bool TopRow { get; set; }
 	[Parameter]
 	public bool RightCol { get; set; }
+	[Parameter]
+	public bool BottomRow { get; set; }
 
-	private string GetShortHourString(TimeSpan time)
+	[Parameter]
+	public Type EventType { get; set; } = typeof(SimpleEvent);
+
+	private Dictionary<string, object> GetParameters(ICalendarEvent ev)
 	{
-		var hours = time.Hours;
+		Dictionary<string, object> dictinaryFromModel = ev.Parameters is not null ? ev.Parameters : new();
+		if (!dictinaryFromModel.ContainsKey("Tilte"))
+		{
+			dictinaryFromModel[ "Title" ] = ev.Title;
+		}
+		if (!dictinaryFromModel.ContainsKey("Time"))
+		{
+			dictinaryFromModel[ "Time" ] = ev.AllDay ? "" : GetShortHourString(ev.StartTime.Value);
+		}
+		if (!dictinaryFromModel.ContainsKey("Language"))
+		{
+			dictinaryFromModel[ "Language" ] = ev.Language;
+		}
+		return dictinaryFromModel;
+	}
+
+	private string GetShortHourString(TimeOnly time)
+	{
+		var hours = time.Hour;
 		var t = hours >= 12 ? "p" : "a";
 		if (hours > 12)
 		{
