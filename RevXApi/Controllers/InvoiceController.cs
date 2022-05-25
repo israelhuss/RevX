@@ -38,7 +38,7 @@ namespace RevXApi.Controllers
 		[AllowAnonymous]
 		public async void SendEmail()
 		{
-			await _emailService.SendEmail();
+			var res = await _emailService.SendEmail();
 		}
 
 		[HttpPost]

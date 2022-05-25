@@ -10,5 +10,6 @@ namespace RevXPortal.API
 		Task SaveSession(ManageSessionModel model);
 		Task EditSession(ManageSessionModel model);
 		Task DeleteSession(int id);
+		Task<List<SessionModel>> GetAllSessions();
 	}
 }

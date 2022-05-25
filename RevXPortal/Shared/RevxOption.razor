@@ -1,0 +1,45 @@
+﻿@inject IJSRuntime jsRuntime
+@typeparam TValue
+
+<div @onmouseenter="() => isHovered = true" @onmouseleave="() => isHovered = false" id="@myId" class="revx-input-option @(Parent.CurrentItem == myId ? "selected" : "")" @onclick="() => Parent.OnSelectionChanged(this)">
+    <div style="width: @(isHovered && Actions is not null ? "70%" : "100%"); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+        @Text
+    </div>
+    @if (isHovered)
+    {
+        <div @onclick:stopPropagation="true" @onclick:preventDefault="true">
+            @Actions
+        </div>
+    }
+</div>
+
+@code {
+    [CascadingParameter(Name = "Parent")]
+    public RevxSelect2<TValue> Parent { get; set; }
+    [Parameter]
+    public string Text { get; set; }
+    [Parameter]
+    public TValue Value { get; set; }
+
+    [Parameter]
+    public RenderFragment Actions { get; set; }
+
+    public int myId { get; set; }
+    private bool isHovered { get; set; } = false;
+
+    protected override void OnInitialized()
+    {
+        if (Parent is null)
+        {
+            throw new Exception("RevxOption must be a child of RevxSelect2");
+        }
+        myId = Parent.AddItem(this);
+        jsRuntime.InvokeVoidAsync("log", $"Option Initialized:  Id - {myId}");
+        if (Parent.Value is not null && Parent.Value.Equals(Value))
+        {
+            Parent.CurrentItem = myId;
+            jsRuntime.InvokeVoidAsync("log", $"I set Parents' CurrentItem to {myId}");
+        }
+        base.OnInitialized();
+    }
+}

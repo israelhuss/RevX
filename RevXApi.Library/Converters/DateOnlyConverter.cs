@@ -20,8 +20,15 @@ namespace RevXApi.Library.Converters
 			{
 				Console.WriteLine(ex.Message);
 			}
-
-			var value = reader.GetString();
+			string value = null;
+			try
+            {
+				value = reader.GetString();
+            }
+			catch (Exception)
+            {
+				reader.Read();
+            }
 			if (value == null)
 			{
 				return default;

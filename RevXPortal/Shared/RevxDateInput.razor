@@ -3,7 +3,7 @@
 	<div class="revx-input-icon">
 		<i class="fas fa-calendar-alt"></i>
 	</div>
-	<input class="form-control revx-input-box @(ValidationMessage is not null ? "validate" : "")" type="date" min="@Min" max="@Max" @onchange="InputChanged" />
+	<input class="form-control revx-input-box @(ValidationMessage is not null ? "validate" : "")" type="date" min="@Min" max="@Max" value="@Value.ToString("yyyy-MM-dd")" @onchange="InputChanged" />
 	@if (PlaceHolder is not null)
 	{
 		<div class="revx-input-label fixed">

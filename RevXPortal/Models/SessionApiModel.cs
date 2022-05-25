@@ -4,6 +4,11 @@ namespace RevXPortal.Models
 {
 	public class SessionApiModel
 	{
+		public object this[ string propertyName ]
+		{
+			get { return this.GetType().GetProperty(propertyName).GetValue(this, null); }
+			set { this.GetType().GetProperty(propertyName).SetValue(this, value, null); }
+		}
 		public int Id { get; set; }
 		public string UserId { get; set; }
 		public ClientModel Client { get; set; }
@@ -16,5 +21,4 @@ namespace RevXPortal.Models
 		public HourlyRate Rate { get; set; }
 		public int InvoiceId { get; set; }
 	}
-
 }

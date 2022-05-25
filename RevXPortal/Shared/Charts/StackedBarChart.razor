@@ -1,4 +1,6 @@
-﻿<style>
+﻿@inject IJSRuntime jsRuntime
+
+<style>
 	.bar-container {
 		position: absolute;
 		left: 2px;
@@ -13,7 +15,7 @@
 	.bar-group {
 		display: flex;
 		width: var(--bar-group-width);
-		justify-content: center;
+		justify-content: space-evenly;
 		align-items: flex-end;
 	}
 
@@ -21,15 +23,8 @@
 		width: var(--bar-width);
 		display: flex;
 		flex-direction: column-reverse;
+		transition: height 1.5s ease-out;
 		animation: roll-up 1.5s;
-	}
-
-	.bar-1 {
-		margin-right: 1px;
-	}
-
-	.bar-2 {
-		margin-left: 1px;
 	}
 
 	.stack-2 {
@@ -43,13 +38,33 @@
 		}
 </style>
 
-<CascadingValue Value="this">
-	<div class="bar-container">
-		@ChildContent
-	</div>
+<CascadingValue Value="Parent">
+	<CascadingValue Value="this">
+		<div class="bar-container">
+			@ChildContent
+		</div>
+	</CascadingValue>
 </CascadingValue>
 
 @code {
 	[Parameter]
 	public RenderFragment ChildContent { get; set; }
+
+	[CascadingParameter]
+	public ChartBase Parent { get; set; }
+
+	protected override void OnInitialized()
+	{
+		if (Parent is null)
+		{
+			throw new Exception("StackedBarChart must be a child of ChartBase");
+		}
+	}
+
+	//protected override void OnAfterRender(bool firstRender)
+	//{
+	//	Parent.SetReady(true);
+	//	jsRuntime.InvokeVoidAsync("log", "Set to true");
+	//	base.OnAfterRender(firstRender);
+	//}
 }

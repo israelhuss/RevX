@@ -1,0 +1,250 @@
+﻿@inject IJSRuntime jsRuntime
+
+@typeparam TValue
+@attribute [CascadingTypeParameter(nameof(TValue))]
+
+<style>
+    .pointer {
+        cursor: pointer;
+    }
+
+    .revx-input-options {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+        background: #fff;
+        display: none;
+    }
+
+        .revx-input-options.show {
+            display: block;
+        }
+
+    .revx-input-option {
+        padding: 0.2rem 0.75rem;
+        border: 1px solid #ced4da;
+        border-top: none;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+    }
+
+        .revx-input-option.selected {
+            background-color: #3e6581;
+            color: #e6e6e6;
+        }
+
+        .revx-input-option:hover {
+            background-color: #e2e2e2;
+            color: #474747;
+        }
+</style>
+
+<CascadingValue Value="this" Name="Parent">
+    <div class="revx-input @(PlaceHolder is not null ? "has-placeholder" : "")">
+        <div class="revx-input-icon pointer" @onclick="ToggleOptions">
+            <i class="fas fa-chevron-down @(showOptions ? "flipped" : "")"></i>
+        </div>
+        @if (showOptions)
+        {
+            <input type="text" class="revx-input-box @InputClass" @bind-value="searchTerm" @oninput="InputChanged" @ref="inputRef" @onkeyup="InputKeyUp" />
+        }
+        else
+        {
+            <div class="revx-input-box pointer" @onclick="OpenOptions">@(Value is not null && CurrentItem >= 0 && items.Count > CurrentItem ? items[CurrentItem].Text : "")</div>
+        }
+
+        @if (PlaceHolder is not null)
+        {
+            <div class="revx-input-label @(Value is null ? "" : "fixed")">
+                @PlaceHolder
+                @if (Required)
+                {
+                    <span style="color: red;">*</span>
+                }
+            </div>
+        }
+        <div class="revx-input-options @(showOptions ? "show" : "")">
+            @ChildContent
+        </div>
+        @if (ValidationMessage is not null)
+        {
+            <small class="revx-validate" style="color: red; margin-left: 3px;">@ValidationMessage</small>
+        }
+    </div>
+</CascadingValue>
+
+
+
+@code {
+    [Parameter]
+    public TValue Value { get; set; }
+    [Parameter]
+    public EventCallback<TValue> ValueChanged { get; set; }
+    [Parameter]
+    public string PlaceHolder { get; set; }
+    [Parameter]
+    public bool Required { get; set; }
+    [Parameter]
+    public string ValidationMessage { get; set; }
+    [Parameter]
+    public string InputClass { get; set; }
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    public int CurrentItem { get; set; } = -1;
+
+    private List<RevxOption<TValue>> items { get; set; } = new();
+    private string searchTerm { get; set; }
+    private string inputId { get; set; } = Guid.NewGuid().ToString();
+    private bool showOptions { get; set; }
+    ElementReference inputRef;
+
+    protected override void OnInitialized()
+    {
+        jsRuntime.InvokeVoidAsync("log", $"Select2 TValue is: {typeof(TValue).ToString()}");
+        base.OnInitialized();
+    }
+
+    public int AddItem(RevxOption<TValue> item)
+    {
+        jsRuntime.InvokeVoidAsync("log", $"Adding option");
+        items.Add(item);
+        StateHasChanged();
+        return items.Count - 1;
+    }
+
+    private void DocumentClicked(MouseClickArgs e)
+    {
+        bool isChild = false;
+        jsRuntime.InvokeVoidAsync("log", JsonSerializer.Serialize(e));
+        List<string> parents = new()
+        {
+            "revx-input-options",
+            "revx-input-option"
+        };
+        if (e.ParentClassNames is not null)
+        {
+            foreach (var className in e.ParentClassNames)
+            {
+                if (!String.IsNullOrWhiteSpace(className))
+                {
+
+                    foreach (var parent in parents)
+                    {
+                        if (className.Contains(parent))
+                        {
+                            isChild = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if (!isChild)
+        {
+            CloseOptions();
+        }
+        //if (!e.TargetClassName.Contains("revx-input-option") && !e.TargetClassName.Contains("revx-input-option"))
+        //{
+        //    CloseOptions();
+        //}
+    }
+
+    public async void OnSelectionChanged(RevxOption<TValue> selected)
+    {
+        Value = selected.Value;
+        showOptions = false;
+        CurrentItem = items.IndexOf(selected);
+        await ValueChanged.InvokeAsync(selected.Value);
+        CloseOptions();
+        //StateHasChanged();
+    }
+
+    private void InputKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "ArrowDown")
+        {
+            if (CurrentItem == items.Count() - 1)
+            {
+                CurrentItem = 0;
+            }
+            else
+            {
+                CurrentItem += 1;
+            }
+
+        }
+        else if (e.Key == "ArrowUp")
+        {
+            if (CurrentItem == 0)
+            {
+                CurrentItem = items.Count() - 1;
+            }
+            else
+            {
+                CurrentItem -= 1;
+
+            }
+        }
+        else if (e.Key == "Enter")
+        {
+            OnSelectionChanged(items[CurrentItem]);
+        }
+    }
+
+    private void InputChanged(ChangeEventArgs e)
+    {
+        searchTerm = e.Value.ToString();
+        //if (!String.IsNullOrWhiteSpace(searchTerm))
+        //{
+        //	jsRuntime.InvokeVoidAsync("log", "Search Term: " + searchTerm);
+        //	Items = Items.Where((i) => i.DisplayName.Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase));
+        //}
+        //else
+        //{
+        //	Items = Items;
+        //}
+    }
+
+    private void ToggleOptions()
+    {
+        if (showOptions)
+        {
+            CloseOptions();
+        }
+        else
+        {
+            OpenOptions();
+        }
+    }
+
+    private void CloseOptions()
+    {
+        showOptions = false;
+        searchTerm = "";
+        StateHasChanged();
+        jsRuntime.InvokeVoidAsync("documentClick.removeClickListener");
+    }
+
+    private void OpenOptions()
+    {
+        showOptions = true;
+        if (Value is not null)
+        {
+            jsRuntime.InvokeVoidAsync("log", $"CurrentItem: {CurrentItem}, Items: {items.Count}");
+            if (CurrentItem >= 0)
+            {
+                searchTerm = items[CurrentItem].Text;
+            }
+        }
+        Task.Delay(100).ContinueWith((task) =>
+        {
+            jsRuntime.InvokeVoidAsync("documentClick.registerClickCallback");
+            DocumentClickService.OnClick += DocumentClicked;
+            inputRef.FocusAsync();
+            StateHasChanged();
+        });
+    }
+}

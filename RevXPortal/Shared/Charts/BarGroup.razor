@@ -1,16 +1,49 @@
-﻿<div class="bar-group">
-	<div class="bar bar-1">
-		@BarOne
+﻿@inject IJSRuntime jsRuntime
+
+<style>
+	:root {
+		--bar-width: calc((100% - @(Bars.Count * .75)rem) / @Bars.Count);
+	}
+</style>
+
+<CascadingValue Value="this">
+	<div class="bar-group">
+		@ChildContent
 	</div>
-	<div class="bar bar-2">
-		@BarTwo
-	</div>
-</div>
+</CascadingValue>
+
+
 @code {
 	[CascadingParameter]
-	public double MaxValue { get; set; }
+	public ChartBase ChartBase { get; set; }
+
+	[CascadingParameter]
+	public StackedBarChart Parent { get; set; }
+
 	[Parameter]
-	public RenderFragment BarOne { get; set; }
+	public string Label { get; set; }
+
+	public List<Bar> Bars { get; set; } = new();
+	public int GroupIndex { get; set; }
+
 	[Parameter]
-	public RenderFragment BarTwo { get; set; }
+	public RenderFragment ChildContent { get; set; }
+
+	protected override void OnInitialized()
+	{
+		GroupIndex = ChartBase.AddLabel(Label);
+	}
+
+	protected override void OnParametersSet()
+	{
+		if (Parent is null)
+		{
+			throw new Exception("BarGroup must be a child of StackedBarChart");
+		}
+	}
+
+	public void AddBar(Bar bar)
+	{
+		Bars.Add(bar);
+	}
 }

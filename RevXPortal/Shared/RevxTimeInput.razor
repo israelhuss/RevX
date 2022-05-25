@@ -4,7 +4,7 @@
 	<div class="revx-input-icon">
 		<i class="fas fa-clock"></i>
 	</div>
-	<input class="form-control revx-input-box @(ValidationMessage is not null ? "validate" : "")" type="time" @onchange="InputChanged" />
+	<input class="form-control revx-input-box @(ValidationMessage is not null ? "validate" : "")" type="time" value="@Value.ToString("HH:mm")" @onchange="InputChanged" />
 	@if (PlaceHolder is not null)
 	{
 		<div class="revx-input-label fixed">
@@ -34,8 +34,9 @@
 
 	private void InputChanged(ChangeEventArgs e)
 	{
-		jsRuntime.InvokeVoidAsync("log", e.Value);
+		jsRuntime.InvokeVoidAsync("log","peekaboo" + e.Value);
 		Value = TimeOnly.Parse(e.Value.ToString());
+		jsRuntime.InvokeVoidAsync("log","peekaboo" + Value.ToShortTimeString());
 		ValueChanged.InvokeAsync(Value);
 	}
 }

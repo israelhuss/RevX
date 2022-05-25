@@ -1,0 +1,73 @@
+﻿<div style="position: relative;">
+	<div @onmouseover="OnStackHover" @onmouseout="OnStackLeave" style="height: calc(@(Value)rem * var(--chart-height-number) / @ChartBase.MaxValue); background-color: @Color; @(stackIndex == Parent.Stacks.FindLastIndex((s) => s.Value > 0) ? "border-top-left-radius: 3px;border-top-right-radius: 3px;" : "")">
+		<p style="color: white; display: inline;"></p>
+	</div>
+	@if (TooltipText is not null || TooltipContent is not null)
+	{
+		<MovingTooltip @ref="TooltipRef" Text="@TooltipText" TooltipContent="@TooltipContent"></MovingTooltip>
+	}
+</div>
+
+@code {
+	[CascadingParameter]
+	public Bar Parent { get; set; }
+
+	[CascadingParameter]
+	public ChartBase ChartBase { get; set; }
+
+	[Parameter]
+	public double Value { get; set; }
+	[Parameter]
+	public string Color { get; set; }
+	[Parameter]
+	public string TooltipText { get; set; }
+	[Parameter]
+	public ListDictionary TooltipContent { get; set; }
+
+	public MovingTooltip TooltipRef { get; set; }
+	private bool showTooltip { get; set; } = false;
+	private int stackIndex { get; set; }
+
+	protected override void OnInitialized()
+	{
+		stackIndex = Parent.AddStack(this);
+		base.OnInitialized();
+	}
+
+	protected override void OnParametersSet()
+	{
+		if (Parent is null)
+		{
+			throw new Exception("BarStack must be a child of Bar");
+		}
+		base.OnParametersSet();
+	}
+
+	private void openTooltip()
+	{
+		this.showTooltip = true;
+		StateHasChanged();
+	}
+
+	private void closeTooltip()
+	{
+		this.showTooltip = false;
+		StateHasChanged();
+	}
+
+	private void OnStackHover(MouseEventArgs e)
+	{
+		if (TooltipText is not null || TooltipContent is not null)
+		{
+			TooltipRef.Show();
+		}
+	}
+
+	private void OnStackLeave(MouseEventArgs e)
+	{
+		if (TooltipText is not null || TooltipContent is not null)
+		{
+			TooltipRef.Hide();
+		}
+	}
+}

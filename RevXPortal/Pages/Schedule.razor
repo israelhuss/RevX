@@ -192,8 +192,11 @@
 		NewSession = new();
 	}
 
-	public void DeletePending()
+	public async Task DeletePending()
 	{
-		jsRuntime.InvokeVoidAsync("log", "Delete function got: " + PendingDeletion);
+		await _pendingEndpoint.Delete(PendingDeletion);
+		toastService.ShowSuccess("Planned Session Deleted.");
+		await InitializeCalendar();
+		await jsRuntime.InvokeVoidAsync("log", "Delete function got: " + PendingDeletion);
 	}
 }

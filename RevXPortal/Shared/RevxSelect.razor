@@ -123,13 +123,16 @@
 			else
 			{
 				currentSelection = Items.ToList().FindIndex(i => i.IsDefault);
-				ISelectionFriendly defaultSelect = Items.ElementAt(currentSelection);
-				await jsRuntime.InvokeVoidAsync("log", defaultSelect.Id);
-				await jsRuntime.InvokeVoidAsync("log", defaultSelect.DisplayName);
-				if (defaultSelect is not null)
+				if (currentSelection != -1)
 				{
-					// await jsRuntime.InvokeVoidAsync("SetSelectOption", inputId, ( defaultSelect + 1 ));
-					OnSelectionChanged(currentSelection);
+					ISelectionFriendly defaultSelect = Items.ElementAt(currentSelection);
+					await jsRuntime.InvokeVoidAsync("log", defaultSelect.Id);
+					await jsRuntime.InvokeVoidAsync("log", defaultSelect.DisplayName);
+					if (defaultSelect is not null)
+					{
+						// await jsRuntime.InvokeVoidAsync("SetSelectOption", inputId, ( defaultSelect + 1 ));
+						OnSelectionChanged(currentSelection);
+					}
 				}
 			}
 		}
@@ -149,12 +152,12 @@
 
 	private async void OnSelectionChanged(int selected)
 	{
+		showOptions = false;
 		await jsRuntime.InvokeVoidAsync("log", selected);
 		await jsRuntime.InvokeVoidAsync("documentClick.removeClickListener");
 		Value = Items.ElementAt(selected);
 		currentSelection = selected;
 		await ValueChanged.InvokeAsync((TValue)Value);
-		showOptions = false;
 		StateHasChanged();
 	}
 

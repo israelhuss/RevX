@@ -1,0 +1,39 @@
+﻿<div style="display: flex; align-items: center; justify-content: center; cursor: pointer;" @onclick="Increment">
+	@((MarkupString)displayMap[currentIndex].Value)
+</div>
+
+@code {
+	[Parameter]
+	public ConditionOperator Value { get; set; }
+	[Parameter]
+	public EventCallback<ConditionOperator> ValueChanged { get; set; }
+	private int currentIndex { get; set; }
+
+	private List<KeyValuePair<ConditionOperator, string>> displayMap { get; set; } = new()
+		{
+			new(ConditionOperator.Equals, "<i class='fas fa-equals'></i>"),
+			new(ConditionOperator.GreaterThan, "<i class='fas fa-greater-than'></i>"),
+			new(ConditionOperator.GreaterThanOrEqual, "<i class='fas fa-greater-than-equal'></i>"),
+			new(ConditionOperator.LessThan, "<i class='fas fa-less-than'></i>"),
+			new(ConditionOperator.LessThanOrEqual, "<i class='fas fa-less-than-equal'></i>"),
+			new(ConditionOperator.DoesntEqual, "<i class='fas fa-not-equal'></i>")
+		};
+
+	protected override void OnInitialized()
+	{
+		currentIndex = displayMap.FindIndex(d => d.Key == Value);
+		ValueChanged.InvokeAsync(Value);
+		base.OnInitialized();
+	}
+
+	private void Increment()
+	{
+		currentIndex++;
+		if (currentIndex > displayMap.Count - 1)
+		{
+			currentIndex = 0;
+		}
+		Value = displayMap[ currentIndex ].Key;
+		ValueChanged.InvokeAsync(Value);
+	}
+}

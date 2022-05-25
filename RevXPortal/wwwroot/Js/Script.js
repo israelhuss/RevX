@@ -34,21 +34,22 @@ window.SetPath = (elementId, path) => {
 };
 
 window.setTooltipCords = (e) => {
-    console.log("Tooltips set");
-    //if (typeof (e.target.className) == 'object' && e.target.className.animVal == 'path') {
-    var tooltip = document.getElementById('m-tooltip');
+    var tooltip = document.getElementById(window.movingTooltipId);
     if (tooltip) {
-        tooltip.style.left = e.pageX + 15 + 'px';
-        tooltip.style.top = e.pageY + 15 + 'px';
+        tooltip.style.left = e.offsetX + 5 + 'px';
+        tooltip.style.top = e.offsetY + 5 + 'px';
     }
-    //}
 };
 
-setUpMovingTooltip = () => {
+window.movingTooltipId;
+
+setUpMovingTooltip = (id) => {
+    window.movingTooltipId = id;
     window.addEventListener('mousemove', setTooltipCords, false);
 };
 
-removeMovingTooltip = () => {
+removeMovingTooltip = (id) => {
+    window.movingTooltipId = null;
     window.removeEventListener('mousemove', setTooltipCords, false);
 };
 
@@ -75,5 +76,19 @@ window.documentClick = {
 
 function documentClicked(e) {
     console.log(e);
-    DotNet.invokeMethodAsync("RevXPortal", 'OnDocumentClicked', { targetClassName: e.target.className });
+    DotNet.invokeMethodAsync("RevXPortal", 'OnDocumentClicked', { targetClassName: e.target.className, parentClassNames: e.path.map(p => p.className) });
+}
+
+function checkOverflow(el) {
+    var curOverflow = el.style.overflow;
+
+    if (!curOverflow || curOverflow === "visible")
+        el.style.overflow = "hidden";
+
+    var isOverflowing = el.clientWidth < el.scrollWidth
+        || el.clientHeight < el.scrollHeight;
+
+    el.style.overflow = curOverflow;
+
+    return isOverflowing;
 }

@@ -88,17 +88,53 @@
 				}
 			}
 		</div>
-
-
 	</div>
 </div>
 
 
 @code {
+	[CascadingParameter]
+	public ChartBase Parent { get; set; }
+	private bool valuesSet { get; set; } = false;
+	private double parentMax { get; set; }
+
+
+	protected override void OnInitialized()
+	{
+		jsRuntime.InvokeVoidAsync("log", Values);
+		foreach (double val in Values)
+		{
+			jsRuntime.InvokeVoidAsync("log", "Hi");
+			Parent.AddValue(Values.IndexOf(val).ToString(), val);
+		}
+		base.OnInitialized();
+	}
+
+	protected override void OnParametersSet()
+	{
+		if (Parent is null)
+		{
+			throw new Exception("StackedBarChart must be a child of ChartBase");
+		}
+		if (Values is not null && Values.Count != 0 && !valuesSet)
+		{
+			jsRuntime.InvokeVoidAsync("log", "Hollo " +  JsonSerializer.Serialize(Values));
+			foreach (double val in Values)
+			{
+				jsRuntime.InvokeVoidAsync("log", "Hi");
+				Parent.AddValue(Values.IndexOf(val).ToString(), val);
+			}
+			parentMax = Parent.MaxValue;
+			jsRuntime.InvokeVoidAsync("log", "Hollo " + parentMax);
+			valuesSet = true;
+		}
+	}
+
 	[Parameter]
 	public List<double> Values { get; set; }
 	[Parameter]
 	public List<ListDictionary> TooltipValues { get; set; }
+
 
 	// The labels for the side
 	[CascadingParameter]
@@ -151,9 +187,9 @@
 		{
 			foreach (var value in Values)
 			{
-				await jsRuntime.InvokeVoidAsync("log", xAxisIncrement + "  Hello");
+				await jsRuntime.InvokeVoidAsync("log", xAxisIncrement + "  Hello " + parentMax);
 				//await jsRuntime.InvokeVoidAsync("log", ActualHeight + "  ActualHeight");
-				var y = ActualHeight - Math.Ceiling(( ActualHeight / ValuePointsNumbers.Last() ) * value);
+				var y = ActualHeight - Math.Ceiling(( ActualHeight / parentMax ) * value);
 				//await jsRuntime.InvokeVoidAsync("log", ValuePointsNumbers.Last() + "  max");
 				//await jsRuntime.InvokeVoidAsync("log", y + "  Y");
 				var x = xAxis += xAxisIncrement;

@@ -1,55 +1,489 @@
 ﻿@page "/reports"
+@inject ISessionEndpoint _sessionEndpoint
+@inject IProviderEndpoint _providerEndpoint
+@inject IClientEndpoint _clientEndpoint
 @inject IReportEndpoint _reportEndpoint
-@inject IInvoiceEndpoint _invoiceEndpoint
 @inject NavigationManager NavManager
 @inject IJSRuntime jsRuntime
+@inject IToastService toastService
+@using System.Linq.Expressions
+@using System.Reflection
 
 <style>
-	.page-container {
-		padding: 1rem 0;
-	}
+    .page-container {
+        padding: 1rem 0;
+    }
 
-	.report-generator {
-		width: 95%;
-		border: solid 1px #c5c5c5;
-		border-radius: 3px;
-		min-height: 2rem;
-		margin: 0 auto;
-	}
+    .report-generator {
+        border: solid 1px #c5c5c5;
+        border-radius: 3px;
+        min-height: 2rem;
+        margin: 0 auto;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .add-report {
+        padding: 0.2rem 0.75rem;
+        border: 1px solid #ced4da;
+        border-top: none;
+        cursor: pointer;
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        background-color: var(--secondary-dark-color);
+        color: var(--light-gray);
+        transition: all .3s ease-out;
+    }
+
+        .add-report:hover {
+            color: var(--light-gray);
+            background-color: var(--secondary-light-color);
+        }
+
+    .option-actions {
+        display: flex;
+    }
+
+    .option-action {
+        padding: 0.05rem 0.3rem;
+        border-radius: 0.2rem;
+        transition: all .4s;
+        margin: 0 0.1rem;
+    }
+
+        .option-action:hover {
+            background-color: var(--primary-dark-color);
+            color: var(--light-gray);
+        }
 </style>
 
-@*<StackedBarChart RowCount="6" Data="MonthlyIncome" />*@
-@*<DoubleStackedBarChart>
-	<Header>
-	<DoubleStackedBarHeader BarOneTitle="School Hours" BarTwoTitle="After School Hours" StackOneTitle="Encore" StackTwoTitle="Legadel" BarOneTotals="12000" BarTwoTotals="6000"></DoubleStackedBarHeader>
-	</Header>
-	<Content>
-	<DoubleStackedBarContent RowCount="6" Data="MonthlyIncome"></DoubleStackedBarContent>
-	</Content>
-	</DoubleStackedBarChart>*@
+@if (AllReports is not null)
+{
+    <div class="page-container">
+        <div class="report-generator">
+            <div style="width: 25%;">
+                <RevxSelect2 PlaceHolder="My Reports" @bind-Value="CurrentReport">
+                    @foreach (var report in AllReports)
+                    {
+                        <RevxOption Text="@report.Title" Value="report">
+                            <Actions>
+                                <div class="option-actions">
+                                    <div class="option-action" @onclick="() => SetAsDefault(report.Id)">
+                                        @if (report.IsDefault)
+                                        {
+                                    <i style="color: var(--secondary-light-color)" class="fas fa-star"></i>
+                                        }
+                                        else
+                                        {
+                                    <i class="far fa-star"></i>
+                                        }
+                            </div>
+                            <div @onclick="() => EditReport(report)" class="option-action"><i class="fas fa-edit"></i></div>
+                            <div @onclick="() => { PendingDeletion = report.Id; DeleteConfirmation.Show(); }" class="option-action"><i class="fas fa-trash"></i></div>
+                        </div>
+                    </Actions>
+                </RevxOption>
+                    }
+                    <div class="add-report btn" @onclick="() => { SaveAction = AddReport; addReportRef.Show(); }">New Report</div>
+                </RevxSelect2>
+            </div>
+            <div>
+                <div style="display: flex; align-items: center;">
+                    <div style="padding: 0 .5rem;">Show Totals</div>
+                    <RevxSwitch @bind-Value="ShowTotals"></RevxSwitch>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <div style="padding: 0 .5rem;">Show Totals</div>
+                    <RevxSwitch @bind-Value="ShowTotals"></RevxSwitch>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
-<div class="page-container">
-	<div class="report-generator">
-	</div>
-</div>
+@if (Sessions is not null && CurrentReport is not null)
+{
+    @if (CurrentReport.ReportStyle == ReportStyle.BarChart)
+    {
+        <ChartBase @key="CurrentReport.Id" ShowBarTotals="ShowTotals">
+            <ChartHeader>
+                <div>
+                    @foreach (var bar in CurrentReport.Bars)
+                    {
+
+                    }
+                    @*<div>School Hours - @ReportData.Select(d => (d.SchoolEncore.Hours * d.SchoolEncore.Rate) + (d.SchoolLegadel.Hours * d.SchoolLegadel.Rate)).Sum().ToString("C")</div>
+            <div>After School Hours - @ReportData.Select(d => (d.AfterEncore.Hours * d.AfterEncore.Rate) + (d.AfterLegadel.Hours * d.AfterLegadel.Rate)).Sum().ToString("C")</div>*@
+                </div>
+                <div style="display: flex;">
+                    @for (var i = 0; i < CurrentReport.Bars.Count; i++)
+                    {
+                        var bar = CurrentReport.Bars[ i ];
+                        <div style="padding: 0 .5rem;">
+                            @for (var j = 0; j < CurrentReport.Stacks.Count; j++)
+                            {
+                                var stack = CurrentReport.Stacks[ j ];
+                                <div style="display: flex; align-items: center; @(j != CurrentReport.Stacks.Count - 1 ? "padding-bottom: 7px;" : "")"> 
+                                    <div style="width: 12px; height: 12px; background-color: @(stack.Color is not null ? stack.Color : Colors[i][j]); margin-right: 5px;"></div>
+                                    <p style="margin: 0; line-height:1;">@bar.Nickname / @stack.Nickname</p>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </ChartHeader>
+            <ChartContent>
+                <StackedBarChart>
+                    @{
+                        List<SessionModel> between = null;
+                        if (CurrentReport.StartDate != DateOnly.MinValue || CurrentReport.EndDate != DateOnly.MinValue)
+                        {
+                            List<ReportItemDetail> betweenDates = new();
+                            if (CurrentReport.StartDate != DateOnly.MinValue)
+                            {
+                                ReportItemDetail notBefore = new()
+                            {
+                                Field = "Date",
+                                Value = CurrentReport.StartDate,
+                                Operator = ConditionOperator.GreaterThanOrEqual,
+                                Level = ReportItemConditionLevel.Where
+                            };
+                                betweenDates.Add(notBefore);
+                            }
+                            if (CurrentReport.EndDate != DateOnly.MinValue)
+                            {
+                                ReportItemDetail notAfter = new()
+                            {
+                                Field = "Date",
+                                Value = CurrentReport.EndDate,
+                                Operator = ConditionOperator.LessThanOrEqual,
+                                Level = ReportItemConditionLevel.Where
+                            };
+                                betweenDates.Add(notAfter);
+                            }
+                            between = processData(Sessions, betweenDates);
+                        }
+                        else
+                        {
+                            between = Sessions;
+                        }
+                        var data = groupSessions(CurrentReport.GroupBy, between);
+                    }
+                    @foreach (var session in data)
+                    {
+                        <BarGroup @key="session.Key" Label="@session.Key">
+                            @if (CurrentReport.Bars is null || CurrentReport.Bars.Count == 0)
+                            {
+                                CurrentReport.Bars = new() { new() { } };
+                            }
+                            @foreach (var bar in CurrentReport.Bars)
+                            {
+                                int barIndex = CurrentReport.Bars.IndexOf(bar);
+                                var barData = processData(session.ToList(), bar.ItemDetails);
+                                <Bar @key="@($"Group{session.Key}Bar{bar.Id}")">
+                                    @if (CurrentReport.Stacks is null || CurrentReport.Stacks.Count == 0)
+                                    {
+                                        CurrentReport.Stacks = new() { new() { } };
+                                    }
+                                    @foreach (var stack in CurrentReport.Stacks)
+                                    {
+                                        int stackIndex = CurrentReport.Stacks.IndexOf(stack);
+                                        var stackData = processData(barData, stack.ItemDetails);
+                                        double hours = stackData.Sum(s => ( s.EndTime > s.StartTime ? s.EndTime - s.StartTime : TimeSpan.Zero ).TotalHours);
+                                        double rate = stackData.Count() > 0 ? stackData.First().Rate.Rate : 0;
+                                        double amount = hours * rate;
+                                        <BarStack @key="@($"Group{session.Key}Bar{bar.Id}Stack{stack.Id}")" Value="@amount" Color="@(stack.Color is not null ? stack.Color : Colors[barIndex][stackIndex])" TooltipContent="@(getTooltipContent(session.Key, GetTooltipTitle(bar, stack), hours, rate, amount))"></BarStack>
+                                    }
+                                </Bar>
+                            }
+                        </BarGroup>
+                    }
+                </StackedBarChart>
+            </ChartContent>
+        </ChartBase>
+    }
+}
+
+<CascadingValue Value="Clients">
+    <CascadingValue Value="Providers">
+        <AddReportModel @ref="addReportRef" Report="ReportForModal" SavedAsync="SaveAction"></AddReportModel>
+    </CascadingValue>
+</CascadingValue>
+
+<ConfirmationDialog @ref="DeleteConfirmation" ConfirmationChanged="@((bool confirm) => { if (confirm) { DeleteReport(); } else { PendingDeletion = 0;} ;})" />
 
 
 @code {
+    private ConfirmationDialog DeleteConfirmation { get; set; }
+    private int PendingDeletion { get; set; }
 
-	public List<IncomeReportModel> MonthlyIncome { get; set; }
+    private bool ShowTotals { get; set; } = false;
 
-	public List<double> MonthlyNumbers { get; set; } = new();
+    public List<SessionModel> Sessions { get; set; }
+    public List<ClientModel> Clients { get; set; }
+    public List<ProviderModel> Providers { get; set; }
+    public List<BarReportModel> AllReports { get; set; }
+    public BarReportModel CurrentReport { get; set; }
+    public List<List<string>> Colors { get; set; } = new()
+        {
+            new() { "#1365fc", "#659afd" },
+            new() { "#298a00", "#74b359" },
+            new() { "#722472", "#9c659c" }
+        };
+    public List<string> BarColors { get; set; } = new() { "#1365fc", "#298a00", "#722472", "#ff5a5a", "#f5f26c", "#60d1d0", "#d76311", "#2900A5", "#d38dd2", "#E4BF58", "#C94D6D", "#A9A9A9", "#e786f4", "#1365fc", "#298a00", "#722472", "#ff5a5a", "#f5f26c", "#60d1d0", "#d76311", "#2900A5", "#d38dd2", "#E4BF58", "#C94D6D", "#A9A9A9", "#e786f4", "#1365fc", "#298a00", "#722472", "#ff5a5a", "#f5f26c", "#60d1d0", "#d76311", "#2900A5", "#d38dd2", "#E4BF58", "#C94D6D", "#A9A9A9", "#e786f4", "#1365fc", "#298a00", "#722472", "#ff5a5a", "#f5f26c", "#60d1d0", "#d76311", "#2900A5", "#d38dd2", "#E4BF58", "#C94D6D", "#A9A9A9", "#e786f4" };
+    public List<string> StackColors { get; set; } = new() { "#659afd", "#74b359", "#9c659c", "#ff5a5a", "#f5f26c", "#60d1d0", "#d76311", "#2900A5", "#d38dd2", "#E4BF58", "#C94D6D", "#A9A9A9", "#e786f4", "#1365fc", "#298a00", "#722472", "#ff5a5a", "#f5f26c", "#60d1d0", "#d76311", "#2900A5", "#d38dd2", "#E4BF58", "#C94D6D", "#A9A9A9", "#e786f4", "#1365fc", "#298a00", "#722472", "#ff5a5a", "#f5f26c", "#60d1d0", "#d76311", "#2900A5", "#d38dd2", "#E4BF58", "#C94D6D", "#A9A9A9", "#e786f4", "#1365fc", "#298a00", "#722472", "#ff5a5a", "#f5f26c", "#60d1d0", "#d76311", "#2900A5", "#d38dd2", "#E4BF58", "#C94D6D", "#A9A9A9", "#e786f4" };
 
-	public List<int> Values { get; set; }
+    private AddReportModel addReportRef { get; set; }
+    public BarReportModel ReportForModal { get; set; }
+    public Func<BarReportModel, Task> SaveAction { get; set; }
 
-	protected override async Task OnParametersSetAsync()
-	{
-		MonthlyIncome = await _reportEndpoint.GetMonthlyIncome(DateTime.Parse("2020-09-01"), DateTime.Now, "Month");
-		foreach (var item in MonthlyIncome)
-		{
-			item.Date = DateTime.Parse(item.Title).ToString("MMMM");
-			var t = ( item.SchoolPrimary + item.AfterSchoolPrimary + item.SchoolSecondary + item.AfterSchoolSecondary );
-			MonthlyNumbers.Add(t);
-		}
-	}
+    protected override async Task OnInitializedAsync()
+    {
+        Sessions = await _sessionEndpoint.GetAllSessions();
+        Providers = await _providerEndpoint.GetEnabled();
+        Clients = await _clientEndpoint.GetEnabled();
+        await RefreshReports();
+        CurrentReport = (BarReportModel)AllReports.Where(r => r.IsDefault == true).FirstOrDefault();
+    }
+
+    public async Task RefreshReports()
+    {
+        AllReports = ( await _reportEndpoint.GetAllReports() ).Select(r => (BarReportModel)r).OrderBy(r => r.Title).ToList();
+    }
+
+    private string GetTooltipTitle(ReportItem bar, ReportItem stack)
+    {
+        string barCondition = String.Empty;
+        if (!String.IsNullOrWhiteSpace(bar.Nickname))
+        {
+            barCondition = bar.Nickname;
+        }
+        else
+        {
+            if (bar.ItemDetails is not null)
+            {
+                foreach (var detail in bar.ItemDetails)
+                {
+                    if (detail.Value is not null)
+                    {
+                        barCondition += detail.Value;
+                    }
+                }
+            }
+        }
+        string stackCondition = String.Empty;
+        if (!String.IsNullOrWhiteSpace(stack.Nickname))
+        {
+            stackCondition = stack.Nickname;
+        }
+        else
+        {
+            if (stack.ItemDetails is not null)
+            {
+                foreach (var detail in stack.ItemDetails)
+                {
+                    if (detail.Value is not null)
+                    {
+                        stackCondition += detail.Value;
+                    }
+                }
+            }
+        }
+        return $"{barCondition}{( !String.IsNullOrWhiteSpace(stackCondition) ? " / " : String.Empty )}{stackCondition}";
+    }
+
+    private ListDictionary getTooltipContent(string title, string subTitle, double hours, double rate, double total)
+    {
+        ListDictionary output = new();
+        output.Add("Title", title);
+        output.Add("SubTitle", subTitle);
+        output.Add("Hours", Math.Round(hours, 2));
+        output.Add("Rate", rate.ToString("C0"));
+        output.Add("Total", total.ToString("C0"));
+        return output;
+    }
+
+    private IEnumerable<IGrouping<string, SessionModel>> groupSessions(ReportGroupBy groupBy, List<SessionModel> sessions)
+    {
+        switch (groupBy)
+        {
+            case ReportGroupBy.Month:
+                return sessions.GroupBy(s => new DateOnly(s.Date.Year, s.Date.Month, 1).ToString("MMM yyyy"));
+            case ReportGroupBy.Year:
+                return sessions.GroupBy(s => new DateOnly(s.Date.Year, 1, 1).ToString("yyyy"));
+            case ReportGroupBy.Week:
+                return sessions.GroupBy(s => s.Date.StartOfWeek(DayOfWeek.Sunday).ToString("MM/dd/yyyy"));
+            case ReportGroupBy.Day:
+                return sessions.GroupBy(s => s.Date.ToString("MM/dd/yyyy"));
+            default:
+                return sessions.GroupBy(s => new DateOnly(s.Date.Year, s.Date.Month, 1).ToString("MMM yyyy"));
+        }
+    }
+
+    private List<SessionModel> processData(List<SessionModel> sessions, List<ReportItemDetail> conditions)
+    {
+        if (conditions is null)
+        {
+            return sessions;
+        }
+        var wheres = conditions.Where(c => c.Level == ReportItemConditionLevel.Where).ToList();
+        var selects = conditions.Where(c => c.Level == ReportItemConditionLevel.Select).ToList();
+        var filtered = dynamicFilter(sessions, wheres);
+        var selected = dynamicSelect(filtered, selects);
+        return selected;
+    }
+
+    private List<SessionModel> dynamicFilter(List<SessionModel> sessions, List<ReportItemDetail> conditions)
+    {
+        Expression<Func<SessionModel, bool>> predicate = null;
+        DynamicFilterBuilder<SessionModel> predicateBuilder = new();
+
+        if (conditions is null || conditions.Count == 0)
+        {
+            return sessions;
+        }
+        foreach (var condition in conditions)
+        {
+            int pairAsInt;
+            bool isInt = int.TryParse(condition.Value.ToString(), out pairAsInt);
+            predicateBuilder.And(condition.Field, (FilterOperator)condition.Operator, ( isInt ? pairAsInt : condition.Value ));
+        }
+        predicate = predicateBuilder.Build();
+        var filtered = sessions.AsQueryable().Where(predicate).ToList();
+        return filtered;
+    }
+
+    private List<SessionModel> dynamicSelect(List<SessionModel> sessions, List<ReportItemDetail> conditions)
+    {
+        if (conditions is null || conditions.Count == 0)
+        {
+            return sessions;
+        }
+        List<SessionModel> sessionsCopy = sessions.Clone().ToList();
+        foreach (var condition in conditions)
+        {
+            if (condition.Field == "StartTime")
+            {
+                DateTime parsed;
+                bool isDateTime = DateTime.TryParse(condition.Value.ToString(), out parsed);
+                if (!isDateTime)
+                {
+                    throw new Exception("Start Time can only be compared to valid date");
+                }
+                TimeOnly key = TimeOnly.FromDateTime(parsed);
+                switch (condition.Operator)
+                {
+                    case ConditionOperator.Max:
+                        sessionsCopy = sessionsCopy.Select(s => { s.StartTime = ( s.StartTime > key ? s.StartTime : key ); return s; }).ToList();
+                        break;
+                    case ConditionOperator.Min:
+                        sessionsCopy = sessionsCopy.Select(s => { s.StartTime = ( s.StartTime < key ? s.StartTime : key ); return s; }).ToList();
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+            if (condition.Field == "EndTime")
+            {
+                DateTime parsed;
+                bool isDateTime = DateTime.TryParse(condition.Value.ToString(), out parsed);
+                if (!isDateTime)
+                {
+                    throw new Exception("Start Time can only be compared to valid date");
+                }
+                TimeOnly key = TimeOnly.FromDateTime(parsed);
+                switch (condition.Operator)
+                {
+                    case ConditionOperator.Max:
+                        sessionsCopy = sessionsCopy.Select(s => { s.EndTime = ( s.EndTime > key ? s.EndTime : key ); return s; }).ToList();
+                        break;
+                    case ConditionOperator.Min:
+                        sessionsCopy = sessionsCopy.Select(s => { s.EndTime = ( s.EndTime < key ? s.EndTime : key ); return s; }).ToList();
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+        }
+        return sessionsCopy;
+    }
+
+    public async Task AddReport(BarReportModel report)
+    {
+        try
+        {
+            await _reportEndpoint.SaveReport(report);
+            toastService.ShowSuccess($"{report.Title} Saved.");
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError("Error Saving Report");
+            await jsRuntime.InvokeVoidAsync("log", "Error: " + ex.Message);
+        }
+        AllReports.Add(report);
+        CurrentReport = report;
+        StateHasChanged();
+    }
+
+    public void EditReport(BarReportModel report)
+    {
+        jsRuntime.InvokeVoidAsync("log", $"Editing Report {report.Title}");
+        ReportForModal = report;
+        SaveAction = SaveReportChanges;
+        addReportRef.Show();
+    }
+
+    public async Task SaveReportChanges(BarReportModel report)
+    {
+        try
+        {
+            await _reportEndpoint.EditReport(ReportForModal);
+            await RefreshReports();
+            CurrentReport = AllReports.Find(r => r.Title == ReportForModal.Title);
+            toastService.ShowSuccess($"{ReportForModal.Title} successfully Updated.");
+            ReportForModal = new();
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError("Error Updating Report");
+            await jsRuntime.InvokeVoidAsync("log", "Error: " + ex.Message);
+        }
+        StateHasChanged();
+    }
+
+    public async Task DeleteReport()
+    {
+        try
+        {
+            await _reportEndpoint.DeleteReport(PendingDeletion);
+            var report = AllReports.Find(r => r.Id == PendingDeletion);
+            toastService.ShowSuccess($"{report.Title} successfully Deleted.");
+            await RefreshReports();
+            await jsRuntime.InvokeVoidAsync("log", $"Deleting Report {PendingDeletion}");
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            await jsRuntime.InvokeVoidAsync("log", "Error: " + ex.Message);
+            toastService.ShowError("Error Deleding Report");
+        }
+    }
+
+    public async Task SetAsDefault(int id)
+    {
+        try
+        {
+            await _reportEndpoint.SetAsDefault(id);
+            var report = AllReports.Find(r => r.Id == id);
+            toastService.ShowSuccess($"{report.Title} was set as default.");
+            await RefreshReports();
+        }
+        catch (Exception ex)
+        {
+            await jsRuntime.InvokeVoidAsync("log", "Error: " + ex.Message);
+            toastService.ShowError("Error Setting as default");
+        }
+    }
 }

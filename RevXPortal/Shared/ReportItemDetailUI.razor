@@ -1,0 +1,244 @@
+﻿@using System.Reflection
+@inject IJSRuntime jsRuntime
+
+
+<div class="report-item-container">
+    <div class="detail-container">
+        <RevxInput Value="@Nickname" ValueChanged="(v) => { Nickname = v; NicknameChanged.InvokeAsync(Nickname); }" PlaceHolder="Nickname"></RevxInput>
+        @if (ItemDetail is not null)
+        {
+            <RevxSelect2 TValue="string" Value="ItemDetail.GetAtIndex(0, new()).Field" ValueChanged="(v) => UpdateField(v)">
+                @foreach (var t in getPropertiesWithDisplay(typeof(SessionModel)))
+                {
+                    <RevxOption Text="@t.Key" Value="t.Value"></RevxOption>
+                }
+            </RevxSelect2>
+
+            @if (ItemDetail.GetAtIndex(0, new()).Field is not null & !locked)
+            {
+                if (ItemDetail.GetAtIndex(0, new()).Field == "StartTime")
+                {
+                    <div style="display: flex; align-items: center; justify-content: center;"><i class="fas fa-less-than"></i><i class="fas fa-greater-than"></i></div>
+                    <RevxTimeInput Value="SafeCast<TimeOnly>(ItemDetail.GetAtIndex(0, DefaultDurationDetails[0]).Value)" ValueChanged="(v) => SetTimeValue(v, 0)"></RevxTimeInput>
+                    <div style="display: flex; align-items: center; justify-content: center;"><span class="fas" style="font-size: 1rem; font-family: inherit;">&</span></div>
+                    <RevxTimeInput Value="SafeCast<TimeOnly>(ItemDetail.GetAtIndex(1, DefaultDurationDetails[1]).Value)" ValueChanged="(v) => SetTimeValue(v, 1)"></RevxTimeInput>
+                }
+                else
+                {
+                    <OperatorUI @bind-Value="ItemDetail.GetAtIndex(0, new()).Operator"></OperatorUI>
+                    @if (ItemDetail.GetAtIndex(0, new()).Field == "ClientId")
+                    {
+                        <RevxSelect2 TValue="int" Value="SafeCast<int>(ItemDetail.GetAtIndex(0, new()).Value)" ValueChanged="(v) => { ItemDetail.GetAtIndex(0, new()).Value = v; UpdateValue(); }">
+                            @foreach (var client in Clients)
+                            {
+                                <RevxOption Text="@client.DisplayName" Value="client.Id"></RevxOption>
+                            }
+                        </RevxSelect2>
+                    }
+                    else if (ItemDetail.GetAtIndex(0, new()).Field == "ProviderId")
+                    {
+                        <RevxSelect2 TValue="int" Value="SafeCast<int>(ItemDetail.GetAtIndex(0, new()).Value)" ValueChanged="(v) => { ItemDetail.GetAtIndex(0, new()).Value = v; UpdateValue(); }">
+                            @foreach (var provider in Providers)
+                            {
+                                <RevxOption Text="@provider.DisplayName" Value="provider.Id"></RevxOption>
+                            }
+                        </RevxSelect2>
+                    }
+                }
+            }
+        }
+        else
+        {
+            ItemDetail = new();
+            StateHasChanged();
+        }
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public List<ReportItemDetail> ItemDetail { get; set; }
+    [Parameter]
+    public EventCallback<List<ReportItemDetail>> ItemDetailChanged { get; set; }
+    [Parameter]
+    public string Nickname { get; set; }
+    [Parameter]
+    public EventCallback<string> NicknameChanged { get; set; }
+
+    [CascadingParameter]
+    public List<ClientModel> Clients { get; set; }
+    [CascadingParameter]
+    public List<ProviderModel> Providers { get; set; }
+
+    private bool locked { get; set; } = false;
+
+    private List<ReportItemDetail> DefaultDurationDetails = new()
+        {
+            new()
+            {
+                Id = RandomNumber(0, 10000),
+                Field = "StartTime",
+                Level = ReportItemConditionLevel.Select,
+                Operator = ConditionOperator.Max,
+            },
+            new()
+            {
+                Id = RandomNumber(0, 10000),
+                Field = "EndTime",
+                Level = ReportItemConditionLevel.Select,
+                Operator = ConditionOperator.Min,
+            }
+        };
+
+    protected override void OnInitialized()
+    {
+        if (ItemDetail is null)
+        {
+            ItemDetail = new();
+        }
+        else
+        {
+            jsRuntime.InvokeVoidAsync("log", JsonSerializer.Serialize(ItemDetail));
+        }
+        base.OnInitialized();
+    }
+
+    private void UpdateValue()
+    {
+        try
+        {
+            ItemDetailChanged.InvokeAsync(ItemDetail);
+        }
+        catch (Exception ex)
+        {
+            jsRuntime.InvokeVoidAsync("log", ex.Message);
+        }
+    }
+
+    private void SetTimeValue(TimeOnly val, int index)
+    {
+        //locked = true;
+        ReportItemDetail ItemAtIndex = ItemDetail.GetAtIndex(index, DefaultDurationDetails[ index ]);
+        var newVal = val.ToString("HH:mm:ss");
+        //jsRuntime.InvokeVoidAsync("log", $"HELLO");
+        // ReportItemDetail OtherItem = ItemDetail.GetAtIndex(( index == 0 ? 1 : 0 ), DefaultDurationDetails[ ( index == 0 ? 1 : 0 ) ]);
+        ItemAtIndex.Value = newVal;
+        UpdateValue();
+        // locked = false;
+    }
+
+    private void UpdateField(string val)
+    {
+        ItemDetail.GetAtIndex(0, new()).Field = val;
+        if (val == "StartTime")
+        {
+            ItemDetail = new()
+            {
+                DefaultDurationDetails[0]
+            };
+        }
+    }
+
+    private static readonly Random random = new Random();
+    private static readonly object syncLock = new object();
+    public static int RandomNumber(int min, int max)
+    {
+        lock (syncLock)
+        { // synchronize
+            return random.Next(min, max);
+        }
+    }
+
+    private T SafeCast<T>(object val)
+    {
+        if (val is not null)
+        {
+            jsRuntime.InvokeVoidAsync("log", $"Trying to cast {val} To {typeof(T).Name}");
+            if (typeof(T).Name == typeof(TimeOnly).Name)
+            {
+                TimeOnly parsed;
+                var success = TimeOnly.TryParse(val.ToString(), out parsed);
+                if (!success)
+                {
+                    jsRuntime.InvokeVoidAsync("log", $"cast not successful");
+                    parsed = new TimeOnly();
+                }
+                return (T)(object)parsed;
+            }
+            else if (typeof(T).Name == typeof(Int32).Name)
+            {
+                int parsed;
+                var success = int.TryParse(val.ToString(), out parsed);
+                if (!success)
+                {
+                    parsed = 0;
+                }
+                return (T)(object)parsed;
+            }
+            else
+            {
+                return default(T);
+            }
+        }
+        else
+        {
+            jsRuntime.InvokeVoidAsync("log", $"{val} Is null for cast to {typeof(T).Name}");
+            return default(T);
+        }
+    }
+
+    private Dictionary<string, string> getPropertiesWithDisplay(Type type)
+    {
+        Dictionary<string, string> output = new();
+        var properties = type.GetProperties();
+        //jsRuntime.InvokeVoidAsync("log", properties.Count());
+        foreach (var p in properties)
+        {
+            //jsRuntime.InvokeVoidAsync("log", p.Name);
+            var attrs = p.GetCustomAttributes(typeof(SelectableAttribute), true);
+            if (attrs.Length == 0)
+            {
+                //jsRuntime.InvokeVoidAsync("log", $"{p.Name} Does not have a selectable attribute");
+            }
+            else
+            {
+                var myAttr = (SelectableAttribute)attrs[ 0 ];
+                var displayText = myAttr.DisplayText;
+                if (displayText is null || displayText == "")
+                {
+                    displayText = p.Name;
+                }
+                output.Add(displayText, p.Name);
+                //jsRuntime.InvokeVoidAsync("log", $"{p.Name} Does have a selectable attribute, i added to the dictinamry the name {displayText}");
+            };
+        };
+        return output;
+    }
+
+    private Dictionary<string, int> getEnumValuesWithDisplay(Type type)
+    {
+        Dictionary<string, int> output = new();
+        var properties = Enum.GetValues(type);
+        foreach (var p in properties)
+        {
+            jsRuntime.InvokeVoidAsync("log", p);
+            Enum value = (Enum)Enum.ToObject(type, p);
+            var attrs = value.GetAttribute<SelectableAttribute>();
+            if (attrs is null)
+            {
+                jsRuntime.InvokeVoidAsync("log", $"{p} Does not have a selectable attribute");
+            }
+            else
+            {
+                var displayText = attrs.DisplayText;
+                if (displayText is null || displayText == "")
+                {
+                    displayText = p.ToString();
+                }
+                output.Add(displayText, (int)p);
+            };
+        };
+        return output;
+    }
+}

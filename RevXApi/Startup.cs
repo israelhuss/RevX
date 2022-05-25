@@ -87,7 +87,7 @@ namespace RevXApi
 				.AddRazorRenderer()
 				.AddSmtpSender(new SmtpClient("smtp.gmail.com", 587)
 				{
-					Credentials = new NetworkCredential("RevXReports@gmail.com", "ngsfhyicqzmaxwni"),
+					Credentials = new NetworkCredential("RevXReports@gmail.com", Configuration[ "EmailConfig:AppPassword" ]),
 					EnableSsl = true
 				});
 				//.AddSmtpSender(new SmtpClient("smtp.gmail.com", 587)

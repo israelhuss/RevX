@@ -1,56 +1,130 @@
 ﻿@inject IJSRuntime jsRuntime;
 <style>
-	.m-tooltip-wrapper {
-		display: inline-block;
-	}
+    .m-tooltip-wrapper {
+        display: inline-block;
+    }
 
-	.m-tooltip-wrapper {
-		visibility: visible;
-		position: absolute;
-		width: max-content;
-		background-color: #363636;
-		color: #fff;
-		text-align: center;
-		padding: 5px 15px;
-		border-radius: 5px;
-		z-index: 1;
-		white-space: pre-line;
-		pointer-events: none;
-	}
+    .m-tooltip-wrapper {
+        visibility: visible;
+        position: absolute;
+        width: max-content;
+        background-color: #363636;
+        color: #fff;
+        text-align: center;
+        padding: 5px 15px;
+        border-radius: 5px;
+        z-index: 1;
+        white-space: pre-line;
+        pointer-events: none;
+    }
+
+    .floater-container {
+        position: absolute;
+        transform: translate(-50%);
+        z-index: 500;
+        pointer-events: none;
+    }
+
+    .floater {
+        width: max-content;
+        border-radius: 5px;
+        box-shadow: 2px 2px 6px 0px #00000042;
+        padding: 5px 10px;
+        position: relative;
+        background-color: #fff;
+        margin-top: 5px;
+    }
+
+    .floater-title {
+        font-weight: bold;
+        font-size: 1.1rem;
+        text-align: center;
+    }
+
+    .floater-subtitle {
+        font-weight: bold;
+        font-size: .8rem;
+        text-align: center;
+    }
+
+    .floater-pair {
+        display: flex;
+        justify-content: space-between;
+        font-size: .6rem;
+    }
 </style>
 
 @if (ShowTooltip)
 {
-	<div id="m-tooltip" class="m-tooltip-wrapper">
-		@Text
-	</div>
+    if (Text is not null)
+    {
+        <div id="@guid.ToString()" class="m-tooltip-wrapper">
+            @Text
+        </div>
+    }
+    else if (TooltipContent is not null)
+    {
+        <div id="@guid.ToString()" style="display: @(ShowTooltip ? "block" : "none");" class="floater-container">
+            <div class="dotted-line"></div>
+            <div class="floater">
+                <div>
+                    @if (TooltipContent.Contains("Title"))
+                    {
+                        <div class="floater-title">@TooltipContent["Title"]</div>
+                    }
+                    @if (TooltipContent.Contains("Title"))
+                    {
+                        <div class="floater-subtitle">@TooltipContent["SubTitle"]</div>
+                    }
+                    @foreach (var i in TooltipContent)
+                    {
+                        DictionaryEntry t = (DictionaryEntry)i;
+                        if (t.Key.ToString() != "Title" && t.Key.ToString() != "SubTitle")
+                        {
+                            <div class="floater-pair">
+                                <div style="margin-right: 3px;">@t.Key:</div>
+                                <div>@t.Value</div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    }
 }
 
 @code {
-	[Parameter] public string Text { get; set; }
+    [Parameter] public string Text { get; set; }
+    [Parameter] public ListDictionary TooltipContent { get; set; }
 
-	[Parameter] public bool ShowTooltip { get; set; } = false;
+    [Parameter] public bool ShowTooltip { get; set; } = false;
 
-	[Parameter] public string X { get; set; } = "0px";
-	[Parameter] public string Y { get; set; } = "0px";
+    [Parameter] public string X { get; set; } = "0px";
+    [Parameter] public string Y { get; set; } = "0px";
+    private Guid guid { get; set; }
+    protected override void OnInitialized()
+    {
+        guid = Guid.NewGuid();
+        jsRuntime.InvokeVoidAsync("log", $"Moving Tooltip: Text is {Text}, Content is {JsonSerializer.Serialize(TooltipContent)}");
+        base.OnInitialized();
+    }
 
+    public void Show()
+    {
+        jsRuntime.InvokeVoidAsync("setUpMovingTooltip", guid);
+        ShowTooltip = true;
+        StateHasChanged();
+    }
 
-	public void Show()
-	{
-		jsRuntime.InvokeVoidAsync("setUpMovingTooltip");
-		ShowTooltip = true;
-		StateHasChanged();
-	}
+    public void Hide()
+    {
+        jsRuntime.InvokeVoidAsync("removeMovingTooltip", guid);
+        ShowTooltip = false;
+        StateHasChanged();
+    }
 
-	public void Hide()
-	{
-		jsRuntime.InvokeVoidAsync("removeMovingTooltip");
-		ShowTooltip = false;
-		StateHasChanged();
-	}
-
-	public void SetText(string text)
-	{
-		Text = text;
-	}
+    public void SetText(string text)
+    {
+        Text = text;
+    }
 }

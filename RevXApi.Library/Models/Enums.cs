@@ -12,4 +12,55 @@ namespace RevXApi.Library.Models
 		Biweeky = 2,
 		Weekly = 3,
 	}
+
+	public enum ReportStyle
+	{
+		BarChart,
+		LineChart,
+		PieChart
+	}
+
+	public enum ReportItemView
+	{
+		Bar,
+		Stack
+	}
+
+	public enum ReportItemConditionLevel
+	{
+		Where,
+		Select
+	}
+
+	public enum ConditionOperator
+	{
+		Equals,
+		DoesntEqual,
+		GreaterThan,
+		GreaterThanOrEqual,
+		LessThan,
+		LessThanOrEqual,
+		Contains,
+		NotContains,
+		StartsWith,
+		EndsWith,
+		ContainsIgnoreCase,
+		IsEmpty,
+		IsNotEmpty,
+		ContainsKey,
+		NotContainsKey,
+		ContainsValue,
+		NotContainsValue,
+		Sum,
+		Max,
+		Min
+	}
+
+	public enum ReportGroupBy
+	{
+		Month,
+		Year,
+		Week,
+		Day
+	}
 }

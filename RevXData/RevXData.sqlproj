@@ -16,13 +16,14 @@
     <ModelCollation>1033, CI</ModelCollation>
     <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
     <DeployToDatabase>True</DeployToDatabase>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <TargetLanguage>CS</TargetLanguage>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <SqlServerVerification>False</SqlServerVerification>
     <IncludeCompositeObjects>True</IncludeCompositeObjects>
     <TargetDatabaseSet>True</TargetDatabaseSet>
     <IncludeSchemaNameInFileName>False</IncludeSchemaNameInFileName>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release\</OutputPath>
@@ -118,6 +119,17 @@
     <Build Include="dbo\Stored Procedures\spSessionPlan_Insert.sql" />
     <Build Include="dbo\Stored Procedures\spPendingSession_Insert.sql" />
     <Build Include="dbo\Stored Procedures\spPendingSession_Delete.sql" />
+    <Build Include="dbo\Tables\Report.sql" />
+    <Build Include="dbo\Tables\ReportItem.sql" />
+    <Build Include="dbo\Tables\ReportItemDetail.sql" />
+    <Build Include="dbo\Stored Procedures\spReport_Insert.sql" />
+    <Build Include="dbo\Stored Procedures\spReportItem_Insert.sql" />
+    <Build Include="dbo\Stored Procedures\spReportItemDetail_Insert.sql" />
+    <Build Include="dbo\Stored Procedures\spReportItem_GetByReportId.sql" />
+    <Build Include="dbo\Stored Procedures\spReport_GetAll.sql" />
+    <Build Include="dbo\Stored Procedures\spReportItemDetail_GetByReportItemId.sql" />
+    <Build Include="dbo\Stored Procedures\spReport_Delete.sql" />
+    <Build Include="dbo\Stored Procedures\spReport_SetAsDefault.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="RevXData.refactorlog" />

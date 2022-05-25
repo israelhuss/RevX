@@ -1,5 +1,76 @@
-﻿
-<div class="spinner-parent">
-    <div class="spinner-border spinner"></div>
-    <div class="loading-text">Loading...</div>
-</div>
+﻿@inject IJSRuntime jsRuntime
+@implements IDisposable
+
+<style>
+	.inline-loading {
+		display: flex;
+	}
+
+	.dot {
+		width: .8rem;
+		height: .8rem;
+		border-radius: 50%;
+		background-color: #b8b8b8;
+		margin: 2px;
+		transition: all .9s;
+	}
+
+		.dot.active {
+			background-color: var(--secondary-dark-color);
+		}
+</style>
+
+@if (Inline)
+{
+	<div class="inline-loading">
+		@for (var i = 0; i < DotCount; i++)
+		{
+			<div class="dot @(activeDot == i ? "active" : "")"></div>
+		}
+	</div>
+}
+else
+{
+	<div class="spinner-parent">
+		<div class="spinner-border spinner"></div>
+		<div class="loading-text">@Text</div>
+	</div>
+}
+
+
+
+@code {
+	[Parameter]
+	public string Text { get; set; } = "Loading...";
+	[Parameter]
+	public bool Inline { get; set; } = false;
+	[Parameter]
+	public int DotCount { get; set; } = 3;
+	private int activeDot { get; set; }
+
+	private System.Timers.Timer timer = new(1000);
+
+	protected override void OnInitialized()
+	{
+		timer.Elapsed += (sender, eventArgs) => OnTimerCallback();
+		timer.Start();
+	}
+
+	private void OnTimerCallback()
+	{
+		_ = InvokeAsync(() =>
+		{
+			if (activeDot == DotCount - 1)
+			{
+				activeDot = 0;
+			}
+			else
+			{
+				activeDot++;
+			}
+			StateHasChanged();
+		});
+	}
+
+	public void Dispose() => timer.Dispose();
+}

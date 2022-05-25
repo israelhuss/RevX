@@ -1,0 +1,52 @@
+﻿<CascadingValue Value="this">
+	<div class="bar" style="display: @(ready ? "flex" : "none")">
+		@ChildContent
+		@if (ChartBase.ShowBarTotals)
+		{
+			<div>@(Stacks.Sum(s => s.Value) > 0 ? (Stacks.Sum(s => s.Value)).ToString("C0") : "")</div>
+		}
+	</div>
+</CascadingValue>
+
+@code {
+	[Parameter]
+	public RenderFragment ChildContent { get; set; }
+
+	[CascadingParameter]
+	public BarGroup Parent { get; set; }
+	[CascadingParameter]
+	public ChartBase ChartBase { get; set; }
+
+	public List<BarStack> Stacks { get; set; } = new();
+	private double totalValue { get; set; }
+	private string uuid { get; set; } = Guid.NewGuid().ToString();
+	private bool ready { get; set; }
+
+	protected override void OnInitialized()
+	{
+		Parent.AddBar(this);
+		Task.Delay(Parent.GroupIndex * 160).ContinueWith(t =>
+		{
+			ready = true;
+			StateHasChanged();
+		});
+		base.OnInitialized();
+	}
+
+	protected override void OnParametersSet()
+	{
+		if (Parent is null)
+		{
+			throw new Exception("Bar must be a child of BarGroup");
+		}
+		base.OnParametersSet();
+	}
+
+	public int AddStack(BarStack stack)
+	{
+		Stacks.Add(stack);
+		totalValue = Stacks.Sum(s => s.Value);
+		ChartBase.AddValue(uuid, totalValue);
+		return Stacks.Count - 1;
+	}
+}

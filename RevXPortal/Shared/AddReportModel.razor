@@ -1,0 +1,242 @@
+﻿@inject IJSRuntime jsRuntime
+
+<style>
+	.revx-form-row {
+		padding: 1.25rem 0.75rem;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.revx-form-col {
+		width: 45%;
+	}
+
+	.not-flex {
+		display: block !important;
+	}
+</style>
+
+@if (ShowModal && Report is not null)
+{
+	<div class="modal show d-block" tabindex="-1" role="dialog">
+		<div class="modal-lg modal-dialog modal-dialog-centered fade-in-and-grow" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">@ModalTitle</h5>
+					<button type="button" class="close btn" @onclick="Hide">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="revx-form-row">
+						<div class="revx-form-col">
+							<RevxInput PlaceHolder="Title" @bind-Value="Report.Title" AutoFocus="true" ValidationMessage="@TitleValidateMessage"></RevxInput>
+						</div>
+					</div>
+					<div class="revx-form-row">
+						<div class="revx-form-col">
+							<RevxDateInput PlaceHolder="Start Date" @bind-Value="Report.StartDate"></RevxDateInput>
+						</div>
+						<div class="revx-form-col">
+							<RevxDateInput PlaceHolder="End Date" @bind-Value="Report.EndDate"></RevxDateInput>
+						</div>
+					</div>
+					<div class="revx-form-row">
+						<div class="revx-form-col">
+							<RevxSelect2 TValue="ReportStyle" PlaceHolder="Report Style" @bind-Value="Report.ReportStyle">
+								@foreach (ReportStyle item in Enum.GetValues(typeof(ReportStyle)))
+							{
+								<RevxOption TValue="ReportStyle" Text="@(item.GetDescription())" Value="item"></RevxOption>
+							}
+						</RevxSelect2>
+					</div>
+					<div class="revx-form-col">
+						<RevxSelect2 TValue="ReportGroupBy" PlaceHolder="Group By" @bind-Value="Report.GroupBy">
+							@foreach (ReportGroupBy item in Enum.GetValues(typeof(ReportGroupBy)))
+							{
+								<RevxOption TValue="ReportGroupBy" Text="@item.ToString()" Value="item"></RevxOption>
+							}
+						</RevxSelect2>
+					</div>
+				</div>
+				@if (Report.ReportStyle == ReportStyle.BarChart)
+					{
+						<div class="revx-form-row" style="flex-direction: column; width: 100%; align-items: flex-start;">
+							Bars
+							@if (Report.Bars is not null)
+							{
+								foreach (var bar in Report.Bars)
+								{
+									<ReportItemDetailUI Nickname="@bar.Nickname" NicknameChanged="(v) => { bar.Nickname = v; jsRuntime.InvokeVoidAsync(v.ToString()); }" @bind-ItemDetail="bar.ItemDetails"></ReportItemDetailUI>
+								}
+							}
+							<a href="javascript:void(0)" @onclick="Addbar">+ Add Bar</a>
+						</div>
+						<div class="revx-form-row" style="flex-direction: column; width: 100%; align-items: flex-start;">
+							Stacks
+							@if (Report.Stacks is not null)
+							{
+								foreach (var stack in Report.Stacks)
+								{
+									<ReportItemDetailUI @bind-Nickname="stack.Nickname" @bind-ItemDetail="stack.ItemDetails"></ReportItemDetailUI>
+								}
+							}
+							<a href="javascript:void(0)" @onclick="AddStack">+ Add Stack</a>
+						</div>
+					}
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" @onclick="Hide">Cancel</button>
+					<button type="submit" class="btn btn-primary" @onclick="SaveReport">Save & Run</button>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+@code {
+	private bool ShowModal { get; set; }
+
+	[CascadingParameter]
+	public List<ClientModel> Clients { get; set; }
+	[CascadingParameter]
+	public List<ProviderModel> Providers { get; set; }
+	[Parameter]
+	public string ModalTitle { get; set; } = "Create a Report";
+	[Parameter]
+	public Action Saved { get; set; }
+	[Parameter]
+	public Func<BarReportModel, Task> SavedAsync { get; set; }
+
+	[Parameter]
+	public BarReportModel Report { get; set; }
+
+	protected override void OnInitialized()
+	{
+		//if (Report is null)
+		//{
+		//	int year = DateTime.Now.Year;
+		//	Report = new()
+		//		{
+		//			Id = RandomNumber(0, 100000),
+		//			StartDate = new DateOnly(year, 1, 1),
+		//			EndDate = new DateOnly(year + 20, 1, 1),
+		//		};
+		//}
+		base.OnInitialized();
+		//StateHasChanged();
+	}
+
+	protected override void OnParametersSet()
+	{
+		if (Report is null)
+		{
+			int year = DateTime.Now.Year;
+			Report = new()
+				{
+					Id = RandomNumber(0, 100000),
+					StartDate = new DateOnly(year, 1, 1),
+					EndDate = new DateOnly(year + 20, 1, 1),
+				};
+		}
+		base.OnParametersSet();
+	}
+
+	public string TitleValidateMessage { get; set; }
+
+	private void ResetValidation()
+	{
+		TitleValidateMessage = null;
+		StateHasChanged();
+	}
+
+	private bool Validate()
+	{
+		ResetValidation();
+		if (String.IsNullOrWhiteSpace(Report.Title))
+		{
+			TitleValidateMessage = "A Report must have a title.";
+			return false;
+		}
+
+		return true;
+	}
+
+	public void Show()
+	{
+		ShowModal = true;
+		jsRuntime.InvokeVoidAsync("log", "Showing");
+		jsRuntime.InvokeVoidAsync("log", JsonSerializer.Serialize(Enum.GetValues(typeof(ReportGroupBy))));
+		StateHasChanged();
+	}
+
+	private void UpdateBars(int index, ReportItem item)
+	{
+		Report.Bars[ index ] = item;
+	}
+
+	public void Hide()
+	{
+		Report = new();
+		ShowModal = false;
+		jsRuntime.InvokeVoidAsync("log", "Hiding");
+		StateHasChanged();
+	}
+
+	public async Task SaveReport()
+	{
+		if (Validate())
+		{
+			if (Saved is not null)
+			{
+				Saved();
+			}
+			if (SavedAsync is not null)
+			{
+				await SavedAsync(Report);
+			}
+			Hide();
+		}
+		else
+		{
+			await jsRuntime.InvokeVoidAsync("log", "Not Valid");
+		}
+	}
+
+	private void Addbar()
+	{
+		if (Report.Bars is null)
+		{
+			Report.Bars = new();
+		}
+		Report.Bars.Add(new ReportItem()
+			{
+				Id = RandomNumber(0, 10000),
+				ViewAs = ReportItemView.Bar,
+			});
+	}
+
+	private void AddStack()
+	{
+		if (Report.Stacks is null)
+		{
+			Report.Stacks = new();
+		}
+		Report.Stacks.Add(new ReportItem()
+			{
+				Id = RandomNumber(0, 10000),
+				ViewAs = ReportItemView.Stack
+			});
+	}
+
+	private static readonly Random random = new Random();
+	private static readonly object syncLock = new object();
+	public static int RandomNumber(int min, int max)
+	{
+		lock (syncLock)
+		{ // synchronize
+			return random.Next(min, max);
+		}
+	}
+}

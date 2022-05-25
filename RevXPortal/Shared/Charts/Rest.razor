@@ -5,18 +5,18 @@
 @inject IJSRuntime jsRuntime
 @inject IToastService toastService
 
-@*<ChartBase RowCount="5" Lables="LablesList" FooterLabelStyle="FooterStyles.UnderLine" Values="Values" SkipFirstFooterLabel="true">
+<ChartBase RowCount="5" FooterLabelStyle="FooterStyles.UnderLine" SkipFirstFooterLabel="true">
 	<ChartContent>
 	<LineChart Values="Values" TooltipValues="GetTooltipValues()"></LineChart>
 	</ChartContent>
 	</ChartBase>
-*@
+
 @*<PieChart Data="Values" TootlipData="Values.Select(v => v.ToString()).ToList()" NoText="true"></PieChart>*@
 
 
 
 <div style="padding: 2rem;">
-	<ChartBase RowCount="5" Lables="LablesList" FooterLabelStyle="FooterStyles.Centered" Values="Values" SkipFirstFooterLabel="false">
+	<ChartBase RowCount="5" FooterLabelStyle="FooterStyles.Centered" SkipFirstFooterLabel="false">
 		<ChartHeader>
 			@if (ReportData is not null)
 			{
@@ -54,13 +54,15 @@
 				<StackedBarChart>
 					@foreach (var dataPoint in ReportData)
 					{
-						<BarGroup>
-							<BarOne>
-								<StackedBar StackOne="dataPoint.SchoolEncore.Hours * dataPoint.SchoolEncore.Rate" StackTwo="dataPoint.SchoolLegadel.Hours * dataPoint.SchoolLegadel.Rate" Color="#1365fc"></StackedBar>
-							</BarOne>
-							<BarTwo>
-								<StackedBar StackOne="dataPoint.AfterEncore.Hours * dataPoint.AfterEncore.Rate" StackTwo="dataPoint.AfterLegadel.Hours * dataPoint.AfterLegadel.Rate" Color="#298a00"></StackedBar>
-							</BarTwo>
+						<BarGroup Label="@(dataPoint.Label)">
+							<Bar>
+								<BarStack Value="dataPoint.SchoolEncore.Hours * dataPoint.SchoolEncore.Rate" Color="#1365fc" TooltipText="@($"{dataPoint.SchoolEncore.Hours} Hours ${(dataPoint.SchoolEncore.Hours * dataPoint.SchoolEncore.Rate).ToString()}")"></BarStack>
+								<BarStack Value="dataPoint.SchoolLegadel.Hours * dataPoint.SchoolLegadel.Rate" Color="#659afd"></BarStack>
+							</Bar>
+							<Bar>
+								<BarStack Value="dataPoint.AfterEncore.Hours * dataPoint.AfterEncore.Rate" Color="#298a00"></BarStack>
+								<BarStack Value="dataPoint.AfterLegadel.Hours * dataPoint.AfterLegadel.Rate" Color="#74b359"></BarStack>
+							</Bar>
 						</BarGroup>
 					}
 				</StackedBarChart>
@@ -123,6 +125,7 @@
 
 	public record SchoolAndAfterSchoolData
 	{
+		public string Label { get; set; }
 		public DataPoint SchoolEncore { get; set; }
 		public DataPoint SchoolLegadel { get; set; }
 		public DataPoint AfterEncore { get; set; }
@@ -140,6 +143,7 @@
 		{
 			List<ManageSessionModel> mySessions = new();
 			SchoolAndAfterSchoolData dataPoint = new();
+			dataPoint.Label = month.Key.ToString("MMM yyyy");
 			foreach (var invoice in month)
 			{
 				mySessions.AddRange(Sessions.Where(s => s.InvoiceId == invoice.Id));
@@ -147,12 +151,12 @@
 			jsRuntime.InvokeVoidAsync("log", mySessions.Count);
 			dataPoint.SchoolEncore = new();
 			dataPoint.AfterEncore = new();
-			dataPoint.SchoolEncore.Hours = mySessions.Select(s => s.Provider.Id == encoreId ? GetHoursBetween(s, new TimeOnly(08, 00, 00), new TimeOnly(14, 00, 00)) : 0).Sum();
+			dataPoint.SchoolEncore.Hours = mySessions.Select(s => s.Provider.Id == encoreId ? GetHoursBetween(s, new TimeOnly(08, 00, 00), new TimeOnly(15, 00, 00)) : 0).Sum();
 			if (dataPoint.SchoolEncore.Hours > 0)
 			{
 				dataPoint.SchoolEncore.Rate = mySessions.Where(s => s.Provider.Id == encoreId).FirstOrDefault().Rate.Rate;
 			}
-			dataPoint.AfterEncore.Hours = mySessions.Select(s => s.Provider.Id == encoreId ? GetHoursBetween(s, new TimeOnly(14, 00, 00), new TimeOnly(16, 00, 00)) : 0).Sum();
+			dataPoint.AfterEncore.Hours = mySessions.Select(s => s.Provider.Id == encoreId ? GetHoursBetween(s, new TimeOnly(15, 00, 00), new TimeOnly(16, 00, 00)) : 0).Sum();
 			if (dataPoint.AfterEncore.Hours > 0)
 			{
 				dataPoint.AfterEncore.Rate = mySessions.Where(s => s.Provider.Id == encoreId).FirstOrDefault().Rate.Rate;
@@ -160,12 +164,12 @@
 
 			dataPoint.SchoolLegadel = new();
 			dataPoint.AfterLegadel = new();
-			dataPoint.SchoolLegadel.Hours = mySessions.Select(s => s.Provider.Id == secondaryProviderId ? GetHoursBetween(s, new TimeOnly(08, 00, 00), new TimeOnly(14, 00, 00)) : 0).Sum();
+			dataPoint.SchoolLegadel.Hours = mySessions.Select(s => s.Provider.Id == secondaryProviderId ? GetHoursBetween(s, new TimeOnly(08, 00, 00), new TimeOnly(15, 00, 00)) : 0).Sum();
 			if (dataPoint.SchoolLegadel.Hours > 0)
 			{
 				dataPoint.SchoolLegadel.Rate = mySessions.Where(s => s.Provider.Id == secondaryProviderId).FirstOrDefault().Rate.Rate;
 			}
-			dataPoint.AfterLegadel.Hours = mySessions.Select(s => s.Provider.Id == secondaryProviderId ? GetHoursBetween(s, new TimeOnly(14, 00, 00), new TimeOnly(16, 00, 00)) : 0).Sum();
+			dataPoint.AfterLegadel.Hours = mySessions.Select(s => s.Provider.Id == secondaryProviderId ? GetHoursBetween(s, new TimeOnly(15, 00, 00), new TimeOnly(16, 00, 00)) : 0).Sum();
 			if (dataPoint.AfterLegadel.Hours > 0)
 			{
 				dataPoint.AfterLegadel.Rate = mySessions.Where(s => s.Provider.Id == secondaryProviderId).FirstOrDefault().Rate.Rate;

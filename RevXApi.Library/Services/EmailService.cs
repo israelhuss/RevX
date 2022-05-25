@@ -33,7 +33,7 @@ namespace RevXApi.Library.Services
 			_templateLocation = _config[ "EmailConfig:TemplateLocation" ];
 			_documentLocationRoot = _config[ "EmailConfig:DocumentTemplateLocationRoot" ];
 		}
-		public async Task SendEmail()
+		public async Task<SendResponse> SendEmail()
 		{
 			//This is a test function for the emails
 			List<SessionEmailModel> sessions = new();
@@ -51,23 +51,52 @@ namespace RevXApi.Library.Services
 
 				MemoryStream stream = new(bytes);
 				MemoryStream document = new(documentBytes);
-
-				var email = await _fluentEmail
-					.SetFrom("RevXReports@gmail.com", "RevXLogs")
-					.To(_config[ "EmailConfig:IsraelEmailAddress" ], "Israel Huss")
-					.Subject("Hi from the RevX Team")
-					.Attach(new Attachment() { IsInline = true, ContentId = "Signature", Data = stream, ContentType = "image/png", Filename = "Signature.png" })
-					.Attach(new Attachment() { ContentId = "Document", ContentType = "application/pdf", Data = document, Filename = "hello.pdf" })
-					.UsingTemplateFromFile(_templateLocation, new InvoiceEmailModel() { FullName = "Israel", InvoiceSessions = sessions, TotalHours = 79, InvoicePeriod = "Hello", Rate = 32, Signature = signature }, true)
-					.SendAsync();
+				try
+				{
+					var email = await _fluentEmail
+						.SetFrom("RevXReports@gmail.com", "RevXLogs")
+						.To(_config[ "EmailConfig:IsraelEmailAddress" ], "Israel Huss")
+						.Subject("Hi from the RevX Team")
+						.Attach(new Attachment() { IsInline = true, ContentId = "Signature", Data = stream, ContentType = "image/png", Filename = "Signature.png" })
+						.Attach(new Attachment() { ContentId = "Document", ContentType = "application/pdf", Data = document, Filename = "hello.pdf" })
+						.UsingTemplateFromFile(_templateLocation, new InvoiceEmailModel() { FullName = "Israel", InvoiceSessions = sessions, TotalHours = 79, InvoicePeriod = "Hello", Rate = 32, Signature = signature }, true)
+						.SendAsync();
+					return email;
+				}
+				catch (Exception ex)
+				{
+					return new SendResponse()
+					{
+						ErrorMessages = new List<string>()
+						{
+							ex.Message,
+							ex.StackTrace,
+						}
+					};
+				}
 			}
 			else
 			{
-				var email = await _fluentEmail
-					.To(_config[ "EmailConfig:IsraelEmailAddress" ], "Israel Huss")
-					.Subject("Hi from the RevX Team - Attachment was null")
-					.UsingTemplateFromFile(_templateLocation, new InvoiceEmailModel() { FullName = "Israel", InvoiceSessions = sessions, TotalHours = 79, InvoicePeriod = "Hello", Rate = 32, Signature = signature }, true)
-					.SendAsync();
+				try
+				{
+					var email = await _fluentEmail
+						.To(_config[ "EmailConfig:IsraelEmailAddress" ], "Israel Huss")
+						.Subject("Hi from the RevX Team - Attachment was null")
+						.UsingTemplateFromFile(_templateLocation, new InvoiceEmailModel() { FullName = "Israel", InvoiceSessions = sessions, TotalHours = 79, InvoicePeriod = "Hello", Rate = 32, Signature = signature }, true)
+						.SendAsync();
+					return email;
+				}
+				catch (Exception ex)
+				{
+					return new SendResponse()
+					{
+						ErrorMessages = new List<string>()
+						{
+							ex.Message,
+							ex.StackTrace,
+						}
+					};
+				}
 			}
 		}
 

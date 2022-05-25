@@ -70,6 +70,60 @@ namespace RevXPortal.API
 			//return new List<ManageSessionModel>();
 		}
 
+		public async Task<List<SessionModel>> GetAllSessions()
+		{
+			try
+			{
+				using (HttpResponseMessage response = await _client.GetAsync($"/api/Session"))
+				{
+					if (response.IsSuccessStatusCode)
+					{
+						var resultsAsDbModel = await response.Content.ReadAsAsync<List<SessionApiModel>>();
+						var output = new List<SessionModel>();
+						foreach (var session in resultsAsDbModel)
+						{
+							SessionModel sessionModel = new()
+							{
+								Id = session.Id,
+								ClientId = session.Client.Id,
+								ProviderId = session.Provider.Id,
+								Date = DateOnly.FromDateTime(session.Date),
+								StartTime = TimeOnly.Parse(session.StartTime),
+								EndTime = TimeOnly.Parse(session.EndTime),
+								BillingStatusId = session.BillingStatus.Id,
+								InvoiceId = session.InvoiceId,
+								Rate = session.Rate,
+								Notes = session.Notes
+							};
+							output.Add(sessionModel);
+						}
+						return output;
+					}
+					else
+					{
+						throw new Exception(response.ReasonPhrase);
+					}
+				}
+			}
+			catch (HttpRequestException ex)
+			{
+				if (ex.Message == "TypeError: Failed to fetch")
+				{
+					throw new ApiException("The API cannot be reached");
+					throw;
+				}
+				else
+				{
+					throw;
+				}
+			}
+			catch (Exception)
+			{
+				throw;
+			}
+			//return new List<ManageSessionModel>();
+		}
+
 		public async Task SaveSession(ManageSessionModel model)
 		{
 			//SessionDbModel dbModel = new()

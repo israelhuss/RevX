@@ -3,6 +3,9 @@
 :root {
     --primary-dark-color: #3e6581;
     --primary-white-color: #e6e6e6;
+    --secondary-dark-color: #298a00;
+    --secondary-light-color: #74b359;
+    --light-gray: #e6e6e6;
 }
 
 *,
@@ -24,6 +27,10 @@ html, body {
 
 table {
     color: inherit !important;
+}
+
+.modal {
+    overflow: auto;
 }
 
 a, .btn-link {
@@ -189,6 +196,7 @@ a, .btn-link {
     display: flex;
     align-items: center;
     justify-content: start;
+    overflow-x: hidden;
 }
 
     .revx-input-box.validate {
@@ -227,21 +235,24 @@ a, .btn-link {
 
 .revx-input-icon {
     position: absolute;
-    top: 0;
+    top: 50%;
     right: 0;
+    transform: translateY(-60%);
     max-width: 50px;
-    height: 97%;
     display: flex;
     justify-content: center;
     align-items: center;
     padding-right: 10px;
+    padding-left: 5px;
     background-color: #fff;
     animation: fadeIn .6s;
+    font-size: 1rem;
 }
 
     .revx-input-icon > i {
         transition: all .4S ease-in-out;
     }
+
     .revx-input-icon > .flipped {
         transform: rotate(180deg);
     }
@@ -253,9 +264,9 @@ a, .btn-link {
     margin-top: 3px;
 }
 
-.revx-validate:first-of-type {
-    animation: grow-shrink 1s ease-in-out;
-}
+    .revx-validate:first-of-type {
+        animation: grow-shrink 1s ease-in-out;
+    }
 
 .blazored-toast {
     animation: slide-in .6s ease-out;
@@ -265,9 +276,11 @@ a, .btn-link {
     0% {
         transform: scale(1)
     }
+
     50% {
         transform: scale(1.1);
     }
+
     100% {
         transform: scale(1)
     }
@@ -392,9 +405,11 @@ a, .btn-link {
     0% {
         transform: translateX(90%);
     }
+
     90% {
         transform: translateX(-5%);
     }
+
     100% {
         transform: translateX(0);
     }

@@ -1,0 +1,39 @@
+﻿@inject IJSRuntime jsRuntime
+<div class="chart-footer-cell">
+	<p @ref="el" style="white-space: nowrap;" class="@classMap[Parent.FooterLabelStyle]">@ChildContent</p>
+</div>
+@code {
+	[Parameter]
+	public RenderFragment ChildContent { get; set; }
+
+	[CascadingParameter]
+	public ChartBase Parent { get; set; }
+	private Dictionary<FooterStyles, string> classMap { get; set; } = new()
+		{
+			{FooterStyles.Auto, "footer-cell-centered"},
+			{ FooterStyles.Centered, "footer-cell-centered" },
+			{ FooterStyles.CenteredSlant, "footer-cell-slant" },
+			{ FooterStyles.UnderLine, "footer-cell-underline" }
+		};
+
+	private string footerLabelClass { get; set; }
+	private ElementReference el { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (Parent is null)
+		{
+			throw new Exception("FooterCell must be a child of ChartBase");
+		}
+		await jsRuntime.InvokeVoidAsync("log", $"Overflow? {Parent.FooterLabelStyle}");
+		if (Parent.FooterLabelStyle == FooterStyles.Auto)
+		{
+			var doesOverflow = await jsRuntime.InvokeAsync<bool>("checkOverflow", el);
+			if (doesOverflow)
+			{
+				Parent.SetFooterStyle(FooterStyles.CenteredSlant);
+			}
+		}
+		base.OnInitialized();
+	}
+}

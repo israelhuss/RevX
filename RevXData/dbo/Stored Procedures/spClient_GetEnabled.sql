@@ -6,5 +6,5 @@ BEGIN
 
 	SELECT *
 	FROM dbo.Client
-	WHERE [Enabled] = 1 AND USerId = @UserId;
+	WHERE [Enabled] = 1 AND UserId = @UserId;
 END
