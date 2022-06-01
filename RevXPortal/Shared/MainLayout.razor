@@ -8,11 +8,11 @@
 <style>
 	.revx-sidebar {
 		background-image: linear-gradient(to bottom right, #334c66, #3e6581) !important;
-		width: 12rem;
-		height: calc(100vh - 3.5rem);
+		width: 19.20rem;
+		height: calc(100vh - 5.60rem);
 		position: sticky;
 		top: 0;
-		margin-top: 3.5rem;
+		margin-top: 5.60rem;
 	}
 
 		.revx-sidebar.force {
@@ -28,12 +28,12 @@
 		position: fixed;
 		width: 100%;
 		z-index: 1000;
-		height: 3.5rem;
+		height: 5.60rem;
 		align-items: center;
 	}
 
 	.nav-bar-item {
-		height: 3.5rem;
+		height: 5.60rem;
 		width: calc(100vw / 2);
 	}
 
@@ -61,9 +61,9 @@
 
 	.content {
 		flex: 1;
-		max-height: calc(100vh - 3.5rem);
+		max-height: calc(100vh - 5.60rem);
 		overflow: auto !important;
-		margin-top: 3.5rem;
+		margin-top: 5.60rem;
 	}
 
 	.navbar-toggler {
@@ -71,13 +71,13 @@
 	}
 
 	.navbar-brand {
-		margin-left: 1.5rem;
-		padding-top: 0.5rem;
-		padding-bottom: 0.5rem;
+		margin-left: 2.40rem;
+		padding-top: 0.80rem;
+		padding-bottom: 0.80rem;
 	}
 
 	.login-logo {
-		padding: 3rem 0 1rem;
+		padding: 4.80rem 0 1.60rem;
 	}
 
 	.revx-card {
@@ -85,9 +85,9 @@
 		box-shadow: 0 1px 1px 0 rgb(58 60 77 / 10%), 0 2px 8px 0 rgb(58 60 77 / 8%);
 		border-radius: 0 0 1px 1px;
 		border: none;
-		margin: 5rem auto;
-		max-width: 41rem;
-		min-width: 41rem;
+		margin: 8.00rem auto;
+		max-width: 65.60rem;
+		min-width: 65.60rem;
 		position: relative;
 		padding: 40px 80px;
 	}
@@ -95,12 +95,12 @@
 	.revx-input1 {
 		width: 100%;
 		border: 1px solid #d1d7de;
-		height: 3.3rem;
-		line-height: 3.3rem;
+		height: 5.28rem;
+		line-height: 5.28rem;
 		border-radius: 3px;
 		padding-left: 15px;
 		-webkit-appearance: none;
-		font-size: 1.2rem;
+		font-size: 1.92rem;
 	}
 
 		.revx-input1.error {
@@ -117,9 +117,9 @@
 
 	.login-btn {
 		width: 70%;
-		margin: calc(2rem + .5rem) auto;
+		margin: calc(3.20rem + 0.80rem) auto;
 		display: block;
-		height: 3.3rem;
+		height: 5.28rem;
 		border-radius: 3px;
 		border: none;
 		background-color: #00ae0d;
@@ -150,11 +150,11 @@
 			<div class="nav-bar">
 				<div class="navbar-toggler nav-bar-item">
 					<button class="navbar-toggler-btn" @onclick="ToggleSidebar">
-						<i class="fas fa-bars" style="font-size: 1.4rem; color: #d7d7d7;"></i>
+						<i class="fas fa-bars" style="font-size: 2.24rem; color: #d7d7d7;"></i>
 					</button>
 				</div>
 				<div class="logo nav-bar-item">
-					<a class="navbar-brand" href=""><img src="https://timcohussstorage.blob.core.windows.net/revxlogo/Logo-text-transparent.png" style="height: 2.5rem;" /></a>
+					<a class="navbar-brand" href=""><img src="https://timcohussstorage.blob.core.windows.net/revxlogo/Logo-text-transparent.png" style="height: 4.00rem;" /></a>
 				</div>
 				<div class="account nav-bar-item">
 					<AccountInfo Name="@($"{context.User.FindFirst(ClaimTypes.GivenName).Value} {context.User.FindFirst(ClaimTypes.Surname).Value}")">
@@ -193,29 +193,29 @@
 	<NotAuthorized>
 		<div class="login-container" tabindex="0" @onkeyup="@(async (e) => { if (e.Key == "Enter") { await ExecuteLogin(); }; })">
 			<div class="login-logo">
-				<img src="https://timcohussstorage.blob.core.windows.net/revxlogo/Logo-text-transparent.png" style="width: 15rem; display: block; margin: 0 auto;" />
+				<img src="https://timcohussstorage.blob.core.windows.net/revxlogo/Logo-text-transparent.png" style="width: 24.00rem; display: block; margin: 0 auto;" />
 			</div>
 			<div class="revx-card">
-				<h1 style="font-weight: 100; text-align: center; padding: 2rem 0;">Welcome to the RevX Portal</h1>
-				<div style="margin-bottom: 1rem">
+				<h1 style="font-weight: 100; text-align: center; padding: 3.20rem 0;">Welcome to the RevX Portal</h1>
+				<div style="margin-bottom: 1.60rem">
 					<input class="revx-input1 @(model.Email == string.Empty ? "error" : model.Email is null ? "" : "valid")" type="email" placeholder="Email" @onkeyup="@(async (e) => { if (e.Key == "Enter") { await ExecuteLogin(); }; })" @oninput="@((e) => InputChanged(e, "email"))" />
 					@if (model.Email == string.Empty || ( model.Email is not null && !emailRegex.IsMatch(model.Email) ))
 					{
 						<small style="color: red;">@emailErrorText</small>
 					}
 				</div>
-				<div style="margin-bottom: 1rem">
+				<div style="margin-bottom: 1.60rem">
 					<input class="revx-input1 @(model.Password == string.Empty ? "error" : model.Password is null ? "" : "valid")" type="password" placeholder="Password" @onkeyup="@(async (e) => { if (e.Key == "Enter") { await ExecuteLogin(); }; })" @oninput="@((e) => InputChanged(e, "password"))" />
 					@if (model.Password == string.Empty)
 					{
 						<small style="color: red;">@passwordErrorText</small>
 					}
 				</div>
-				<div style="margin-bottom: 0.5rem">
+				<div style="margin-bottom: 0.80rem">
 					<button type="submit" class="login-btn @(canLogIn ? "" : "disabled") @(btnText == "Signing In..." ? "working" : "")" @onclick="ExecuteLogin">@btnText</button>
 					@if (showAuthenticationError)
 					{
-						<small style="color: red; text-align: center; margin-top: -2rem; display: block;">@authenticationErrorText</small>
+						<small style="color: red; text-align: center; margin-top: -3.20rem; display: block;">@authenticationErrorText</small>
 					}
 				</div>
 			</div>

@@ -3,42 +3,42 @@
 }
 
 .top-row {
-    height: 3.5rem;
+    height: 5.60rem;
     background-color: rgba(0,0,0,0.4);
 }
 
 .navbar-brand {
-    font-size: 1.1rem;
+    font-size: 1.76rem;
 }
 
 .oi {
-    width: 2rem;
-    font-size: 1.1rem;
+    width: 3.20rem;
+    font-size: 1.76rem;
     vertical-align: text-top;
     top: -2px;
 }
 
 .nav-item {
-    font-size: 0.9rem;
-    padding-bottom: 0.5rem;
+    font-size: 1.44rem;
+    padding-bottom: 0.80rem;
 }
 
     .nav-item:first-of-type {
-        padding-top: 1rem;
+        padding-top: 1.60rem;
     }
 
     .nav-item:last-of-type {
-        padding-bottom: 1rem;
+        padding-bottom: 1.60rem;
     }
 
     .nav-item ::deep a {
         color: #d7d7d7;
         border-radius: 4px;
-        height: 3rem;
+        height: 4.80rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        line-height: 3rem;
+        line-height: 4.80rem;
     }
 
 .nav-item ::deep a.active {
@@ -52,7 +52,7 @@
 }
 
 .nav-icon {
-    font-size: 1.4rem;
+    font-size: 2.24rem;
     width: 25%;
     text-align: center;
 }
@@ -62,7 +62,7 @@
 }
 
 .nav-link {
-    padding: .5rem !important;
+    padding: 0.80rem !important;
 }
 
 @media (min-width: 641px) {

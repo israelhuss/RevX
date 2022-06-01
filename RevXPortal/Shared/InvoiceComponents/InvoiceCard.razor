@@ -22,7 +22,7 @@
 	}
 
 	.invoice-card-body {
-		min-height: 14rem;
+		min-height: 22.40rem;
 		text-align: center;
 		display: flex;
 		flex-direction: column;
@@ -32,9 +32,9 @@
 		margin-top: -1px;
 		border-top: solid 1px rgb(228, 228, 231);
 		display: flex;
-		padding: 1rem 4rem 1rem 3rem;
+		padding: 1.60rem 6.40rem 1.60rem 4.80rem;
 		justify-content: space-between;
-		font-size: 1.6rem;
+		font-size: 2.56rem;
 		position: relative;
 	}
 
@@ -43,7 +43,7 @@
 	}
 
 	.icon-container {
-		width: 3rem;
+		width: 4.80rem;
 		margin-right: 5px;
 	}
 
@@ -68,7 +68,7 @@
 			@{
 				double total = Invoices.Sum(i => i.Total);
 			}
-			<h1 style="font-weight: 300; font-size: 3rem;">@total.ToString("C")</h1>
+			<h1 style="font-weight: 300; font-size: 4.80rem;">@total.ToString("C")</h1>
 			<h5>Gross Pay for @Month 01, @Year - @Month @LastDay, @Year</h5>
 		</div>
 
@@ -88,7 +88,7 @@
 								}
 								else
 								{
-									<div style="height: 20rem; display: flex;" class="invoice-card-body-row">
+									<div style="height: 32.00rem; display: flex;" class="invoice-card-body-row">
 										<h4 style="margin: auto;">There is no invoice for @provider.Name in this month.</h4>
 									</div>
 								}
@@ -114,7 +114,7 @@
 											</div>
 										</Header>
 										<Content>
-											<div class="d-flex" style="justify-content: center; align-items: center; padding: 1rem 0;">
+											<div class="d-flex" style="justify-content: center; align-items: center; padding: 1.60rem 0;">
 												<div class="custom-control custom-switch">
 													<input type="checkbox" checked="@CalendarView" class="custom-control-input" id="@invoice.Id-calendar-view-switch" @onchange="((e) => CalendarView = (bool)e.Value)">
 													<label class="custom-control-label" for="@invoice.Id-calendar-view-switch"></label>
@@ -127,7 +127,7 @@
 											}
 											@if (CalendarView)
 											{
-												<div style="margin: 1rem;">
+												<div style="margin: 1.60rem;">
 													<SimpleCalendar FirstDayOfMonth="new DateOnly(invoice.StartDate.Year, invoice.StartDate.Month, 1)" Events="GetSessionEvents(FilterSessionsByMonthAndProvider(Sessions, provider.Id))" />
 												</div>
 											}
@@ -152,7 +152,7 @@
 										<div>@invoice?.Total.ToString("C")</div>
 									</div>
 									<div class="invoice-card-body-row" style="justify-content: center; color: #00ae0d;">
-										<div><i style="padding: 0 10px; font-size: 1.4rem;" class="fas fa-download"></i></div>
+										<div><i style="padding: 0 10px; font-size: 2.24rem;" class="fas fa-download"></i></div>
 										@if (!DownloadingInProgress)
 										{
 											<div class="download-btn" @onclick="@(() => DownloadInvoice(invoice.Id, invoice.StartDate.ToString("MMMM yyyy")))">Download Invoice</div>

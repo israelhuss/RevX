@@ -30,7 +30,7 @@
                 <path class="path" id="@($"path-{i}-{Rand}")" d="@GetPath(i, false)"
                       style="fill:@Colors[i];
             fill-opacity: 1" @onmouseover="(e) => OnPathHover(j, e)" @onmouseout="(e) => OnPathLeave(j, e)" />
-                <text class="text" text-anchor="middle" style="transform: translate(@GetLabelPoints(i)) rotate(-90deg); font-size:1.2rem; fill:#fff; pointer-events: none ">@(((Data[i] * 100) / total).ToString("0.00"))%</text>
+                <text class="text" text-anchor="middle" style="transform: translate(@GetLabelPoints(i)) rotate(-90deg); font-size:1.92rem; fill:#fff; pointer-events: none ">@(((Data[i] * 100) / total).ToString("0.00"))%</text>
             </g>
         }
         else

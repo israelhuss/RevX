@@ -1,5 +1,5 @@
 ﻿.footer-cell-centered {
-    padding-top: 0.5rem;
+    padding-top: 0.80rem;
     width: 100%;
     margin: 0 auto;
     text-align: center;
@@ -7,7 +7,7 @@
 
 .footer-cell-slant {
     transform: rotate(35deg) translate(30%, -30%);
-    padding-top: 1.2rem;
+    padding-top: 1.92rem;
     width: max-content;
     white-space: nowrap;
 }
@@ -15,14 +15,14 @@
 .footer-cell-slant {
     transform: rotate(35deg) translate(30%, -20%);
     transform-origin: center;
-    padding-top: 1rem;
+    padding-top: 1.60rem;
     width: max-content;
     white-space: nowrap;
     margin: 0;
 }
 
 .footer-cell-underline {
-    padding-top: 1rem;
+    padding-top: 1.60rem;
     width: min-content;
     margin: 0 auto;
     position: absolute;

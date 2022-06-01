@@ -1,19 +1,19 @@
 ﻿<style>
 	:root {
 		--container-width: 75vw;
-		--chart-container-width: calc(var(--container-width) - 4.5rem);
-		--chart-height: 25rem;
+		--chart-container-width: calc(var(--container-width) - 7.20rem);
+		--chart-height: 40.00rem;
 		--chart-rows: @RowCount;
 		--chart-row-height: calc(var(--chart-height) / var(--chart-rows));
 		--bar-group-width: calc(100% / @DataLength);
-		--bar-width: calc((100% - 2.5rem) / 2);
+		--bar-width: calc((100% - 4.00rem) / 2);
 	}
 
 	.card-body {
-		padding-bottom: 4rem;
-		padding-top: 2.5rem;
-		padding-left: 4.5rem;
-		padding-right: 3rem;
+		padding-bottom: 6.40rem;
+		padding-top: 4.00rem;
+		padding-left: 7.20rem;
+		padding-right: 4.80rem;
 		word-wrap: normal;
 	}
 
@@ -181,7 +181,7 @@
 				@foreach (var item in Data)
 				{
 					<div class="chart-footer-cell">
-						<p style="transform: rotate(30deg) translate(20%, -30%); padding-top: 1rem; padding-left: 1rem; width: max-content; margin: 0 auto;">@item.Title</p>
+						<p style="transform: rotate(30deg) translate(20%, -30%); padding-top: 1.60rem; padding-left: 1.60rem; width: max-content; margin: 0 auto;">@item.Title</p>
 					</div>
 				}
 			</div>

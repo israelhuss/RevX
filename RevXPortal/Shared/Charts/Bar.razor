@@ -3,7 +3,7 @@
 		@ChildContent
 		@if (ChartBase.ShowBarTotals)
 		{
-			<div style="font-size: .7rem;">@(Stacks.Sum(s => s.Value) > 0 ? (Stacks.Sum(s => s.Value)).ToString("C0") : "")</div>
+			<div style="font-size: 1.12rem;">@(Stacks.Sum(s => s.Value) > 0 ? (Stacks.Sum(s => s.Value)).ToString("C0") : "")</div>
 		}
 	</div>
 </CascadingValue>
