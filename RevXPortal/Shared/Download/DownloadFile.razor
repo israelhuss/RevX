@@ -13,6 +13,6 @@
 
 	public async void Download()
 	{
-		_invoiceEndpoint.GetDocument(Id, "DONTUSE");
+		await _invoiceEndpoint.GetDocument(Id, "DONTUSE");
 	}
 }

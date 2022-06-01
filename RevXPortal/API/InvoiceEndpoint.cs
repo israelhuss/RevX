@@ -80,16 +80,12 @@ namespace RevXPortal.API
 
 		public async Task GetDocument(int id, string filename)
 		{
-			using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/invoice/document?id={id}"))
-			{
-				using (Stream contentStream = await ( await _client.SendAsync(request) ).Content.ReadAsStreamAsync())
-				{
-					using MemoryStream stream = new();
-					await contentStream.CopyToAsync(stream);
-					byte[] bytes = stream.ToArray();
-					await jSRuntime.InvokeVoidAsync("BlazorDownloadFile", $"{filename}.pdf", "application/pdf", bytes);
-				}
-			}
+			using var request = new HttpRequestMessage(HttpMethod.Get, $"/api/invoice/document?id={id}");
+			using Stream contentStream = await ( await _client.SendAsync(request) ).Content.ReadAsStreamAsync();
+			using MemoryStream stream = new();
+			await contentStream.CopyToAsync(stream);
+			byte[] bytes = stream.ToArray();
+			await jSRuntime.InvokeVoidAsync("BlazorDownloadFile", $"{filename}.pdf", "application/pdf", bytes);
 		}
 	}
 }

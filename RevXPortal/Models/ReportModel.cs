@@ -2,7 +2,7 @@
 
 namespace RevXPortal.Models
 {
-	public class ReportApiModel : IReportModel
+	public class ReportModel : IReportModel
 	{
 		public int Id { get; set; }
 		public string Title { get; set; }
@@ -13,6 +13,9 @@ namespace RevXPortal.Models
 		public DateOnly EndDate { get; set; }
 		public ReportGroupBy GroupBy { get; set; }
 		public bool IsDefault { get; set; }
+
+		public IEnumerable<IGrouping<string, SessionModel>> Groups { get; set; }
+
 		public List<ReportItem> Bars { get; set; }
 		public List<ReportItem> Stacks { get; set; }
 	}

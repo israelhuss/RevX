@@ -2,7 +2,7 @@
 
 <style>
 	:root {
-		/*--container-width: @Width;
+/*		--container-width: @Width;
 		--chart-container-width: calc(var(--container-width) );*/
 		--chart-height: @Height;
 		--chart-height-number: @(new Regex(@"\d\d+").Match(Height).Value);
@@ -14,6 +14,7 @@
 	.container-main {
 		width: var(--container-width);
 		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
 	}
 
 	.chart-header {

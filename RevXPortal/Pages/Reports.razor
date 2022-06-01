@@ -24,6 +24,11 @@
         justify-content: space-between;
     }
 
+    .left {
+        display: flex;
+        justify-content: space-between;
+    }
+
     .add-report {
         padding: 0.2rem 0.75rem;
         border: 1px solid #ced4da;
@@ -63,40 +68,47 @@
 {
     <div class="page-container">
         <div class="report-generator">
-            <div style="width: 25%;">
-                <RevxSelect2 PlaceHolder="My Reports" @bind-Value="CurrentReport">
-                    @foreach (var report in AllReports)
-                    {
-                        <RevxOption Text="@report.Title" Value="report">
-                            <Actions>
-                                <div class="option-actions">
-                                    <div class="option-action" @onclick="() => SetAsDefault(report.Id)">
-                                        @if (report.IsDefault)
-                                        {
-                                    <i style="color: var(--secondary-light-color)" class="fas fa-star"></i>
-                                        }
-                                        else
-                                        {
-                                    <i class="far fa-star"></i>
-                                        }
+            <div class="left">
+                <div>
+                    <RevxSelect2 PlaceHolder="My Reports" @bind-Value="CurrentReport">
+                        @foreach (var report in AllReports)
+                        {
+                            <RevxOption Text="@report.Title" Value="report">
+                                <Actions>
+                                    <div class="option-actions">
+                                        <div class="option-action" @onclick="() => SetAsDefault(report.Id)">
+                                            @if (report.IsDefault)
+                                            {
+                                        <i style="color: var(--secondary-light-color)" class="fas fa-star"></i>
+                                            }
+                                            else
+                                            {
+                                        <i class="far fa-star"></i>
+                                            }
+                                </div>
+                                <div @onclick="() => EditReport(report)" class="option-action"><i class="fas fa-edit"></i></div>
+                                <div @onclick="() => { PendingDeletion = report.Id; DeleteConfirmation.Show(); }" class="option-action"><i class="fas fa-trash"></i></div>
                             </div>
-                            <div @onclick="() => EditReport(report)" class="option-action"><i class="fas fa-edit"></i></div>
-                            <div @onclick="() => { PendingDeletion = report.Id; DeleteConfirmation.Show(); }" class="option-action"><i class="fas fa-trash"></i></div>
-                        </div>
-                    </Actions>
-                </RevxOption>
-                    }
-                    <div class="add-report btn" @onclick="() => { SaveAction = AddReport; addReportRef.Show(); }">New Report</div>
-                </RevxSelect2>
-            </div>
-            <div>
-                <div style="display: flex; align-items: center;">
-                    <div style="padding: 0 .5rem;">Show Totals</div>
-                    <RevxSwitch @bind-Value="ShowTotals"></RevxSwitch>
+                        </Actions>
+                    </RevxOption>
+                        }
+                        <div class="add-report btn" @onclick="() => { SaveAction = AddReport; addReportRef.Show(); }">New Report</div>
+                    </RevxSelect2>
                 </div>
-                <div style="display: flex; align-items: center;">
-                    <div style="padding: 0 .5rem;">Show Totals</div>
-                    <RevxSwitch @bind-Value="ShowTotals"></RevxSwitch>
+                <div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                        <div style="padding: 0 .5rem;">Show Headers</div>
+                        <RevxSwitch @bind-Value="ShowHeaders"></RevxSwitch>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                        <div style="padding: 0 .5rem;">Show Totals</div>
+                        <RevxSwitch @bind-Value="ShowTotals"></RevxSwitch>
+                    </div>
+                </div>
+            </div>
+            <div class="right">
+                <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                    <i style="font-size: 1.4rem; display: flex; color: #00ae0d; height: min-content; cursor: pointer;" class="fas fa-download" @onclick="DownloadReport"></i>
                 </div>
             </div>
         </div>
@@ -107,102 +119,120 @@
 {
     @if (CurrentReport.ReportStyle == ReportStyle.BarChart)
     {
-        <ChartBase @key="CurrentReport.Id" ShowBarTotals="ShowTotals">
-            <ChartHeader>
-                <div>
-                    @foreach (var bar in CurrentReport.Bars)
+        <div id="report-base">
+            <ChartBase @key="CurrentReport.Id" ShowBarTotals="ShowTotals">
+                <ChartHeader>
+                    @if (ShowHeaders)
                     {
-
-                    }
-                    @*<div>School Hours - @ReportData.Select(d => (d.SchoolEncore.Hours * d.SchoolEncore.Rate) + (d.SchoolLegadel.Hours * d.SchoolLegadel.Rate)).Sum().ToString("C")</div>
-            <div>After School Hours - @ReportData.Select(d => (d.AfterEncore.Hours * d.AfterEncore.Rate) + (d.AfterLegadel.Hours * d.AfterLegadel.Rate)).Sum().ToString("C")</div>*@
-                </div>
-                <div style="display: flex;">
-                    @for (var i = 0; i < CurrentReport.Bars.Count; i++)
-                    {
-                        var bar = CurrentReport.Bars[ i ];
-                        <div style="padding: 0 .5rem;">
-                            @for (var j = 0; j < CurrentReport.Stacks.Count; j++)
+                        <div class="d-flex">
+                            <div style="margin-right: 1rem;">
+                                @foreach (var bar in CurrentReport.Bars)
+                                {
+                                    <div style="display: flex; align-items: center; height: 1.2rem; justify-content: space-between; @(CurrentReport.Bars.FindIndex(r => r.Id == bar.Id) != CurrentReport.Bars.Count - 1 ? "margin-bottom: 7px;" : "")">
+                                        <p style="margin: 0; line-height:1;">@(bar.Nickname ?? bar.Id.ToString())</p>
+                                        <p style="margin: 0; line-height:1; padding: 0 .35rem;"> - </p>
+                                        <p style="margin: 0; line-height:1;">@bar.TotalMoney.ToString("C")</p>
+                                    </div>
+                                }
+                            </div>
+                            <div>
+                                @foreach (var stack in CurrentReport.Stacks)
+                                {
+                                    <div style="display: flex; align-items: center; height: 1.2rem; justify-content: space-between; @(CurrentReport.Stacks.FindIndex(r => r.Id == stack.Id) != CurrentReport.Stacks.Count - 1 ? "margin-bottom: 7px;" : "")">
+                                        <p style="margin: 0; line-height:1;">@(stack.Nickname ?? stack.Id.ToString())</p>
+                                        <p style="margin: 0; line-height:1; padding: 0 .35rem;"> - </p>
+                                        <p style="margin: 0; line-height:1;">@stack.TotalMoney.ToString("C")</p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <div style="display: flex;">
+                            @for (var i = 0; i < CurrentReport.Bars.Count; i++)
                             {
-                                var stack = CurrentReport.Stacks[ j ];
-                                <div style="display: flex; align-items: center; @(j != CurrentReport.Stacks.Count - 1 ? "padding-bottom: 7px;" : "")"> 
-                                    <div style="width: 12px; height: 12px; background-color: @(stack.Color is not null ? stack.Color : Colors[i][j]); margin-right: 5px;"></div>
-                                    <p style="margin: 0; line-height:1;">@bar.Nickname / @stack.Nickname</p>
+                                var bar = CurrentReport.Bars[ i ];
+                                <div style="padding: 0 .5rem;">
+                                    @for (var j = 0; j < CurrentReport.Stacks.Count; j++)
+                                    {
+                                        var stack = CurrentReport.Stacks[ j ];
+                                        <div style="display: flex; align-items: center; @(j != CurrentReport.Stacks.Count - 1 ? "padding-bottom: 7px;" : "")">
+                                            <div style="width: 1.2rem; height: 1.2rem; background-color: @(stack.Color is not null ? stack.Color : Colors[i][j]); margin-right: 5px;"></div>
+                                            <p style="margin: 0; line-height:1;">@bar.Nickname / @stack.Nickname</p>
+                                        </div>
+                                    }
                                 </div>
                             }
                         </div>
                     }
-                </div>
-            </ChartHeader>
-            <ChartContent>
-                <StackedBarChart>
-                    @{
-                        List<SessionModel> between = null;
-                        if (CurrentReport.StartDate != DateOnly.MinValue || CurrentReport.EndDate != DateOnly.MinValue)
-                        {
-                            List<ReportItemDetail> betweenDates = new();
-                            if (CurrentReport.StartDate != DateOnly.MinValue)
+                </ChartHeader>
+                <ChartContent>
+                    <StackedBarChart>
+                        @{
+                            List<SessionModel> between = null;
+                            if (CurrentReport.StartDate != DateOnly.MinValue || CurrentReport.EndDate != DateOnly.MinValue)
                             {
-                                ReportItemDetail notBefore = new()
+                                List<ReportItemDetail> betweenDates = new();
+                                if (CurrentReport.StartDate != DateOnly.MinValue)
+                                {
+                                    ReportItemDetail notBefore = new()
                             {
                                 Field = "Date",
                                 Value = CurrentReport.StartDate,
                                 Operator = ConditionOperator.GreaterThanOrEqual,
                                 Level = ReportItemConditionLevel.Where
                             };
-                                betweenDates.Add(notBefore);
-                            }
-                            if (CurrentReport.EndDate != DateOnly.MinValue)
-                            {
-                                ReportItemDetail notAfter = new()
+                                    betweenDates.Add(notBefore);
+                                }
+                                if (CurrentReport.EndDate != DateOnly.MinValue)
+                                {
+                                    ReportItemDetail notAfter = new()
                             {
                                 Field = "Date",
                                 Value = CurrentReport.EndDate,
                                 Operator = ConditionOperator.LessThanOrEqual,
                                 Level = ReportItemConditionLevel.Where
                             };
-                                betweenDates.Add(notAfter);
+                                    betweenDates.Add(notAfter);
+                                }
+                                between = processData(Sessions, betweenDates);
                             }
-                            between = processData(Sessions, betweenDates);
+                            else
+                            {
+                                between = Sessions;
+                            }
+                            var data = groupSessions(CurrentReport.GroupBy, between);
                         }
-                        else
+                        @foreach (var session in data)
                         {
-                            between = Sessions;
+                            <BarGroup @key="session.Key" Label="@session.Key">
+                                @if (CurrentReport.Bars is null || CurrentReport.Bars.Count == 0)
+                                {
+                                    CurrentReport.Bars = new() { new() { } };
+                                }
+                                @foreach (var bar in CurrentReport.Bars)
+                                {
+                                    int barIndex = CurrentReport.Bars.IndexOf(bar);
+                                    var barData = processData(session.ToList(), bar.ItemDetails);
+                                    <Bar @key="@($"Group{session.Key}Bar{bar.Id}")">
+                                        @if (CurrentReport.Stacks is null || CurrentReport.Stacks.Count == 0)
+                                        {
+                                            CurrentReport.Stacks = new() { new() { } };
+                                        }
+                                        @foreach (var stack in CurrentReport.Stacks)
+                                        {
+                                            int stackIndex = CurrentReport.Stacks.IndexOf(stack);
+                                            var stackData = stack.Sessions.GetValueOrDefault($"{session.Key}{barIndex}"); //processData(barData, stack.ItemDetails);
+                                            double amount = stackData.Sum(s => ( s.EndTime > s.StartTime ? s.EndTime - s.StartTime : TimeSpan.Zero ).TotalHours * s.Rate.Rate);
+                                            double hours = stackData.Sum(s => ( s.EndTime > s.StartTime ? s.EndTime - s.StartTime : TimeSpan.Zero ).TotalHours);
+                                            <BarStack @key="@($"Group{session.Key}Bar{bar.Id}Stack{stack.Id}")" Value="@amount" Color="@(stack.Color is not null ? stack.Color : Colors[barIndex][stackIndex])" TooltipContent="@(getTooltipContent(session.Key, GetTooltipTitle(bar, stack), hours, stackData.FirstOrDefault()?.Rate.Rate ?? 0, amount))"></BarStack>
+                                        }
+                                    </Bar>
+                                }
+                            </BarGroup>
                         }
-                        var data = groupSessions(CurrentReport.GroupBy, between);
-                    }
-                    @foreach (var session in data)
-                    {
-                        <BarGroup @key="session.Key" Label="@session.Key">
-                            @if (CurrentReport.Bars is null || CurrentReport.Bars.Count == 0)
-                            {
-                                CurrentReport.Bars = new() { new() { } };
-                            }
-                            @foreach (var bar in CurrentReport.Bars)
-                            {
-                                int barIndex = CurrentReport.Bars.IndexOf(bar);
-                                var barData = processData(session.ToList(), bar.ItemDetails);
-                                <Bar @key="@($"Group{session.Key}Bar{bar.Id}")">
-                                    @if (CurrentReport.Stacks is null || CurrentReport.Stacks.Count == 0)
-                                    {
-                                        CurrentReport.Stacks = new() { new() { } };
-                                    }
-                                    @foreach (var stack in CurrentReport.Stacks)
-                                    {
-                                        int stackIndex = CurrentReport.Stacks.IndexOf(stack);
-                                        var stackData = processData(barData, stack.ItemDetails);
-                                        double hours = stackData.Sum(s => ( s.EndTime > s.StartTime ? s.EndTime - s.StartTime : TimeSpan.Zero ).TotalHours);
-                                        double rate = stackData.Count() > 0 ? stackData.First().Rate.Rate : 0;
-                                        double amount = hours * rate;
-                                        <BarStack @key="@($"Group{session.Key}Bar{bar.Id}Stack{stack.Id}")" Value="@amount" Color="@(stack.Color is not null ? stack.Color : Colors[barIndex][stackIndex])" TooltipContent="@(getTooltipContent(session.Key, GetTooltipTitle(bar, stack), hours, rate, amount))"></BarStack>
-                                    }
-                                </Bar>
-                            }
-                        </BarGroup>
-                    }
-                </StackedBarChart>
-            </ChartContent>
-        </ChartBase>
+                    </StackedBarChart>
+                </ChartContent>
+            </ChartBase>
+        </div>
     }
 }
 
@@ -220,12 +250,13 @@
     private int PendingDeletion { get; set; }
 
     private bool ShowTotals { get; set; } = false;
+    private bool ShowHeaders { get; set; } = true;
 
     public List<SessionModel> Sessions { get; set; }
     public List<ClientModel> Clients { get; set; }
     public List<ProviderModel> Providers { get; set; }
-    public List<BarReportModel> AllReports { get; set; }
-    public BarReportModel CurrentReport { get; set; }
+    public List<ReportModel> AllReports { get; set; }
+    public ReportModel CurrentReport { get; set; }
     public List<List<string>> Colors { get; set; } = new()
         {
             new() { "#1365fc", "#659afd" },
@@ -236,8 +267,8 @@
     public List<string> StackColors { get; set; } = new() { "#659afd", "#74b359", "#9c659c", "#ff5a5a", "#f5f26c", "#60d1d0", "#d76311", "#2900A5", "#d38dd2", "#E4BF58", "#C94D6D", "#A9A9A9", "#e786f4", "#1365fc", "#298a00", "#722472", "#ff5a5a", "#f5f26c", "#60d1d0", "#d76311", "#2900A5", "#d38dd2", "#E4BF58", "#C94D6D", "#A9A9A9", "#e786f4", "#1365fc", "#298a00", "#722472", "#ff5a5a", "#f5f26c", "#60d1d0", "#d76311", "#2900A5", "#d38dd2", "#E4BF58", "#C94D6D", "#A9A9A9", "#e786f4", "#1365fc", "#298a00", "#722472", "#ff5a5a", "#f5f26c", "#60d1d0", "#d76311", "#2900A5", "#d38dd2", "#E4BF58", "#C94D6D", "#A9A9A9", "#e786f4" };
 
     private AddReportModel addReportRef { get; set; }
-    public BarReportModel ReportForModal { get; set; }
-    public Func<BarReportModel, Task> SaveAction { get; set; }
+    public ReportModel ReportForModal { get; set; }
+    public Func<ReportModel, Task> SaveAction { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -245,12 +276,12 @@
         Providers = await _providerEndpoint.GetEnabled();
         Clients = await _clientEndpoint.GetEnabled();
         await RefreshReports();
-        CurrentReport = (BarReportModel)AllReports.Where(r => r.IsDefault == true).FirstOrDefault();
+        CurrentReport = (ReportModel)AllReports.Where(r => r.IsDefault == true).FirstOrDefault();
     }
 
     public async Task RefreshReports()
     {
-        AllReports = ( await _reportEndpoint.GetAllReports() ).Select(r => (BarReportModel)r).OrderBy(r => r.Title).ToList();
+        AllReports = ( await _reportEndpoint.GetAllReports() ).Select(r => (ReportModel)r).OrderBy(r => r.Title).ToList();
     }
 
     private string GetTooltipTitle(ReportItem bar, ReportItem stack)
@@ -410,7 +441,7 @@
         return sessionsCopy;
     }
 
-    public async Task AddReport(BarReportModel report)
+    public async Task AddReport(ReportModel report)
     {
         try
         {
@@ -427,7 +458,7 @@
         StateHasChanged();
     }
 
-    public void EditReport(BarReportModel report)
+    public void EditReport(ReportModel report)
     {
         jsRuntime.InvokeVoidAsync("log", $"Editing Report {report.Title}");
         ReportForModal = report;
@@ -435,7 +466,7 @@
         addReportRef.Show();
     }
 
-    public async Task SaveReportChanges(BarReportModel report)
+    public async Task SaveReportChanges(ReportModel report)
     {
         try
         {
@@ -485,5 +516,10 @@
             await jsRuntime.InvokeVoidAsync("log", "Error: " + ex.Message);
             toastService.ShowError("Error Setting as default");
         }
+    }
+
+    public async void DownloadReport()
+    {
+        await _reportEndpoint.DownloadReport();
     }
 }

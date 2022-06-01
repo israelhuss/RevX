@@ -8,10 +8,11 @@ namespace RevXPortal.API
 	public interface IReportEndpoint
 	{
 		Task DeleteReport(int id);
-		Task EditReport(BarReportModel report);
+		Task DownloadReport();
+		Task EditReport(ReportModel report);
 		Task<List<IReportModel>> GetAllReports();
 		Task<List<IncomeReportModel>> GetMonthlyIncome(DateTime startDate, DateTime endDate, string groupBy);
-		Task SaveReport(BarReportModel report);
+		Task SaveReport(ReportModel report);
 		Task SetAsDefault(int id);
 	}
 }

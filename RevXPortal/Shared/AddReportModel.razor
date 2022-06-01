@@ -107,10 +107,10 @@
 	[Parameter]
 	public Action Saved { get; set; }
 	[Parameter]
-	public Func<BarReportModel, Task> SavedAsync { get; set; }
+	public Func<ReportModel, Task> SavedAsync { get; set; }
 
 	[Parameter]
-	public BarReportModel Report { get; set; }
+	public ReportModel Report { get; set; }
 
 	protected override void OnInitialized()
 	{

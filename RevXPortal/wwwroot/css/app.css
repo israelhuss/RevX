@@ -20,7 +20,7 @@
 }
 
 html, body {
-    font-family: 'Nunito', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Nunito', 'Helvetica Neue', 'Roboto', Helvetica, Arial, sans-serif;
     background-color: rgb(253 253 253);
     color: #474747;
 }
@@ -463,4 +463,13 @@ a, .btn-link {
     .navbar-toggler {
         display: block !important;
     }
+}
+
+@media print {
+    body.print-element > *:not(.print-all > *) {
+        display: none;
+    }
+/*    .print-all * {
+        display: block !important;
+    }*/
 }
