@@ -153,7 +153,6 @@ function ensureValue(val) {
     var reg = /var\((--[^\)]*)\)/g;
     var matches = val.matchAll(reg);
     for (var variable of matches) {
-        console.log(variable);
         var variableName = variable[1];
         if (variableName && rootVariables[variableName]) {
             var newVal = rootVariables[variableName].replace(/\s/g, "");
@@ -161,12 +160,7 @@ function ensureValue(val) {
                 newVal = ensureValue(newVal);
             }
             var replaced = val.replace(variable[0], newVal);
-            console.log("variable", variableName);
-            console.log("newVal", newVal);
-            console.log("replaced", replaced);
             val = replaced;
-            console.log("variable", variableName);
-            console.log("val", val);
         }
     }
     return val;
@@ -182,7 +176,6 @@ function applyInline(element, recursive = true) {
     // we need to preserve any pre-existing inline styles.
     var srcRules = document.createElement(element.tagName).style;
     srcRules.cssText = ensureValue(element.style.cssText);
-    console.log("srcRules", srcRules.cssText);
     element.style.cssText = srcRules.cssText;
 
     matches.forEach((rule) => {
@@ -192,8 +185,6 @@ function applyInline(element, recursive = true) {
             val = ensureValue(val);
             let priority = rule.style.getPropertyPriority(prop);
             element.style.setProperty(prop, val, priority);
-            console.log("prop", prop);
-            console.log("val", val);
         }
     });
 
@@ -232,12 +223,27 @@ function matchRules(el, sheets) {
             }
         }
     }
-    //   Iterate rootVariables to resolve internal variable referencing
-    //for (var s in rootVariables) {
-    //    rootVariables[s] = ensureValue(rootVariables[s]);
-    //}
+    //  Iterate rootVariables to resolve internal variable referencing
+    for (var s in rootVariables) {
+        rootVariables[s] = ensureValue(rootVariables[s]);
+    }
     console.log("rootVariables", rootVariables);
     return ret;
+}
+
+function isAllowedLink(link) {
+    var allowedLinks = [
+        "font-awesome",
+        "fonts.googleapis.com",
+        "fonts.gstatic.com",
+        "fonts.google.com",
+    ];
+    for (var i in allowedLinks) {
+        if (link.indexOf(allowedLinks[i]) > -1) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function inlineStyles(id) {
@@ -256,6 +262,17 @@ function inlineStyles(id) {
         body.appendChild(inlined);
         body.style.cssText +=
             "display:flex; flex-direction:column; justify-content:center; min-height:100vh;";
+        var links = document.getElementsByTagName('link');
+        console.log(links);
+        for (var i = 0; i < links.length; i++) {
+            var link = links[i];
+            if (link.rel == "stylesheet" && link.href && isAllowedLink(link.href)) {
+                var linkEl = document.createElement("link");
+                linkEl.rel = "stylesheet";
+                linkEl.href = link.href;
+                html.appendChild(linkEl);
+            }
+        }
         var str = html.outerHTML;
     } else {
         var str = inlined.outerHTML;

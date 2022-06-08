@@ -17,14 +17,16 @@ namespace RevXPortal.API
 		private readonly HttpClient _client;
 		private readonly ISessionEndpoint _sessionEndpoint;
 		private readonly IJSRuntime _jSRuntime;
+		private readonly IToastService _toastService;
 
 		private List<SessionModel> _sessions { get; set; }
 
-		public ReportEndpoint(HttpClient client, ISessionEndpoint sessionEndpoint, IJSRuntime jSRuntime)
+		public ReportEndpoint(HttpClient client, ISessionEndpoint sessionEndpoint, IJSRuntime jSRuntime, IToastService toastService)
 		{
 			_client = client;
 			_sessionEndpoint = sessionEndpoint;
 			_jSRuntime = jSRuntime;
+			_toastService = toastService;
 		}
 
 		public async Task<List<IncomeReportModel>> GetMonthlyIncome(DateTime startDate, DateTime endDate, string groupBy)
@@ -213,9 +215,15 @@ namespace RevXPortal.API
 		}
 
 		public async Task DownloadReport()
+        {
+			await DownloadReport("Report");
+        }
+
+		public async Task DownloadReport(string filename)
 		{
-			string filename = "report";
+			_toastService.ShowInfo("Prepairing...");
 			string rawHtml = await _jSRuntime.InvokeAsync<string>("inlineStyles", "report-base");
+			_toastService.ShowInfo("Creating PDF...");
 			HtmlRequestContent content = new() { Key = "html", Value = rawHtml };
 			var req = new HttpRequestMessage(HttpMethod.Post, "/api/HtmlToPdf")
 			{
@@ -225,15 +233,18 @@ namespace RevXPortal.API
 			var response = await _client.SendAsync(req);
 			if (response.IsSuccessStatusCode)
 			{
+				_toastService.ShowInfo("Starting Download...");
 				using Stream contentStream = await response.Content.ReadAsStreamAsync();
 				using MemoryStream stream = new();
 				await contentStream.CopyToAsync(stream);
 				byte[] bytes = stream.ToArray();
 				await _jSRuntime.InvokeVoidAsync("BlazorDownloadFile", $"{filename}.pdf", "application/pdf", bytes);
+				_toastService.ShowSuccess("Done Downloading!");
 			}
 			else
 			{
 				Console.WriteLine(response.ReasonPhrase);
+				_toastService.ShowError("Error Getting PDF");
 			}
 		}
 

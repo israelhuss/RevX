@@ -3,6 +3,7 @@
 @inject IProviderEndpoint _providerEndpoint
 @inject IClientEndpoint _clientEndpoint
 @inject IReportEndpoint _reportEndpoint
+@inject IUserEndpoint _userEndpoint
 @inject NavigationManager NavManager
 @inject IJSRuntime jsRuntime
 @inject IToastService toastService
@@ -27,6 +28,7 @@
     .left {
         display: flex;
         justify-content: space-between;
+        min-width: 35%;
     }
 
     .add-report {
@@ -69,7 +71,7 @@
     <div class="page-container">
         <div class="report-generator">
             <div class="left">
-                <div>
+                <div style="flex: 1;">
                     <RevxSelect2 PlaceHolder="My Reports" @bind-Value="CurrentReport">
                         @foreach (var report in AllReports)
                         {
@@ -108,7 +110,20 @@
             </div>
             <div class="right">
                 <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                    <i style="font-size: 2.24rem; display: flex; color: #00ae0d; height: min-content; cursor: pointer;" class="fas fa-download" @onclick="DownloadReport"></i>
+                    @if (DownloadInProgress)
+                    {
+                        <div style="display: flex; color: #00ae0d8c;">
+                            <i style="font-size: 2.24rem; display: flex; height: min-content;" class="fas fa-download"></i>
+                            <span style="margin-left: .5rem;">Working...</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="display: flex; color: #00ae0d; cursor: pointer;" @onclick="DownloadReport">
+                            <i style="font-size: 2.24rem; display: flex; height: min-content;" class="fas fa-download"></i>
+                            <span style="margin-left: .5rem;">Download</span>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -249,6 +264,10 @@
     private ConfirmationDialog DeleteConfirmation { get; set; }
     private int PendingDeletion { get; set; }
 
+    private UserModel currentUser { get; set; }
+
+    private bool DownloadInProgress { get; set; } = false;
+
     private bool ShowTotals { get; set; } = false;
     private bool ShowHeaders { get; set; } = true;
 
@@ -277,6 +296,9 @@
         Clients = await _clientEndpoint.GetEnabled();
         await RefreshReports();
         CurrentReport = (ReportModel)AllReports.Where(r => r.IsDefault == true).FirstOrDefault();
+
+
+        currentUser = await _userEndpoint.GetCurrentUser();
     }
 
     public async Task RefreshReports()
@@ -520,6 +542,10 @@
 
     public async void DownloadReport()
     {
-        await _reportEndpoint.DownloadReport();
+        DownloadInProgress = true;
+        string filename = $"{currentUser.FirstName} {currentUser.LastName} - {CurrentReport.Title}";
+        await _reportEndpoint.DownloadReport(filename);
+        DownloadInProgress = false;
+        StateHasChanged();
     }
 }

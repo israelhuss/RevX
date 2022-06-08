@@ -3,6 +3,7 @@
 @inject IBillingStatusEndpoint _billingStatusEndpoint
 @inject ISessionEndpoint _sessionEndpoint
 @inject NavigationManager NavManager
+@inject IJSRuntime jsRuntime
 
 <div class="container">
     <h3>Upload Excel File</h3>
@@ -35,6 +36,7 @@
 
     private async Task LoadFiles(InputFileChangeEventArgs e)
     {
+        ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
         List<List<string>> excelData = new();
 
         var memoryStream = new MemoryStream();
@@ -78,6 +80,7 @@
         List<ManageSessionModel> output = new();
         foreach (var session in list)
         {
+            jsRuntime.InvokeVoidAsync("log", session);
             ManageSessionModel model = new()
             {
                 Date = DateTime.Parse(session[ 0 ]),
@@ -88,12 +91,13 @@
                 BillingStatus = BillingStatusList.FirstOrDefault(b => b.BillingStatus == "Paid")
             };
             output.Add(model);
+            // jsRuntime.InvokeVoidAsync("log", $"Date {model.Date.ToShortDateString()}, Start {model.StartTime.ToString()}, End {model.EndTime.ToString()}, Client {model.Client.DisplayName}, Provider {model.Provider.DisplayName}, Billing {model.BillingStatus.DisplayName}");
         }
 
-        foreach (var model in output)
-        {
-            _sessionEndpoint.SaveSession(model);
-        }
+        //foreach (var model in output)
+        //{
+        //    _sessionEndpoint.SaveSession(model);
+        //}
 
         return output;
     }
